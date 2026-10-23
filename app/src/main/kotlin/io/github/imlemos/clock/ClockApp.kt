@@ -34,8 +34,8 @@ class ClockApp : Application() {
         appScope.launch {
             alarmController.rescheduleAll()
             // Timers and the stopwatch: reschedule (force-stop clears AlarmManager) and resume ringing.
-            timers.resync(afterBoot = false)
-            stopwatch.resync(afterBoot = false)
+            timers.resync()
+            stopwatch.resync()
         }
         // The 12/24-hour choice is read everywhere times are formatted, including notifications.
         mainScope.launch { settings.timeFormat.collect { ClockTimeFormat.format = it } }

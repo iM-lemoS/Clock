@@ -6,10 +6,13 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.imlemos.clock.core.scheduling.TimerMath
 import io.github.imlemos.clock.core.scheduling.TimerRun
 import io.github.imlemos.clock.core.scheduling.TimerStatus
+import io.github.imlemos.clock.core.time.BootDetector
 import io.github.imlemos.clock.core.time.ElapsedClock
 import io.github.imlemos.clock.timer.TimerNotifications
 import io.github.imlemos.clock.timer.ringing.TimerRingingService
 import java.time.Clock
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,7 +28,10 @@ class TimerController @Inject constructor(
     private val notifications: TimerNotifications,
     private val clock: Clock,
     private val elapsed: ElapsedClock,
+    private val boot: BootDetector,
 ) {
+    private val resyncLock = Mutex()
+
     /** A new stopped timer. Returns its id. */
     suspend fun create(name: String, durationMillis: Long): Long {
         val duration = durationMillis.coerceIn(1_000, TimerMath.MAX_DURATION_MILLIS)
@@ -77,11 +83,13 @@ class TimerController @Inject constructor(
     }
 
     /**
-     * Brings running timers back in line after a reboot ([afterBoot]), a clock change or a fresh
-     * process start, rings those that ended meanwhile, schedules the rest, and resumes ringing any
-     * timer whose process died while it rang.
+     * Brings running timers back in line after a reboot, a clock change or a fresh process start,
+     * rings those that ended meanwhile, schedules the rest, and resumes ringing any timer whose
+     * process died while it rang. Whether the phone rebooted comes from [BootDetector].
      */
-    suspend fun resync(afterBoot: Boolean) {
+    suspend fun resync() = resyncLock.withLock {
+        // App start and boot broadcasts can arrive together: one at a time, each on fresh data.
+        val afterBoot = boot.rebootedSinceLastCheck(BOOT_CONSUMER)
         val nowElapsed = elapsed.millis()
         val nowWall = clock.millis()
         repository.getAll().forEach { timer ->
@@ -128,6 +136,7 @@ class TimerController @Inject constructor(
 
     private companion object {
         const val TAG = "TimerController"
+        const val BOOT_CONSUMER = "timers"
 
         /** AlarmManager may deliver a few milliseconds early; still ring. */
         const val EARLY_TOLERANCE_MS = 1_000L

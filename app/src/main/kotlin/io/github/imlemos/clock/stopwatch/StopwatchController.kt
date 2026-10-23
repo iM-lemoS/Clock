@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.imlemos.clock.core.scheduling.StopwatchMath
 import io.github.imlemos.clock.core.scheduling.StopwatchRun
+import io.github.imlemos.clock.core.time.BootDetector
 import io.github.imlemos.clock.core.time.ElapsedClock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -27,6 +28,7 @@ class StopwatchController @Inject constructor(
     private val notification: StopwatchNotification,
     private val clock: Clock,
     private val elapsed: ElapsedClock,
+    private val boot: BootDetector,
 ) {
     val run: Flow<StopwatchRun> = dataStore.data.map { decode(it[KEY]) }.distinctUntilChanged()
 
@@ -39,8 +41,11 @@ class StopwatchController @Inject constructor(
     suspend fun reset() = change { StopwatchMath.reset() }
 
     /** After a reboot or clock change, keeps a running stopwatch counting from the same moment. */
-    suspend fun resync(afterBoot: Boolean) = change {
-        if (afterBoot) StopwatchMath.afterReboot(it, elapsed.millis(), clock.millis()) else StopwatchMath.afterClockChange(it, elapsed.millis(), clock.millis())
+    suspend fun resync() {
+        val afterBoot = boot.rebootedSinceLastCheck("stopwatch")
+        change {
+            if (afterBoot) StopwatchMath.afterReboot(it, elapsed.millis(), clock.millis()) else StopwatchMath.afterClockChange(it, elapsed.millis(), clock.millis())
+        }
     }
 
     private suspend fun change(transform: (StopwatchRun) -> StopwatchRun) {

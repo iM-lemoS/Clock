@@ -35,9 +35,8 @@ class SystemEventsReceiver : BroadcastReceiver() {
                 if (intent.action in MISSED_CHECK_ACTIONS) controller.checkMissed()
                 controller.rescheduleAll()
                 // Timers and the stopwatch run on elapsed time, which restarts at boot.
-                val boot = intent.action == Intent.ACTION_LOCKED_BOOT_COMPLETED || intent.action == Intent.ACTION_BOOT_COMPLETED
-                timers.resync(afterBoot = boot)
-                stopwatch.resync(afterBoot = boot)
+                timers.resync()
+                stopwatch.resync()
             } finally {
                 pending.finish()
             }

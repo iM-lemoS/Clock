@@ -16,6 +16,7 @@ import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
 import io.github.imlemos.clock.timer.data.TimerController
+import io.github.imlemos.clock.timer.data.TimerRepository
 import java.time.DayOfWeek
 import java.time.LocalDate
 import kotlinx.coroutines.CoroutineScope
@@ -40,6 +41,7 @@ import javax.inject.Inject
  *     | --ei ring_seconds 120 | --es zone America/New_York (the alarm's own zone; same moment)
  *     | --el layout -2 (layout id; presets are negative)
  * adb shell am broadcast -a io.github.imlemos.clock.debug.DELETE_ALL_ALARMS -n <same component>
+ *     (also deletes groups and timers)
  * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_NOTICES -n <same component> --es minutes 30,5
  *     (empty string disables notices)
  * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_AUDIO_OUTPUT -n <same component> --es output PHONE_ONLY
@@ -57,6 +59,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
     @Inject lateinit var clock: Clock
     @Inject lateinit var settings: SettingsRepository
     @Inject lateinit var timers: TimerController
+    @Inject lateinit var timerRepository: TimerRepository
 
     override fun onReceive(context: Context, intent: Intent) {
         val pending = goAsync()
@@ -76,6 +79,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                     ACTION_DELETE_ALL -> {
                         repository.getGroups().forEach { controller.deleteGroup(it.id, withAlarms = true) }
                         repository.getAll().forEach { controller.delete(it.id) }
+                        timerRepository.getAll().forEach { timers.delete(it.id) }
                     }
                     ACTION_START_TIMER -> {
                         val id = timers.create(intent.getStringExtra("name").orEmpty(), intent.getIntExtra("seconds", 10) * 1000L)
