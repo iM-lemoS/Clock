@@ -69,6 +69,7 @@ import io.github.imlemos.clock.alarm.ui.ChipRow
 import io.github.imlemos.clock.alarm.ui.Label
 import io.github.imlemos.clock.alarm.ui.formatSnooze
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
+import io.github.imlemos.clock.core.designsystem.component.ColorPickerDialog
 import io.github.imlemos.clock.core.designsystem.component.GlassIconButton
 import io.github.imlemos.clock.core.designsystem.component.TextInputDialog
 import io.github.imlemos.clock.core.designsystem.glass.CapsuleShape
@@ -138,6 +139,10 @@ fun LayoutEditorScreen(
                     selected = state.selected,
                     onSelect = viewModel::select,
                     onPlacementChange = viewModel::setPlacement,
+                    // On the Background tab, empty space moves and zooms a photo or video.
+                    onBackgroundTransform = viewModel::transformBackground.takeIf {
+                        state.tab == null && state.spec.background !is Background.Preset
+                    },
                 ),
             )
 
@@ -281,16 +286,16 @@ private fun EditorPanel(state: LayoutEditorState, viewModel: LayoutEditorViewMod
                     selected = spec.clock.style,
                     onSelect = viewModel::setClockStyle,
                 )
-                SizeSlider(tab, viewModel)
+                SizeSlider(tab, state.spec.placementOf(tab).scale, viewModel)
                 ColorSwatches(spec.clock.color, allowAuto = true) { viewModel.setColor(tab, it) }
             }
             LayoutElementId.DATE, LayoutElementId.LABEL -> {
                 val element = if (tab == LayoutElementId.DATE) spec.date else spec.label
                 ShowSwitch(element.visible) { viewModel.setVisible(tab, it) }
-                SizeSlider(tab, viewModel)
+                SizeSlider(tab, state.spec.placementOf(tab).scale, viewModel)
                 ColorSwatches(element.color, allowAuto = true) { viewModel.setColor(tab, it) }
             }
-            LayoutElementId.CONTROLS -> SizeSlider(tab, viewModel)
+            LayoutElementId.CONTROLS -> SizeSlider(tab, state.spec.placementOf(tab).scale, viewModel)
             null -> BackgroundOptions(
                 background = spec.background,
                 onPreset = viewModel::setPreset,
@@ -305,7 +310,7 @@ private fun EditorPanel(state: LayoutEditorState, viewModel: LayoutEditorViewMod
 }
 
 @Composable
-private fun SizeSlider(id: LayoutElementId, viewModel: LayoutEditorViewModel) {
+private fun SizeSlider(id: LayoutElementId, scale: Float, viewModel: LayoutEditorViewModel) {
     val range = if (id == LayoutElementId.CONTROLS) {
         LayoutGeometry.CONTROLS_MIN_SCALE..LayoutGeometry.CONTROLS_MAX_SCALE
     } else {
@@ -314,7 +319,7 @@ private fun SizeSlider(id: LayoutElementId, viewModel: LayoutEditorViewModel) {
     Spacer(Modifier.height(8.dp))
     Label(stringResource(R.string.layout_size))
     Slider(
-        value = viewModel.placementOf(id).scale.coerceIn(range),
+        value = scale.coerceIn(range),
         onValueChange = { viewModel.setScale(id, it) },
         valueRange = range,
         colors = sliderColors(),
@@ -378,9 +383,20 @@ private fun BackgroundOptions(
                 ColorSwatches(background.colorB, allowAuto = true, showLabel = false) { onBackground(background.copy(colorB = it)) }
             }
         }
-        is Background.Image -> DimSlider(background.dim) { onBackground(background.copy(dim = it)) }
-        is Background.Video -> DimSlider(background.dim) { onBackground(background.copy(dim = it)) }
+        is Background.Image -> {
+            DimSlider(background.dim) { onBackground(background.copy(dim = it)) }
+            BackgroundHint()
+        }
+        is Background.Video -> {
+            DimSlider(background.dim) { onBackground(background.copy(dim = it)) }
+            BackgroundHint()
+        }
     }
+}
+
+@Composable
+private fun BackgroundHint() {
+    Text(stringResource(R.string.layout_bg_hint), style = ClockTheme.typography.caption, color = ClockTheme.colors.content)
 }
 
 @Composable
@@ -389,35 +405,48 @@ private fun DimSlider(dim: Float, onChange: (Float) -> Unit) {
     Slider(value = dim, onValueChange = onChange, valueRange = 0f..0.8f, colors = sliderColors())
 }
 
-/** Colour choices; the first (when [allowAuto]) returns to the automatic colour. */
+/** The current colour (or "Automatic colour"); tapping opens the full colour picker. */
 @Composable
 private fun ColorSwatches(selected: Int?, allowAuto: Boolean, showLabel: Boolean = true, onSelect: (Int?) -> Unit) {
     val colors = ClockTheme.colors
+    var picking by rememberSaveable { mutableStateOf(false) }
     if (showLabel) Label(stringResource(R.string.layout_color))
-    val autoLabel = stringResource(R.string.layout_color_auto)
     Row(
-        Modifier.horizontalScroll(rememberScrollState()).padding(bottom = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        Modifier
+            .fillMaxWidth()
+            .clip(CapsuleShape)
+            .border(1.dp, colors.outline, CapsuleShape)
+            .clickable(role = Role.Button) { picking = true }
+            .heightIn(min = 48.dp)
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        val options = (if (allowAuto) listOf<Int?>(null) else emptyList()) + Swatches
-        options.forEach { argb ->
-            val isSelected = argb == selected
-            Box(
-                Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(argb?.let(::Color) ?: Color.Transparent, CircleShape)
-                    .border(if (isSelected) 3.dp else 1.dp, if (isSelected) colors.accent else colors.outline, CircleShape)
-                    .clickable(role = Role.RadioButton) { onSelect(argb) }
-                    .semantics {
-                        this.selected = isSelected
-                        if (argb == null) contentDescription = autoLabel
-                    },
-                contentAlignment = Alignment.Center,
-            ) {
-                if (argb == null) Text("A", style = ClockTheme.typography.label, color = colors.content)
-            }
+        Box(
+            Modifier
+                .size(28.dp)
+                .clip(CircleShape)
+                .background(selected?.let(::Color) ?: Color.Transparent, CircleShape)
+                .border(1.dp, colors.outline, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (selected == null) Text("A", style = ClockTheme.typography.label, color = colors.content)
         }
+        Spacer(Modifier.size(12.dp))
+        Text(
+            selected?.let { "#%06X · %d%%".format(it and 0xFFFFFF, ((it ushr 24) * 100 / 255)) }
+                ?: stringResource(R.string.layout_color_auto),
+            style = ClockTheme.typography.body,
+            color = colors.content,
+        )
+    }
+    Spacer(Modifier.height(8.dp))
+    if (picking) {
+        ColorPickerDialog(
+            initial = selected,
+            allowAuto = allowAuto,
+            onPick = { onSelect(it); picking = false },
+            onDismiss = { picking = false },
+        )
     }
 }
 
@@ -432,7 +461,3 @@ private const val PHOTO = "photo"
 private const val VIDEO = "video"
 private const val MAX_NAME = 40
 
-private val Swatches: List<Int> = listOf(
-    0xFFFFFFFF, 0xFFB0B0B0, 0xFF5C5C5C, 0xFF000000, 0xFFE5302B, 0xFFFF7A1A,
-    0xFFFFC21A, 0xFF34C759, 0xFF2EC4D6, 0xFF3478F6, 0xFF8E5CF7, 0xFFFF4FA3,
-).map { it.toInt() }

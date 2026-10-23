@@ -12,11 +12,12 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -51,11 +52,15 @@ enum class LayoutElementId { CLOCK, DATE, LABEL, CONTROLS }
 /** A ringing alarm's label, with an optional second line (its time in another zone). */
 data class LayoutLabel(val text: String, val detail: String? = null)
 
-/** Hooks for the layout editor: elements become selectable, draggable and pinch-resizable. */
+/**
+ * Hooks for the layout editor: elements become selectable, draggable and pinch-resizable. With
+ * [onBackgroundTransform], dragging and pinching empty space moves and zooms a photo or video.
+ */
 class LayoutEditing(
     val selected: LayoutElementId?,
     val onSelect: (LayoutElementId?) -> Unit,
     val onPlacementChange: (LayoutElementId, Placement) -> Unit,
+    val onBackgroundTransform: ((dx: Float, dy: Float, zoom: Float, area: Size2, mediaAspect: Float) -> Unit)? = null,
 )
 
 /**
@@ -104,7 +109,8 @@ fun AlarmLayoutView(
 
     @Composable
     fun Element(id: LayoutElementId, visible: Boolean, content: @Composable () -> Unit) {
-        if (!visible && editing == null) {
+        // Hidden elements disappear in the editor too; the panel's switch brings them back.
+        if (!visible) {
             Box {}
             return
         }
@@ -164,9 +170,31 @@ fun AlarmLayoutView(
     }
 
     Box(modifier.fillMaxSize()) {
-        LayoutBackground(spec.background, Modifier.fillMaxSize().glassBackdropSource(backdrop), animate)
+        var mediaAspect by remember { mutableFloatStateOf(0f) }
+        LayoutBackground(
+            background = spec.background,
+            modifier = Modifier.fillMaxSize().glassBackdropSource(backdrop),
+            animate = animate,
+            onMediaAspect = { mediaAspect = it },
+        )
         if (editing != null) {
-            Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures { editing.onSelect(null) } })
+            val onBackground = editing.onBackgroundTransform
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) { detectTapGestures { editing.onSelect(null) } }
+                    .then(
+                        if (onBackground == null) {
+                            Modifier
+                        } else {
+                            Modifier.pointerInput(onBackground) {
+                                detectTransformGestures { _, pan, zoom, _ ->
+                                    onBackground(pan.x, pan.y, zoom, Size2(size.width.toFloat(), size.height.toFloat()), mediaAspect)
+                                }
+                            }
+                        },
+                    ),
+            )
         }
         val ids = LayoutElementId.entries
         Layout(
@@ -183,13 +211,12 @@ fun AlarmLayoutView(
                             style = ClockTheme.typography.body,
                             color = spec.date.color?.let(::Color) ?: colors.contentMuted,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.alphaIf(!spec.date.visible),
                         )
                     }
                 },
                 {
                     Element(LayoutElementId.LABEL, spec.label.visible) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.alphaIf(!spec.label.visible)) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             val color = spec.label.color?.let(::Color) ?: colors.content
                             labels.forEach { label ->
                                 Text(label.text, style = ClockTheme.typography.headline, color = color, textAlign = TextAlign.Center)
@@ -259,8 +286,6 @@ private fun scaleRange(id: LayoutElementId): Pair<Float, Float> =
         LayoutGeometry.MIN_SCALE to LayoutGeometry.MAX_SCALE
     }
 
-/** Hidden elements are shown faded in the editor so they can be found and switched back on. */
-private fun Modifier.alphaIf(faded: Boolean): Modifier = if (faded) alpha(0.3f) else this
 
 private val CONTROLS_WIDTH = 340.dp
 private val ELEMENT_GAP = 8.dp

@@ -56,16 +56,26 @@ sealed interface Background {
     @SerialName("preset")
     data class Preset(val kind: PresetKind, val colorA: Int? = null, val colorB: Int? = null) : Background
 
-    /** A photo copied into app storage. [dim] darkens it so text stays readable (0..0.8). */
+    /**
+     * A photo copied into app storage. [dim] darkens it so text stays readable (0..0.8); [frame]
+     * is how it is zoomed and positioned.
+     */
     @Serializable
     @SerialName("image")
-    data class Image(val path: String, val dim: Float = 0.35f) : Background
+    data class Image(val path: String, val dim: Float = 0.35f, val frame: Frame = Frame()) : Background
 
     /** A silent, looping video copied into app storage. */
     @Serializable
     @SerialName("video")
-    data class Video(val path: String, val dim: Float = 0.35f) : Background
+    data class Video(val path: String, val dim: Float = 0.35f, val frame: Frame = Frame()) : Background
 }
+
+/**
+ * Zoom and position of a photo or video that already fills the screen (centre crop). Offsets are
+ * fractions of the screen; [LayoutGeometry.clampFrame] keeps the screen always covered.
+ */
+@Serializable
+data class Frame(val zoom: Float = 1f, val offsetX: Float = 0f, val offsetY: Float = 0f)
 
 /** A layout in the library: one of the built-in [presets] (negative ids) or the user's own. */
 data class AlarmLayout(val id: Long, val name: String, val spec: LayoutSpec, val builtIn: Boolean = id < 0)

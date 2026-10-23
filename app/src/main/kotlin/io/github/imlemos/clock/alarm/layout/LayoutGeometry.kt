@@ -42,6 +42,34 @@ object LayoutGeometry {
         return Point2(x, y)
     }
 
+    const val MAX_BACKGROUND_ZOOM = 4f
+
+    /**
+     * Keeps a photo or video of [mediaAspect] (width / height) covering the whole [area]: zoom from
+     * 1 (just filling it, centre crop) to [MAX_BACKGROUND_ZOOM], and offsets no larger than the part
+     * that overflows on each side. A wide photo on a tall screen can move sideways even unzoomed.
+     */
+    fun clampFrame(frame: Frame, area: Size2, mediaAspect: Float): Frame {
+        val zoom = frame.zoom.coerceIn(1f, MAX_BACKGROUND_ZOOM)
+        if (area.width <= 0f || area.height <= 0f || mediaAspect <= 0f) return Frame(zoom)
+        val coverWidth = maxOf(area.width, area.height * mediaAspect) * zoom
+        val coverHeight = maxOf(area.height, area.width / mediaAspect) * zoom
+        val limitX = (coverWidth - area.width) / 2f / area.width
+        val limitY = (coverHeight - area.height) / 2f / area.height
+        // "+ 0f" turns -0.0 into 0.0, so an unmoved frame equals the default one.
+        return Frame(zoom, frame.offsetX.coerceIn(-limitX, limitX) + 0f, frame.offsetY.coerceIn(-limitY, limitY) + 0f)
+    }
+
+    /** [frame] after a drag of ([dx], [dy]) pixels and a pinch of [zoom]; see [clampFrame]. */
+    fun transformFrame(frame: Frame, dx: Float, dy: Float, zoom: Float, area: Size2, mediaAspect: Float): Frame {
+        if (area.width <= 0f || area.height <= 0f) return frame
+        return clampFrame(
+            Frame(frame.zoom * zoom, frame.offsetX + dx / area.width, frame.offsetY + dy / area.height),
+            area,
+            mediaAspect,
+        )
+    }
+
     /** [placement] dragged by ([dx], [dy]) pixels, with its centre kept where the element fits. */
     fun moved(placement: Placement, dx: Float, dy: Float, size: Size2, area: Size2): Placement {
         if (area.width <= 0f || area.height <= 0f) return placement

@@ -145,6 +145,8 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - Layouts incluídos (Pontos, Ondas, Matriz de pontos, Analógico) não se editam: duplicam-se. Apagar um layout devolve os alarmes que o usavam ao predefinido.
 - Se num ecrã pequeno ou com letra grande dois elementos se tocam, o de baixo desce até deixar de tocar.
 - No editor, com TalkBack, cada elemento tem ações para mover e mudar de tamanho, sem gestos.
+- Cores: seletor completo (tom, saturação/brilho e opacidade) com cores rápidas e "cor automática".
+- Foto e vídeo: no separador Fundo, arrastar e afastar os dedos posiciona e amplia (sem nunca deixar margens vazias). Elementos escondidos desaparecem também no editor.
 - "Testar" abre o ecrã do alarme verdadeiro, sem som; adiar ou desligar só fecham a pré-visualização.
 - Se o alarme começa a tocar com o telemóvel em uso e o ecrã é bloqueado, o ecrã do alarme aparece (a notificação é publicada de novo, porque o Android só abre o ecrã inteiro para notificações novas).
 

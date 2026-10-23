@@ -21,24 +21,35 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import io.github.imlemos.clock.alarm.layout.Background
+import io.github.imlemos.clock.alarm.layout.Frame
+import io.github.imlemos.clock.alarm.layout.LayoutGeometry
+import io.github.imlemos.clock.alarm.layout.Size2
 import io.github.imlemos.clock.alarm.layout.PresetKind
 import io.github.imlemos.clock.core.designsystem.component.DotGrid
 import kotlinx.coroutines.Dispatchers
@@ -50,16 +61,25 @@ import kotlin.math.sin
 
 /** The alarm screen background: a preset drawn in code, a photo or a silent looping video. */
 @Composable
-fun LayoutBackground(background: Background, modifier: Modifier = Modifier, animate: Boolean = true) {
+fun LayoutBackground(
+    background: Background,
+    modifier: Modifier = Modifier,
+    animate: Boolean = true,
+    onMediaAspect: (Float) -> Unit = {},
+) {
+    var aspect by remember(background.mediaPath()) { mutableFloatStateOf(0f) }
+    val reportAspect: (Float) -> Unit = { aspect = it; onMediaAspect(it) }
     Box(modifier.fillMaxSize().background(Color.Black)) {
         when (background) {
             is Background.Preset -> PresetBackground(background, animate)
             is Background.Image -> {
-                ImageBackground(background.path)
+                CoverBox(aspect, background.frame) { frameModifier -> ImageBackground(background.path, frameModifier, reportAspect) }
                 Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = background.dim)))
             }
             is Background.Video -> {
-                VideoBackground(background.path, playing = animate)
+                CoverBox(aspect, background.frame) { frameModifier ->
+                    VideoBackground(background.path, playing = animate, modifier = frameModifier, onAspect = reportAspect)
+                }
                 Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = background.dim)))
             }
         }
@@ -146,13 +166,48 @@ private fun MatrixDots(color: Color, backgroundColor: Color, phase: () -> Float)
     }
 }
 
+private fun Background.mediaPath(): String? = when (this) {
+    is Background.Image -> path
+    is Background.Video -> path
+    is Background.Preset -> null
+}
+
+/**
+ * Lays out a photo or video at the size that covers the screen with its own proportions (centre
+ * crop, nothing stretched), then applies the user's zoom and position. The overflow stays drawn
+ * so moving it never reveals an empty edge; the screen clips it.
+ */
 @Composable
-private fun ImageBackground(path: String) {
+private fun CoverBox(aspect: Float, frame: Frame, content: @Composable (Modifier) -> Unit) {
+    BoxWithConstraints(Modifier.fillMaxSize().clipToBounds(), contentAlignment = Alignment.Center) {
+        val area = Size2(constraints.maxWidth.toFloat(), constraints.maxHeight.toFloat())
+        val sized = if (aspect > 0f) {
+            Modifier.requiredSize(maxOf(maxWidth, maxHeight * aspect), maxOf(maxHeight, maxWidth / aspect))
+        } else {
+            Modifier.fillMaxSize()
+        }
+        val clamped = if (aspect > 0f) LayoutGeometry.clampFrame(frame, area, aspect) else Frame()
+        content(
+            sized.graphicsLayer {
+                scaleX = clamped.zoom
+                scaleY = clamped.zoom
+                translationX = clamped.offsetX * area.width
+                translationY = clamped.offsetY * area.height
+            },
+        )
+    }
+}
+
+@Composable
+private fun ImageBackground(path: String, modifier: Modifier, onAspect: (Float) -> Unit) {
     val widthPx = LocalWindowInfo.current.containerSize.width
     val image by produceState<ImageBitmap?>(null, path) {
         value = withContext(Dispatchers.IO) { decodeSampled(path, widthPx) }
     }
-    image?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
+    image?.let {
+        LaunchedEffect(it) { onAspect(it.width / it.height.toFloat()) }
+        Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = modifier)
+    }
 }
 
 /**
@@ -184,7 +239,7 @@ private fun decodeSampled(path: String, targetWidth: Int): ImageBitmap? = runCat
 
 /** A muted, looping video scaled to fill the screen (centre crop). No extra library: MediaPlayer. */
 @Composable
-private fun VideoBackground(path: String, playing: Boolean) {
+private fun VideoBackground(path: String, playing: Boolean, modifier: Modifier, onAspect: (Float) -> Unit) {
     val player = remember(path) { MediaPlayer() }
     DisposableEffect(player) { onDispose { player.release() } }
     AndroidView(
@@ -198,8 +253,9 @@ private fun VideoBackground(path: String, playing: Boolean) {
                             player.setSurface(Surface(texture))
                             player.isLooping = true
                             player.setVolume(0f, 0f)
+                            // The view is laid out at the video's own proportions (CoverBox).
                             player.setOnVideoSizeChangedListener { _, videoWidth, videoHeight ->
-                                setTransform(centerCrop(width, height, videoWidth, videoHeight))
+                                if (videoHeight > 0) onAspect(videoWidth / videoHeight.toFloat())
                             }
                             player.setOnPreparedListener { if (playing) it.start() else it.seekTo(0) }
                             player.prepareAsync()
@@ -212,17 +268,7 @@ private fun VideoBackground(path: String, playing: Boolean) {
                 }
             }
         },
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier,
     )
 }
 
-/** TextureView stretches the video to the view; this matrix crops it to keep its proportions. */
-private fun centerCrop(viewWidth: Int, viewHeight: Int, videoWidth: Int, videoHeight: Int): Matrix {
-    val matrix = Matrix()
-    if (videoWidth == 0 || videoHeight == 0) return matrix
-    val viewRatio = viewWidth / viewHeight.toFloat()
-    val videoRatio = videoWidth / videoHeight.toFloat()
-    val (scaleX, scaleY) = if (videoRatio > viewRatio) videoRatio / viewRatio to 1f else 1f to viewRatio / videoRatio
-    matrix.setScale(scaleX, scaleY, viewWidth / 2f, viewHeight / 2f)
-    return matrix
-}

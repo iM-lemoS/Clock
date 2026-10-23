@@ -86,4 +86,30 @@ class LayoutGeometryTest {
         assertEquals(200f, result[1].y)
         assertEquals(300f, result[2].y)
     }
+
+    @Test
+    fun `a photo with the screen's proportions only moves once zoomed`() {
+        val aspect = phone.width / phone.height
+        assertEquals(Frame(1f, 0f, 0f), LayoutGeometry.clampFrame(Frame(0.5f, 0.3f, -0.3f), phone, aspect))
+        assertEquals(Frame(2f, 0.5f, -0.5f), LayoutGeometry.clampFrame(Frame(2f, 0.9f, -0.9f), phone, aspect))
+        assertEquals(LayoutGeometry.MAX_BACKGROUND_ZOOM, LayoutGeometry.clampFrame(Frame(10f), phone, aspect).zoom)
+    }
+
+    @Test
+    fun `a wide photo on a tall screen moves sideways without zoom, not up and down`() {
+        // 4:3 photo on 1080x2200: covering the height makes it 2933 px wide, 1853 px overflow.
+        val frame = LayoutGeometry.clampFrame(Frame(1f, 5f, 5f), phone, 4f / 3f)
+        assertEquals((2200f * 4f / 3f - 1080f) / 2f / 1080f, frame.offsetX, 0.0001f)
+        assertEquals(0f, frame.offsetY)
+    }
+
+    @Test
+    fun `dragging and pinching move and zoom the photo`() {
+        val aspect = phone.width / phone.height
+        val zoomed = LayoutGeometry.transformFrame(Frame(), dx = 0f, dy = 0f, zoom = 2f, area = phone, mediaAspect = aspect)
+        assertEquals(2f, zoomed.zoom)
+        val moved = LayoutGeometry.transformFrame(zoomed, dx = 108f, dy = -220f, zoom = 1f, area = phone, mediaAspect = aspect)
+        assertEquals(0.1f, moved.offsetX, 0.0001f)
+        assertEquals(-0.1f, moved.offsetY, 0.0001f)
+    }
 }

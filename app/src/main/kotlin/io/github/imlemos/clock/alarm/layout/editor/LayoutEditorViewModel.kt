@@ -10,7 +10,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.imlemos.clock.alarm.layout.Background
 import io.github.imlemos.clock.alarm.layout.BackgroundStore
 import io.github.imlemos.clock.alarm.layout.ClockStyle
+import io.github.imlemos.clock.alarm.layout.Frame
+import io.github.imlemos.clock.alarm.layout.LayoutGeometry
 import io.github.imlemos.clock.alarm.layout.LayoutRepository
+import io.github.imlemos.clock.alarm.layout.Size2
 import io.github.imlemos.clock.alarm.layout.LayoutSpec
 import io.github.imlemos.clock.alarm.layout.Placement
 import io.github.imlemos.clock.alarm.layout.PresetKind
@@ -72,16 +75,8 @@ class LayoutEditorViewModel @AssistedInject constructor(
         }
     }
 
-    fun setScale(id: LayoutElementId, scale: Float) = setPlacement(id, placementOf(id).copy(scale = scale))
+    fun setScale(id: LayoutElementId, scale: Float) = setPlacement(id, _state.value.spec.placementOf(id).copy(scale = scale))
 
-    fun placementOf(id: LayoutElementId): Placement = with(_state.value.spec) {
-        when (id) {
-            LayoutElementId.CLOCK -> clock.placement
-            LayoutElementId.DATE -> date.placement
-            LayoutElementId.LABEL -> label.placement
-            LayoutElementId.CONTROLS -> controls.placement
-        }
-    }
 
     fun setClockStyle(style: ClockStyle) = edit { it.copy(clock = it.clock.copy(style = style)) }
 
@@ -107,6 +102,16 @@ class LayoutEditorViewModel @AssistedInject constructor(
 
     fun setBackground(background: Background) = edit { it.copy(background = background) }
 
+    /** Drag and pinch on a photo or video background (docs/PLANO.md 3.7). */
+    fun transformBackground(dx: Float, dy: Float, zoom: Float, area: Size2, mediaAspect: Float) = edit { spec ->
+        fun Frame.moved() = LayoutGeometry.transformFrame(this, dx, dy, zoom, area, mediaAspect)
+        when (val background = spec.background) {
+            is Background.Image -> spec.copy(background = background.copy(frame = background.frame.moved()))
+            is Background.Video -> spec.copy(background = background.copy(frame = background.frame.moved()))
+            is Background.Preset -> spec
+        }
+    }
+
     /** Copies a picked photo or video into the app; [onFailed] if it cannot be used. */
     fun importBackground(uri: Uri, video: Boolean, onFailed: () -> Unit) {
         viewModelScope.launch {
@@ -125,4 +130,12 @@ class LayoutEditorViewModel @AssistedInject constructor(
     }
 
     private fun edit(transform: (LayoutSpec) -> LayoutSpec) = _state.update { it.copy(spec = transform(it.spec), dirty = true) }
+}
+
+/** Where [id] sits in this layout. */
+fun LayoutSpec.placementOf(id: LayoutElementId): Placement = when (id) {
+    LayoutElementId.CLOCK -> clock.placement
+    LayoutElementId.DATE -> date.placement
+    LayoutElementId.LABEL -> label.placement
+    LayoutElementId.CONTROLS -> controls.placement
 }

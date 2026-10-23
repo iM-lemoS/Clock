@@ -357,4 +357,14 @@
     <string name="layout_move_right">Move right</string>
     <string name="layout_bigger">Make bigger</string>
     <string name="layout_smaller">Make smaller</string>
+    <string name="color_picker_title">Choose a colour</string>
+    <string name="color_pick">Choose</string>
+    <string name="color_hue">Hue</string>
+    <string name="color_opacity">Opacity</string>
+    <string name="color_saturation_brightness">Saturation and brightness</string>
+    <string name="color_more_saturated">More saturated</string>
+    <string name="color_less_saturated">Less saturated</string>
+    <string name="color_brighter">Brighter</string>
+    <string name="color_darker">Darker</string>
+    <string name="layout_bg_hint">Drag and pinch the screen to position and zoom the photo or video.</string>
 </resources>
