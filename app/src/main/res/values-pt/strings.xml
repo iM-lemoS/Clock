@@ -71,11 +71,6 @@
     <!-- Ringing -->
     <string name="alarm_notification_title">Alarme</string>
     <string name="alarm_action_dismiss">Desligar</string>
-    <plurals name="alarm_action_snooze_minutes">
-        <item quantity="one">Adiar · %d min</item>
-        <item quantity="many">Adiar · %d min</item>
-        <item quantity="other">Adiar · %d min</item>
-    </plurals>
     <string name="alarm_slide_to_dismiss">Desliza para desligar</string>
     <string name="alarm_missed_title">Alarme perdido · %1$s</string>
     <string name="channel_alarm_ringing">Alarmes a tocar</string>
@@ -294,4 +289,10 @@
     <string name="time_in_zone">%1$s %2$s</string>
     <string name="zone_with_here">%1$s · %2$s aqui</string>
     <string name="zone_here">%1$s aqui</string>
+    <string name="alarm_action_snooze">Adiar · %1$s</string>
+    <string name="snooze_field">Adiar</string>
+    <string name="snooze_field_summary">Um toque em Adiar espera este tempo. Mantém premido para escolheres outro.</string>
+    <string name="snooze_wheel_title">Adiar durante</string>
+    <string name="snooze_wheel_confirm">Adiar %1$s</string>
+    <string name="snooze_choose">Escolher quanto tempo adiar</string>
 </resources>

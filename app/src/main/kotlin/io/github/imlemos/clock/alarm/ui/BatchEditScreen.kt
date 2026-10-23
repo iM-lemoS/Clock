@@ -42,6 +42,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.data.AlarmController
+import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.model.AlarmPatch
 import io.github.imlemos.clock.alarm.model.GradualVolume
 import io.github.imlemos.clock.alarm.model.Vibration
@@ -177,6 +178,11 @@ fun BatchEditScreen(
                 viewModel.update { it.copy(ringDurationSeconds = if (on) 60 else null) }
             }) {
                 RingDurationField(patch.ringDurationSeconds ?: 60) { seconds -> viewModel.update { it.copy(ringDurationSeconds = seconds) } }
+            }
+            ChangeableField(R.string.snooze_field, patch.snoozeMinutes != null, { on ->
+                viewModel.update { it.copy(snoozeMinutes = if (on) Alarm.DEFAULT_SNOOZE_MINUTES else null) }
+            }) {
+                SnoozeField(patch.snoozeMinutes ?: Alarm.DEFAULT_SNOOZE_MINUTES) { minutes -> viewModel.update { it.copy(snoozeMinutes = minutes) } }
             }
             ChangeableField(R.string.alarm_editor_single_use, patch.singleUse != null, { on ->
                 viewModel.update { it.copy(singleUse = if (on) false else null) }

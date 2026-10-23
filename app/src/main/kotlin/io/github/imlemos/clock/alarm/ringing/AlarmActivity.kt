@@ -69,7 +69,13 @@ class AlarmActivity : ComponentActivity() {
                 AlarmRingingScreen(
                     session = current,
                     onDismiss = { send(AlarmIntents.ACTION_DISMISS) },
-                    onSnooze = { send(AlarmIntents.ACTION_SNOOZE) },
+                    onSnooze = { minutes ->
+                        startService(
+                            Intent(this, RingingService::class.java)
+                                .setAction(AlarmIntents.ACTION_SNOOZE)
+                                .putExtra(AlarmIntents.EXTRA_SNOOZE_MINUTES, minutes ?: 0),
+                        )
+                    },
                 )
             }
         }

@@ -77,10 +77,6 @@
     <!-- Ringing -->
     <string name="alarm_notification_title">Alarm</string>
     <string name="alarm_action_dismiss">Dismiss</string>
-    <plurals name="alarm_action_snooze_minutes">
-        <item quantity="one">Snooze · %d min</item>
-        <item quantity="other">Snooze · %d min</item>
-    </plurals>
     <string name="alarm_slide_to_dismiss">Slide to dismiss</string>
     <string name="alarm_missed_title">Missed alarm · %1$s</string>
     <string name="channel_alarm_ringing">Ringing alarms</string>
@@ -298,4 +294,10 @@
     <!-- The alarm's city and the same moment on the phone, e.g. "New York · 13:00 here". -->
     <string name="zone_with_here">%1$s · %2$s here</string>
     <string name="zone_here">%1$s here</string>
+    <string name="alarm_action_snooze">Snooze · %1$s</string>
+    <string name="snooze_field">Snooze</string>
+    <string name="snooze_field_summary">A tap on Snooze waits this long. Press and hold it to choose another time.</string>
+    <string name="snooze_wheel_title">Snooze for</string>
+    <string name="snooze_wheel_confirm">Snooze %1$s</string>
+    <string name="snooze_choose">Choose how long to snooze</string>
 </resources>

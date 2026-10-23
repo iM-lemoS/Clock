@@ -19,7 +19,7 @@ data class GradualVolume(
 }
 
 /**
- * Sound and vibration of an alarm. [ringtoneUri] `null` plays the system's default alarm sound.
+ * How an alarm rings: sound, vibration, ring duration and snooze length. [ringtoneUri] `null` plays the system's default alarm sound.
  * Files picked by the user are copied into the app (device-protected storage) and referenced by a
  * file URI, so they play before the first unlock and survive the original being deleted.
  */
@@ -29,4 +29,6 @@ data class AlarmSound(
     val vibration: Vibration = Vibration.SYNC,
     val gradual: GradualVolume = GradualVolume(),
     val ringDurationSeconds: Int = Alarm.DEFAULT_RING_DURATION_SECONDS,
+    /** A tap on "Snooze" waits this long; a long press offers the other choices. */
+    val snoozeMinutes: Int = Alarm.DEFAULT_SNOOZE_MINUTES,
 )

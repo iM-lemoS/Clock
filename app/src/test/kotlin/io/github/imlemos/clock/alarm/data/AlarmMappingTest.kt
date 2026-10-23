@@ -23,13 +23,13 @@ class AlarmMappingTest {
         skippedOccurrence = Instant.parse("2026-11-09T11:45:00Z"),
         lastTriggeredOccurrence = Instant.parse("2026-11-02T11:45:00Z"),
         snoozedUntil = Instant.parse("2026-11-02T11:50:00Z"),
-        snoozeMinutes = 10,
         sound = AlarmSound(
             ringtoneUri = "content://media/internal/audio/media/42",
             ringtoneTitle = "Oxygen",
             vibration = Vibration.HEARTBEAT,
             gradual = GradualVolume(enabled = true, targetPercent = 70, seconds = 90),
             ringDurationSeconds = 120,
+            snoozeMinutes = 10,
         ),
         createdAt = Instant.parse("2026-10-01T00:00:00Z"),
     )

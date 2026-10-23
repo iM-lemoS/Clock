@@ -61,6 +61,7 @@ class DataStoreSettingsRepository @Inject constructor(
                     seconds = (prefs[Keys.DEFAULT_GRADUAL_SECONDS] ?: 60).coerceIn(1, 600),
                 ),
                 ringDurationSeconds = prefs[Keys.DEFAULT_RING_SECONDS] ?: Alarm.DEFAULT_RING_DURATION_SECONDS,
+                snoozeMinutes = prefs[Keys.DEFAULT_SNOOZE_MINUTES] ?: Alarm.DEFAULT_SNOOZE_MINUTES,
             )
         }
         .distinctUntilChanged()
@@ -74,6 +75,7 @@ class DataStoreSettingsRepository @Inject constructor(
             prefs[Keys.DEFAULT_GRADUAL_TARGET] = sound.gradual.targetPercent
             prefs[Keys.DEFAULT_GRADUAL_SECONDS] = sound.gradual.seconds
             prefs[Keys.DEFAULT_RING_SECONDS] = sound.ringDurationSeconds
+            prefs[Keys.DEFAULT_SNOOZE_MINUTES] = sound.snoozeMinutes
         }
     }
 
@@ -181,6 +183,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val DEFAULT_GRADUAL_TARGET = intPreferencesKey("default_gradual_target")
         val DEFAULT_GRADUAL_SECONDS = intPreferencesKey("default_gradual_seconds")
         val DEFAULT_RING_SECONDS = intPreferencesKey("default_ring_seconds")
+        val DEFAULT_SNOOZE_MINUTES = intPreferencesKey("default_snooze_minutes")
         val AUDIO_OUTPUT = stringPreferencesKey("audio_output")
         val WARN_LOW_VOLUME = booleanPreferencesKey("warn_low_volume")
         val TIME_FORMAT = stringPreferencesKey("time_format")

@@ -1,7 +1,8 @@
 package io.github.imlemos.clock.alarm.ringing
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,11 +20,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
@@ -33,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.ui.formatAlarmTime
+import io.github.imlemos.clock.alarm.ui.formatSnooze
 import io.github.imlemos.clock.alarm.ui.formatTimeOfDay
 import io.github.imlemos.clock.alarm.ui.timeParts
 import io.github.imlemos.clock.core.designsystem.component.DotGrid
@@ -48,8 +52,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AlarmRingingScreen(session: RingingSession, onDismiss: () -> Unit, onSnooze: () -> Unit) {
+fun AlarmRingingScreen(session: RingingSession, onDismiss: () -> Unit, onSnooze: (minutes: Int?) -> Unit) {
     val context = LocalContext.current
     val colors = ClockTheme.colors
     val backdrop = rememberGlassBackdrop()
@@ -58,7 +63,9 @@ fun AlarmRingingScreen(session: RingingSession, onDismiss: () -> Unit, onSnooze:
     val parts = timeParts(context, nowTime)
     val alarm = session.primary
     val dismissLabel = stringResource(R.string.alarm_action_dismiss)
-    val snoozeLabel = pluralStringResource(R.plurals.alarm_action_snooze_minutes, alarm.snoozeMinutes, alarm.snoozeMinutes)
+    val snoozeLabel = stringResource(R.string.alarm_action_snooze, formatSnooze(LocalResources.current, alarm.snoozeMinutes))
+    val chooseLabel = stringResource(R.string.snooze_choose)
+    var choosingSnooze by rememberSaveable { mutableStateOf(false) }
 
     Box(
         Modifier
@@ -68,7 +75,8 @@ fun AlarmRingingScreen(session: RingingSession, onDismiss: () -> Unit, onSnooze:
             .semantics {
                 customActions = listOf(
                     CustomAccessibilityAction(dismissLabel) { onDismiss(); true },
-                    CustomAccessibilityAction(snoozeLabel) { onSnooze(); true },
+                    CustomAccessibilityAction(snoozeLabel) { onSnooze(null); true },
+                    CustomAccessibilityAction(chooseLabel) { choosingSnooze = true; true },
                 )
             },
     ) {
@@ -127,7 +135,12 @@ fun AlarmRingingScreen(session: RingingSession, onDismiss: () -> Unit, onSnooze:
                 backdrop = backdrop,
                 modifier = Modifier
                     .clip(CapsuleShape)
-                    .clickable(role = Role.Button, onClick = onSnooze)
+                    .combinedClickable(
+                        role = Role.Button,
+                        onLongClickLabel = chooseLabel,
+                        onLongClick = { choosingSnooze = true },
+                        onClick = { onSnooze(null) },
+                    )
                     .heightIn(min = 64.dp)
                     .padding(horizontal = 32.dp),
             ) {
@@ -140,6 +153,14 @@ fun AlarmRingingScreen(session: RingingSession, onDismiss: () -> Unit, onSnooze:
                 actionLabel = dismissLabel,
                 onDismiss = onDismiss,
                 modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (choosingSnooze) {
+            SnoozeWheel(
+                backdrop = backdrop,
+                initialMinutes = alarm.snoozeMinutes,
+                onSnooze = { minutes -> choosingSnooze = false; onSnooze(minutes) },
+                onClose = { choosingSnooze = false },
             )
         }
     }

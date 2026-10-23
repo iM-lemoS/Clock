@@ -36,11 +36,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.core.content.IntentCompat
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.model.AlarmSound
 import io.github.imlemos.clock.alarm.model.GradualVolume
 import io.github.imlemos.clock.alarm.model.Vibration
@@ -79,6 +81,8 @@ fun SoundSection(
         GradualField(sound.gradual) { onChange(sound.copy(gradual = it)) }
         Spacer(Modifier.height(20.dp))
         RingDurationField(sound.ringDurationSeconds) { onChange(sound.copy(ringDurationSeconds = it)) }
+        Spacer(Modifier.height(20.dp))
+        SnoozeField(sound.snoozeMinutes) { onChange(sound.copy(snoozeMinutes = it)) }
     }
 }
 
@@ -196,6 +200,26 @@ fun RingDurationField(seconds: Int, onSelect: (Int) -> Unit) {
         )
     }
 }
+
+/** Snooze length for a tap on "Snooze"; a long press on the alarm screen offers the others. */
+@Composable
+fun SnoozeField(minutes: Int, onSelect: (Int) -> Unit) {
+    Column(Modifier.fillMaxWidth()) {
+        Label(stringResource(R.string.snooze_field))
+        ChipRow(
+            options = Alarm.SNOOZE_CHOICES.map { it to formatSnooze(LocalResources.current, it) },
+            selected = minutes,
+            onSelect = onSelect,
+        )
+        Text(
+            stringResource(R.string.snooze_field_summary),
+            style = ClockTheme.typography.caption,
+            color = ClockTheme.colors.contentMuted,
+            modifier = Modifier.padding(top = 8.dp),
+        )
+    }
+}
+
 
 @Composable
 private fun GradualSliders(gradual: GradualVolume, onChange: (GradualVolume) -> Unit) {

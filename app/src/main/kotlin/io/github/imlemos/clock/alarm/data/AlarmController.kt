@@ -213,9 +213,10 @@ class AlarmController @Inject constructor(
         return updated
     }
 
-    suspend fun snooze(id: Long) {
+    /** Snoozes for [minutes], or the alarm's own snooze length when `null`. */
+    suspend fun snooze(id: Long, minutes: Int? = null) {
         val alarm = repository.get(id) ?: return
-        val until = clock.instant().plus(Duration.ofMinutes(alarm.snoozeMinutes.toLong()))
+        val until = clock.instant().plus(Duration.ofMinutes((minutes ?: alarm.sound.snoozeMinutes).toLong()))
         val updated = repository.save(alarm.copy(snoozedUntil = until))
         schedule(updated)
     }

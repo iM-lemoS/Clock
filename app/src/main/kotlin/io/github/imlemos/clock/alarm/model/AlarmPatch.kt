@@ -13,6 +13,7 @@ data class AlarmPatch(
     val gradual: GradualVolume? = null,
     val ringDurationSeconds: Int? = null,
     val singleUse: Boolean? = null,
+    val snoozeMinutes: Int? = null,
     val zone: Zone? = null,
 ) {
     /** A time zone choice; [id] `null` is "Local time" (follows the app). */
@@ -33,6 +34,7 @@ data class AlarmPatch(
             vibration = vibration ?: alarm.sound.vibration,
             gradual = gradual ?: alarm.sound.gradual,
             ringDurationSeconds = ringDurationSeconds ?: alarm.sound.ringDurationSeconds,
+            snoozeMinutes = snoozeMinutes ?: alarm.sound.snoozeMinutes,
         ),
     )
 }

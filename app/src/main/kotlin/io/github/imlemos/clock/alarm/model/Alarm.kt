@@ -17,7 +17,6 @@ data class Alarm(
     val skippedOccurrence: Instant? = null,
     val lastTriggeredOccurrence: Instant? = null,
     val snoozedUntil: Instant? = null,
-    val snoozeMinutes: Int = DEFAULT_SNOOZE_MINUTES,
     val sound: AlarmSound = AlarmSound(),
     val singleUse: Boolean = false,
     val groupId: Long? = null,
@@ -39,6 +38,9 @@ data class Alarm(
     companion object {
         // Defaults from docs/PLANO.md section 6; they become user settings in phase 8.
         const val DEFAULT_SNOOZE_MINUTES = 5
+
+        /** Choices on the snooze wheel and in the editor (docs/PLANO.md 3.3). */
+        val SNOOZE_CHOICES = listOf(5, 10, 15, 20, 30, 45, 60)
         const val DEFAULT_RING_DURATION_SECONDS = 60
     }
 }

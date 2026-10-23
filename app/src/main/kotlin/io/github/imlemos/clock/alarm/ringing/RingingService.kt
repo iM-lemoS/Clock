@@ -3,13 +3,17 @@ package io.github.imlemos.clock.alarm.ringing
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.app.ServiceCompat
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.imlemos.clock.R
@@ -18,6 +22,7 @@ import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.scheduling.AlarmIntents
 import io.github.imlemos.clock.alarm.scheduling.AlarmScheduler
 import io.github.imlemos.clock.alarm.ui.formatAlarmTime
+import io.github.imlemos.clock.alarm.ui.formatSnooze
 import io.github.imlemos.clock.core.audio.AlarmSoundPlayer
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import kotlinx.coroutines.flow.first
@@ -55,6 +60,18 @@ class RingingService : Service() {
     private var wakeLock: PowerManager.WakeLock? = null
     private var inForeground = false
 
+    /**
+     * Locking the phone while an alarm rings (it started while the phone was in use, so only a
+     * heads-up notification appeared) must bring up the alarm screen: re-alert the notification so
+     * the system launches its full-screen intent now that the screen is off.
+     */
+    private val screenOffReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (ringingState.session.value != null) updateNotification(alert = true)
+        }
+    }
+    private var screenOffRegistered = false
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -68,13 +85,24 @@ class RingingService : Service() {
                     inForeground = true
                 }
                 acquireWakeLock()
+                if (!screenOffRegistered) {
+                    // Protected system broadcast; only the system can send it.
+                    ContextCompat.registerReceiver(
+                        this, screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF), ContextCompat.RECEIVER_EXPORTED,
+                    )
+                    screenOffRegistered = true
+                }
                 val id = intent.getLongExtra(AlarmIntents.EXTRA_ALARM_ID, -1)
                 val occurrence = Instant.ofEpochMilli(intent.getLongExtra(AlarmIntents.EXTRA_OCCURRENCE, 0))
                 val snooze = intent.getBooleanExtra(AlarmIntents.EXTRA_SNOOZE, false)
                 scope.launch { onFire(id, occurrence, snooze) }
             }
             AlarmIntents.ACTION_DISMISS -> scope.launch { finishSession { controller.dismiss(it) } }
-            AlarmIntents.ACTION_SNOOZE -> scope.launch { finishSession { controller.snooze(it) } }
+            AlarmIntents.ACTION_SNOOZE -> {
+                // 0 = the alarm's own snooze length; the wheel sends another choice.
+                val minutes = intent.getIntExtra(AlarmIntents.EXTRA_SNOOZE_MINUTES, 0).takeIf { it > 0 }
+                scope.launch { finishSession { controller.snooze(it, minutes) } }
+            }
             AlarmIntents.ACTION_SILENCE -> if (ringingState.session.value != null) {
                 player.silence(alsoVibration = intent.getBooleanExtra(AlarmIntents.EXTRA_SILENCE_VIBRATION, false))
                 ringingState.markSilenced()
@@ -95,7 +123,7 @@ class RingingService : Service() {
         val previousPrimary = ringingState.session.value?.primary
         ringingState.add(
             RingingAlarm(
-                alarm.id, alarm.time, alarm.label, alarm.snoozeMinutes, alarm.createdAt,
+                alarm.id, alarm.time, alarm.label, alarm.sound.snoozeMinutes, alarm.createdAt,
                 zone = scheduler.displayZone(alarm, occurrence),
             ),
         )
@@ -135,13 +163,20 @@ class RingingService : Service() {
     }
 
     private fun stopService() {
+        unregisterScreenOff()
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
         inForeground = false
         releaseWakeLock()
         stopSelf()
     }
 
+    private fun unregisterScreenOff() {
+        if (screenOffRegistered) unregisterReceiver(screenOffReceiver)
+        screenOffRegistered = false
+    }
+
     override fun onDestroy() {
+        unregisterScreenOff()
         player.stop()
         ringingState.clear()
         releaseWakeLock()
@@ -166,16 +201,17 @@ class RingingService : Service() {
         }
     }
 
-    private fun updateNotification() {
+    private fun updateNotification(alert: Boolean = false) {
         val alarm = ringingState.session.value?.primary ?: return
         val notification = buildNotification(
             title = formatAlarmTime(this, alarm.time, alarm.zone),
             text = alarm.label.ifBlank { getString(R.string.alarm_notification_title) },
+            alert = alert,
         )
         getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification)
     }
 
-    private fun buildNotification(title: String, text: String?): Notification {
+    private fun buildNotification(title: String, text: String?, alert: Boolean = false): Notification {
         val fullScreen = AlarmIntents.ringingActivityPendingIntent(this)
         val snoozeMinutes = ringingState.session.value?.primary?.snoozeMinutes ?: Alarm.DEFAULT_SNOOZE_MINUTES
         return NotificationCompat.Builder(this, NotificationChannels.ALARM_RINGING)
@@ -186,14 +222,15 @@ class RingingService : Service() {
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOngoing(true)
-            // Updates (label, colliding alarms) must not alert or relaunch the full-screen intent.
-            .setOnlyAlertOnce(true)
+            // Updates (label, colliding alarms) must not alert or relaunch the full-screen intent,
+            // except deliberately when the screen turns off.
+            .setOnlyAlertOnce(!alert)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setFullScreenIntent(fullScreen, true)
             .setContentIntent(fullScreen)
             .addAction(
                 0,
-                resources.getQuantityString(R.plurals.alarm_action_snooze_minutes, snoozeMinutes, snoozeMinutes),
+                getString(R.string.alarm_action_snooze, formatSnooze(resources, snoozeMinutes)),
                 AlarmIntents.serviceActionPendingIntent(this, AlarmIntents.ACTION_SNOOZE),
             )
             .addAction(
