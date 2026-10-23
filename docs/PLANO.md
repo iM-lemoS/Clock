@@ -202,7 +202,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 | Som dos timers | toque padrão |
 | Tema | seguir o sistema (ou fixar escuro/claro) |
 | Cor de destaque | vermelho (personalizável) |
-| Reduzir transparência | desligado (e ligado automaticamente se o sistema pedir menos efeitos) |
+| Reduzir transparência | desligado (e ligado automaticamente com a poupança de bateria; o Android não tem uma definição de "reduzir transparência") |
 | Idioma | seguir o sistema (seletor por app do Android 13+) |
 | Configurar fiabilidade | ecrã de fiabilidade |
 | Caixote do lixo | acesso ao lixo |

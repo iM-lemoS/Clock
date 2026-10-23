@@ -79,8 +79,8 @@ the maintainer's phone.
   `GlassBackdrop`, `glassBackdropSource()` and `GlassSurface`. The glass must not be inside the
   backdrop source layer.
 - `GlassLevel`: `Full` (Android 13+, refraction via AGSL), `BlurOnly` (Android 12),
-  `Solid` (user "Reduce transparency" or the system disabled cross-window blur, e.g. battery
-  saver). Resolved by `resolveGlassLevel`.
+  `Solid` (user "Reduce transparency" or battery saver). Resolved by `resolveGlassLevel`. Do not use
+  `isCrossWindowBlurEnabled` as a signal: Samsung reports it as always off.
 - Debug builds have **Settings > Developer > Glass lab** to compare the levels.
 
 ### Database rule

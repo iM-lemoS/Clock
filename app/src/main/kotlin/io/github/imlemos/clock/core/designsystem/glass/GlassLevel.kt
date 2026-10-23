@@ -11,7 +11,7 @@ enum class GlassLevel {
     /** Blur and tint only. Android 12 has RenderEffect blur but no runtime shaders. */
     BlurOnly,
 
-    /** Opaque surface with a hairline outline: "Reduce transparency", or the system asked for fewer effects. */
+    /** Opaque surface with a hairline outline: "Reduce transparency", or battery saver is on. */
     Solid,
 }
 
@@ -19,7 +19,7 @@ enum class GlassLevel {
  * Picks the richest level the device and the user's settings allow.
  *
  * @param reduceTransparency The user's "Reduce transparency" setting.
- * @param systemReducesEffects The system disabled blurs (battery saver, OEM or developer setting).
+ * @param systemReducesEffects The system asks for fewer effects (battery saver).
  */
 fun resolveGlassLevel(
     reduceTransparency: Boolean,

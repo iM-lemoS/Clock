@@ -38,6 +38,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.core.designsystem.component.ClockTopBar
+import io.github.imlemos.clock.core.designsystem.component.DotDigits
 import io.github.imlemos.clock.core.designsystem.component.FloatingNavBar
 import io.github.imlemos.clock.core.designsystem.component.GlassIconButton
 import io.github.imlemos.clock.core.designsystem.component.NavBarItem
@@ -172,7 +173,7 @@ private fun SampleCard(index: Int) {
                 x += step
             }
         }
-        Text(
+        DotDigits(
             text = stringResource(R.string.glass_lab_digits),
             style = ClockTheme.typography.timeLarge,
             color = Color.White,
