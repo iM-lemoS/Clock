@@ -70,8 +70,11 @@ class AlarmActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         // Back must not silently leave a ringing alarm: the user dismisses or snoozes explicitly.
+        // A "Test" preview closes normally.
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() = Unit
+            override fun handleOnBackPressed() {
+                if (previewLayoutId != NO_PREVIEW) finish()
+            }
         })
 
         lifecycleScope.launch {
