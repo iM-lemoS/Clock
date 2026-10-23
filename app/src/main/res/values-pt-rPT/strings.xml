@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Navigation -->
+    <string name="nav_alarms">Alarmes</string>
+    <string name="nav_timers">Temporizadores</string>
+    <string name="nav_stopwatch">Cronómetro</string>
+
+    <!-- Actions -->
+    <string name="action_settings">Definições</string>
+    <string name="action_back">Voltar</string>
+    <string name="action_add_alarm">Adicionar alarme</string>
+    <string name="action_add_timer">Adicionar temporizador</string>
+
+    <!-- Alarms -->
+    <string name="alarms_empty_title">Sem alarmes</string>
+    <string name="alarms_empty_body">Toque em + para adicionar o primeiro alarme.</string>
+
+    <!-- Timers -->
+    <string name="timers_empty_title">Sem temporizadores</string>
+    <string name="timers_empty_body">Toque em + para guardar um temporizador.</string>
+
+    <!-- Stopwatch -->
+    <string name="stopwatch_zero">00:00,00</string>
+    <string name="stopwatch_empty_title">As voltas aparecem aqui.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Definições</string>
+    <string name="settings_section_appearance">Aspeto</string>
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Escuro</string>
+    <string name="settings_accent">Cor de destaque</string>
+    <string name="accent_red">Vermelho</string>
+    <string name="accent_orange">Laranja</string>
+    <string name="accent_green">Verde</string>
+    <string name="accent_blue">Azul</string>
+    <string name="accent_violet">Violeta</string>
+    <string name="accent_pink">Rosa</string>
+    <string name="settings_reduce_transparency">Reduzir transparência</string>
+    <string name="settings_reduce_transparency_summary">Usa superfícies sólidas em vez de vidro.</string>
+    <string name="settings_reduce_transparency_forced">Ativado pelo sistema, por exemplo pela poupança de bateria.</string>
+    <string name="settings_section_general">Geral</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_language_summary">Segue o sistema, a menos que escolha outro.</string>
+    <string name="settings_section_developer">Programador</string>
+    <string name="settings_glass_lab">Laboratório de vidro</string>
+    <string name="settings_glass_lab_summary">Compare os níveis de vidro sobre conteúdo variado.</string>
+
+    <!-- Glass lab (debug builds) -->
+    <string name="glass_level_auto">Auto (%1$s)</string>
+    <string name="glass_level_full">Vidro</string>
+    <string name="glass_level_blur">Só desfoque</string>
+    <string name="glass_level_solid">Sólido</string>
+</resources>

@@ -1,19 +1,85 @@
 package io.github.imlemos.clock
 
+import android.app.UiModeManager
 import android.os.Bundle
+import android.view.View
+import android.view.ViewTreeObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
+import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dagger.hilt.android.AndroidEntryPoint
+import io.github.imlemos.clock.core.data.prefs.ThemeMode
+import io.github.imlemos.clock.core.designsystem.glass.rememberSystemReducesEffects
+import io.github.imlemos.clock.core.designsystem.glass.resolveGlassLevel
+import io.github.imlemos.clock.core.designsystem.theme.AccentPalette
+import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
+import io.github.imlemos.clock.navigation.ClockShell
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val viewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        keepSplashUntilSettingsLoad()
+
         setContent {
-            Box(Modifier.fillMaxSize())
+            val appearance by viewModel.appearance.collectAsStateWithLifecycle()
+            val settings = appearance ?: return@setContent
+            ApplyNightMode(settings.themeMode)
+            ClockTheme(
+                darkTheme = isSystemInDarkTheme(),
+                accent = AccentPalette.colorFor(settings.accentArgb),
+                glassLevel = resolveGlassLevel(
+                    reduceTransparency = settings.reduceTransparency,
+                    systemReducesEffects = rememberSystemReducesEffects(),
+                ),
+            ) {
+                ClockShell()
+            }
         }
+    }
+
+    /** Avoids a first frame in the wrong theme: hold the system splash until DataStore answers. */
+    private fun keepSplashUntilSettingsLoad() {
+        val content = findViewById<View>(android.R.id.content)
+        content.viewTreeObserver.addOnPreDrawListener(
+            object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean {
+                    val ready = viewModel.appearance.value != null
+                    if (ready) content.viewTreeObserver.removeOnPreDrawListener(this)
+                    return ready
+                }
+            },
+        )
+    }
+}
+
+/**
+ * Applies the theme choice at the app level (Android 12+ API) instead of only inside Compose, so
+ * the splash screen, window background, system bars and system dialogs match it too. The system
+ * persists the value; calling it again with the same mode is a no-op.
+ */
+@Composable
+private fun ApplyNightMode(mode: ThemeMode) {
+    val context = LocalContext.current
+    LaunchedEffect(mode) {
+        val uiModeManager = context.getSystemService(UiModeManager::class.java)
+        uiModeManager.setApplicationNightMode(
+            when (mode) {
+                ThemeMode.SYSTEM -> UiModeManager.MODE_NIGHT_AUTO
+                ThemeMode.LIGHT -> UiModeManager.MODE_NIGHT_NO
+                ThemeMode.DARK -> UiModeManager.MODE_NIGHT_YES
+            },
+        )
     }
 }

@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 // Pure Kotlin/JVM module: scheduling logic must never depend on Android.
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.android.lint)
 }
 
 java {
@@ -22,6 +23,11 @@ dependencies {
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+lint {
+    abortOnError = true
+    warningsAsErrors = true
 }
 
 tasks.test {
