@@ -68,6 +68,16 @@ fun formatAlarmTime(context: Context, time: TimeOfDay, zone: ZoneId?, locale: Lo
 fun formatTimeOfDay(context: Context, at: ZonedDateTime, locale: Locale = Locale.getDefault()): String =
     formatTimeOfDay(context, TimeOfDay(at.hour, at.minute), locale)
 
+/**
+ * The phone's time for an alarm in another zone, with the short weekday when the day differs from
+ * the alarm's own ([alarmDate]): "22:00" or "Sun 22:00".
+ */
+fun formatHereTime(context: Context, here: ZonedDateTime, alarmDate: LocalDate, locale: Locale = Locale.getDefault()): String {
+    val time = formatTimeOfDay(context, here, locale)
+    if (here.toLocalDate() == alarmDate) return time
+    return here.dayOfWeek.getDisplayName(TextStyle.SHORT, locale).trimEnd('.') + " " + time
+}
+
 /** "in 7 h 30 min" for the next 24 hours, otherwise the localized weekday and date. */
 fun describeNextRing(resources: Resources, now: ZonedDateTime, next: ZonedDateTime, locale: Locale): String {
     val until = Duration.between(now, next)

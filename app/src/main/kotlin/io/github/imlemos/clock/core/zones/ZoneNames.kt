@@ -12,8 +12,19 @@ import java.util.Locale
 /** A time zone as the user picks it: by city, with its country. */
 data class ZoneOption(val zone: ZoneId, val city: String, val country: String) {
     private val searchKey = normalize("$city $country ${zone.id}")
+    private val cityKey = normalize(city)
 
     fun matches(query: String): Boolean = normalize(query).split(' ').filter(String::isNotBlank).all { it in searchKey }
+
+    /** Lower is better: the city starts with [query], then contains it, then only the rest matches. */
+    fun rank(query: String): Int {
+        val key = normalize(query).trim()
+        return when {
+            cityKey.startsWith(key) -> 0
+            key in cityKey -> 1
+            else -> 2
+        }
+    }
 }
 
 /**

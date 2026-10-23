@@ -150,7 +150,10 @@ fun AlarmEditorScreen(
             val hereTime = remember(state.time, state.zone, state.kind, state.weekDays, state.dates) { viewModel.hereTime(state) }
             if (hereTime != null) {
                 Text(
-                    stringResource(R.string.zone_here, formatTimeOfDay(context, hereTime)),
+                    stringResource(
+                        R.string.zone_here,
+                        formatHereTime(context, hereTime, hereTime.withZoneSameInstant(state.zone ?: state.manualZone ?: hereTime.zone).toLocalDate(), locale),
+                    ),
                     style = ClockTheme.typography.body,
                     color = colors.contentMuted,
                     modifier = Modifier.padding(top = 8.dp),

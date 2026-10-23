@@ -74,7 +74,7 @@ fun ZonePickerDialog(
     }
     var query by rememberSaveable { mutableStateOf("") }
     val now = remember { Instant.now() }
-    val shown = remember(zones, query) { if (query.isBlank()) zones else zones.filter { it.matches(query) } }
+    val shown = remember(zones, query) { if (query.isBlank()) zones else zones.filter { it.matches(query) }.sortedBy { it.rank(query) } }
 
     Dialog(
         onDismissRequest = onDismiss,

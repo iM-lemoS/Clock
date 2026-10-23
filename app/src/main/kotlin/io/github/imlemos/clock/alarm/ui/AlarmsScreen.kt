@@ -316,7 +316,10 @@ private fun AlarmCard(
             item.zone?.let { zone ->
                 val city = ZoneNames.city(zone, locale)
                 Text(
-                    text = item.hereTime?.let { stringResource(R.string.zone_with_here, city, formatTimeOfDay(context, it)) } ?: city,
+                    text = item.hereTime?.let { here ->
+                        val alarmDate = here.withZoneSameInstant(zone).toLocalDate()
+                        stringResource(R.string.zone_with_here, city, formatHereTime(context, here, alarmDate, locale))
+                    } ?: city,
                     style = ClockTheme.typography.caption,
                     color = colors.content,
                 )
