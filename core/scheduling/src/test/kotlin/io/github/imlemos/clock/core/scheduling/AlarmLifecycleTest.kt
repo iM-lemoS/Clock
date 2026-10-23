@@ -78,6 +78,30 @@ class AlarmLifecycleTest {
         }
 
         @Test
+        fun `notices before the alarm was set are skipped`() {
+            val notices = setOf(1440, 30)
+            val armed = at("2026-11-02T05:00")
+            // The 1-day notice fell before the alarm existed: no notification until 6:30.
+            assertFalse(AlarmLifecycle.isInNoticeWindow(occurrence, notices, at("2026-11-02T05:01"), armed))
+            assertEquals(at("2026-11-02T06:30"), AlarmLifecycle.nextNotice(occurrence, notices, at("2026-11-02T05:01"), armed))
+            assertTrue(AlarmLifecycle.isInNoticeWindow(occurrence, notices, at("2026-11-02T06:30"), armed))
+        }
+
+        @Test
+        fun `a notice just before arming still counts`() {
+            // Set at 6:30:40 for 7:00: the 30-minute notice (6:30) is within the minute of slack.
+            val armed = at("2026-11-02T06:30:40")
+            assertTrue(AlarmLifecycle.isInNoticeWindow(occurrence, setOf(30), at("2026-11-02T06:30:41"), armed))
+        }
+
+        @Test
+        fun `only skipped notices means no notification`() {
+            val armed = at("2026-11-02T06:50")
+            assertFalse(AlarmLifecycle.isInNoticeWindow(occurrence, setOf(30), at("2026-11-02T06:55"), armed))
+            assertNull(AlarmLifecycle.nextNotice(occurrence, setOf(30), at("2026-11-02T06:51"), armed))
+        }
+
+        @Test
         fun `no notices configured means no notification`() {
             assertNull(AlarmLifecycle.nextNotice(occurrence, emptySet(), at("2026-11-02T06:00")))
             assertFalse(AlarmLifecycle.isInNoticeWindow(occurrence, emptySet(), at("2026-11-02T06:59")))

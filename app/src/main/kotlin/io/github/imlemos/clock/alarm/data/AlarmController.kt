@@ -287,12 +287,12 @@ class AlarmController @Inject constructor(
         }
         val minutes = settings.noticeMinutes.first()
         val now = clock.instant()
-        if (AlarmLifecycle.isInNoticeWindow(trigger.occurrence, minutes, now)) {
+        if (AlarmLifecycle.isInNoticeWindow(trigger.occurrence, minutes, now, alarm.armedAt)) {
             notifications.showUpcoming(alarm, trigger.occurrence, scheduler.displayZone(alarm, trigger.occurrence))
         } else {
             notifications.cancelUpcoming(alarm.id)
         }
-        val nextNotice = AlarmLifecycle.nextNotice(trigger.occurrence, minutes, now)
+        val nextNotice = AlarmLifecycle.nextNotice(trigger.occurrence, minutes, now, alarm.armedAt)
         if (nextNotice != null) scheduler.scheduleNotice(alarm.id, nextNotice) else scheduler.cancelNotice(alarm.id)
     }
 

@@ -88,6 +88,7 @@ import io.github.imlemos.clock.core.designsystem.glass.glassBackdropSource
 import io.github.imlemos.clock.core.designsystem.glass.rememberGlassBackdrop
 import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
 import io.github.imlemos.clock.settings.SettingsScreen
+import io.github.imlemos.clock.settings.SettingsSectionScreen
 import io.github.imlemos.clock.stopwatch.StopwatchScreen
 import io.github.imlemos.clock.timer.TimersScreen
 
@@ -197,6 +198,7 @@ fun ClockShell(
                     entry<SettingsDestination> {
                         SettingsScreen(
                             onBack = pop,
+                            onOpenSection = { backStack.add(SettingsSectionDestination(it)) },
                             onOpenReliability = openReliability,
                             onOpenTrash = { backStack.add(TrashDestination) },
                             onOpenLayouts = { backStack.add(LayoutsDestination) },
@@ -204,6 +206,7 @@ fun ClockShell(
                             onOpenGlassLab = if (BuildConfig.DEBUG) ({ backStack.add(GlassLabDestination) }) else null,
                         )
                     }
+                    entry<SettingsSectionDestination> { key -> SettingsSectionScreen(section = key.section, onBack = pop) }
                     entry<GlassLabDestination> { GlassLabScreen(onBack = pop) }
                     entry<AlarmEditorDestination> { key ->
                         AlarmEditorScreen(

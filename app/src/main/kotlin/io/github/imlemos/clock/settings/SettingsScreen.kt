@@ -1,5 +1,12 @@
 package io.github.imlemos.clock.settings
 
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.annotation.StringRes
+import androidx.annotation.DrawableRes
+import androidx.compose.ui.platform.LocalResources
+import io.github.imlemos.clock.core.designsystem.component.DurationPickerDialog
+import io.github.imlemos.clock.alarm.ui.formatNotice
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
@@ -76,10 +83,20 @@ import io.github.imlemos.clock.core.zones.ZoneNames
 import io.github.imlemos.clock.core.zones.ZonePickerDialog
 import java.time.ZoneId
 
-/** The app settings (docs/PLANO.md section 6). */
+/** The settings categories, each on its own page (docs/PLANO.md section 6). */
+enum class SettingsSection(@param:StringRes val title: Int, @param:StringRes val summary: Int, @param:DrawableRes val icon: Int) {
+    APPEARANCE(R.string.settings_section_appearance, R.string.settings_appearance_summary, R.drawable.ic_palette),
+    ALARMS(R.string.settings_section_alarms, R.string.settings_alarms_summary, R.drawable.ic_alarm),
+    SOUND(R.string.settings_section_sound, R.string.settings_sound_summary, R.drawable.ic_volume_up),
+    TIMERS(R.string.settings_section_timers, R.string.settings_timers_summary, R.drawable.ic_hourglass_empty),
+    DATE_TIME(R.string.settings_section_datetime, R.string.settings_datetime_summary, R.drawable.ic_schedule),
+}
+
+/** The settings home: the categories and the other pages, grouped in cards. */
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onOpenSection: (SettingsSection) -> Unit,
     onOpenReliability: () -> Unit,
     onOpenTrash: () -> Unit,
     onOpenLayouts: () -> Unit,
@@ -87,20 +104,266 @@ fun SettingsScreen(
     onOpenGlassLab: (() -> Unit)?,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+    SettingsPage(stringResource(R.string.settings_title), onBack) {
+        SettingsCard {
+            SettingsSection.entries.forEachIndexed { index, section ->
+                if (index > 0) CardDivider()
+                ClickableRow(
+                    title = stringResource(section.title),
+                    summary = stringResource(section.summary),
+                    icon = section.icon,
+                    onClick = { onOpenSection(section) },
+                )
+            }
+        }
+        SettingsCard {
+            val defaultLayout by viewModel.defaultLayout.collectAsStateWithLifecycle()
+            ClickableRow(
+                title = stringResource(R.string.settings_layouts),
+                summary = stringResource(R.string.settings_layouts_summary, defaultLayout?.let { layoutName(it) }.orEmpty()),
+                icon = R.drawable.ic_wallpaper,
+                onClick = onOpenLayouts,
+            )
+            CardDivider()
+            ClickableRow(
+                title = stringResource(R.string.settings_reliability),
+                summary = stringResource(R.string.settings_reliability_summary),
+                icon = R.drawable.ic_verified_user,
+                onClick = onOpenReliability,
+            )
+            CardDivider()
+            ClickableRow(
+                title = stringResource(R.string.settings_trash),
+                summary = stringResource(R.string.settings_trash_summary),
+                icon = R.drawable.ic_delete,
+                onClick = onOpenTrash,
+            )
+        }
+        SettingsCard {
+            // Per-app language settings exist from Android 13; on Android 12 the app follows the system.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ClickableRow(
+                    title = stringResource(R.string.settings_language),
+                    summary = stringResource(R.string.settings_language_summary),
+                    icon = R.drawable.ic_translate,
+                    onClick = {
+                        context.startActivity(
+                            Intent(Settings.ACTION_APP_LOCALE_SETTINGS, "package:${context.packageName}".toUri()),
+                        )
+                    },
+                )
+                CardDivider()
+            }
+            ClickableRow(
+                title = stringResource(R.string.settings_about),
+                summary = stringResource(R.string.settings_about_summary),
+                icon = R.drawable.ic_info,
+                onClick = onOpenAbout,
+            )
+        }
+        if (onOpenGlassLab != null) {
+            SectionHeader(stringResource(R.string.settings_section_developer))
+            SettingsCard {
+                ClickableRow(
+                    title = stringResource(R.string.settings_glass_lab),
+                    summary = stringResource(R.string.settings_glass_lab_summary),
+                    icon = R.drawable.ic_code,
+                    onClick = onOpenGlassLab,
+                )
+                CardDivider()
+                val testLabel = stringResource(R.string.test_alarm_label)
+                ClickableRow(
+                    title = stringResource(R.string.settings_test_alarm),
+                    summary = stringResource(R.string.settings_test_alarm_summary),
+                    icon = R.drawable.ic_alarm,
+                    onClick = { viewModel.createTestAlarm(testLabel) },
+                )
+            }
+        }
+    }
+}
+
+/** One settings category on its own page. */
+@Composable
+fun SettingsSectionScreen(section: SettingsSection, onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
+    SettingsPage(stringResource(section.title), onBack) {
+        when (section) {
+            SettingsSection.APPEARANCE -> AppearanceSettings(viewModel)
+            SettingsSection.ALARMS -> AlarmSettings(viewModel)
+            SettingsSection.SOUND -> SoundSettings(viewModel)
+            SettingsSection.TIMERS -> TimerSettings(viewModel)
+            SettingsSection.DATE_TIME -> DateTimeSettings(viewModel)
+        }
+    }
+}
+
+@Composable
+private fun AppearanceSettings(viewModel: SettingsViewModel) {
     val appearance by viewModel.appearance.collectAsStateWithLifecycle()
     val systemReducesEffects = rememberSystemReducesEffects()
-    val context = LocalContext.current
+    SettingsCard {
+        SettingLabel(stringResource(R.string.settings_theme))
+        ThemeSelector(selected = appearance.themeMode, onSelect = viewModel::setThemeMode)
+        Spacer(Modifier.height(16.dp))
+    }
+    SettingsCard {
+        SettingLabel(stringResource(R.string.settings_accent))
+        AccentSelector(
+            selected = AccentPalette.matching(appearance.accentArgb),
+            customArgb = appearance.accentArgb?.takeIf { AccentPalette.matching(it) == null },
+            onSelect = { accent ->
+                viewModel.setAccent(if (accent == AccentPalette.Default) null else accent.color.toArgb())
+            },
+            onCustom = viewModel::setAccent,
+        )
+        Spacer(Modifier.height(12.dp))
+    }
+    SettingsCard {
+        SwitchRow(
+            title = stringResource(R.string.settings_reduce_transparency),
+            summary = stringResource(
+                if (systemReducesEffects) {
+                    R.string.settings_reduce_transparency_forced
+                } else {
+                    R.string.settings_reduce_transparency_summary
+                },
+            ),
+            checked = appearance.reduceTransparency || systemReducesEffects,
+            enabled = !systemReducesEffects,
+            onCheckedChange = viewModel::setReduceTransparency,
+        )
+    }
+}
 
+@Composable
+private fun AlarmSettings(viewModel: SettingsViewModel) {
+    SettingsCard {
+        SettingLabel(stringResource(R.string.settings_notices))
+        Hint(stringResource(R.string.settings_notices_summary))
+        val notices by viewModel.noticeMinutes.collectAsStateWithLifecycle()
+        NoticeChips(selected = notices, onToggle = viewModel::toggleNotice)
+        Spacer(Modifier.height(16.dp))
+    }
+    SettingsCard {
+        SettingLabel(stringResource(R.string.settings_volume_button))
+        Hint(stringResource(R.string.settings_volume_button_summary))
+        val volumeAction by viewModel.volumeButtonAction.collectAsStateWithLifecycle()
+        RadioList(
+            options = listOf(
+                VolumeButtonAction.OFF to R.string.volume_button_off,
+                VolumeButtonAction.SILENCE_SOUND to R.string.volume_button_sound,
+                VolumeButtonAction.SILENCE_SOUND_AND_VIBRATION to R.string.volume_button_sound_vibration,
+            ),
+            selected = volumeAction,
+            onSelect = viewModel::setVolumeButtonAction,
+        )
+        Spacer(Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun SoundSettings(viewModel: SettingsViewModel) {
+    val context = LocalContext.current
+    Text(
+        text = stringResource(R.string.settings_default_sound_summary),
+        style = ClockTheme.typography.caption,
+        color = ClockTheme.colors.contentMuted,
+        modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
+    )
+    SettingsCard {
+        val defaultSound by viewModel.defaultSound.collectAsStateWithLifecycle()
+        SoundSection(
+            sound = defaultSound,
+            onChange = viewModel::setDefaultSound,
+            onSystemTonePicked = viewModel::setDefaultSystemTone,
+            onFilePicked = { uri ->
+                viewModel.importDefaultTone(uri) {
+                    Toast.makeText(context, R.string.sound_import_failed, Toast.LENGTH_SHORT).show()
+                }
+            },
+            onPreviewVibration = viewModel::previewVibration,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp),
+        )
+    }
+    SettingsCard {
+        SettingLabel(stringResource(R.string.audio_output))
+        val output by viewModel.audioOutput.collectAsStateWithLifecycle()
+        RadioList(
+            options = listOf(
+                AudioOutput.PHONE_AND_BLUETOOTH to R.string.output_both,
+                AudioOutput.PHONE_ONLY to R.string.output_phone,
+                AudioOutput.BLUETOOTH_ONLY to R.string.output_bluetooth,
+            ),
+            selected = output,
+            onSelect = viewModel::setAudioOutput,
+        )
+        Hint(stringResource(R.string.output_bluetooth_summary))
+        Spacer(Modifier.height(8.dp))
+    }
+    SettingsCard {
+        val warnLow by viewModel.warnLowVolume.collectAsStateWithLifecycle()
+        SwitchRow(
+            title = stringResource(R.string.settings_warn_low_volume),
+            summary = stringResource(R.string.settings_warn_low_volume_summary),
+            checked = warnLow,
+            enabled = true,
+            onCheckedChange = viewModel::setWarnLowVolume,
+        )
+    }
+}
+
+@Composable
+private fun TimerSettings(viewModel: SettingsViewModel) {
+    val context = LocalContext.current
+    SettingsCard {
+        SettingLabel(stringResource(R.string.settings_timer_sound))
+        val timerTone by viewModel.timerTone.collectAsStateWithLifecycle()
+        Box(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 20.dp)) {
+            ToneField(
+                title = timerTone.ringtoneTitle,
+                onSystemTonePicked = viewModel::setTimerSystemTone,
+                onFilePicked = { uri ->
+                    viewModel.importTimerTone(uri) {
+                        Toast.makeText(context, R.string.sound_import_failed, Toast.LENGTH_SHORT).show()
+                    }
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun DateTimeSettings(viewModel: SettingsViewModel) {
+    SettingsCard {
+        SettingLabel(stringResource(R.string.settings_time_format))
+        val timeFormat by viewModel.timeFormat.collectAsStateWithLifecycle()
+        SegmentedControl(
+            options = listOf(
+                TimeFormat.SYSTEM to stringResource(R.string.time_format_system),
+                TimeFormat.H24 to stringResource(R.string.time_format_24),
+                TimeFormat.H12 to stringResource(R.string.time_format_12),
+            ),
+            selected = timeFormat,
+            onSelect = viewModel::setTimeFormat,
+            modifier = Modifier.padding(horizontal = 20.dp),
+        )
+        Spacer(Modifier.height(16.dp))
+    }
+    SettingsCard { ZoneSetting(viewModel) }
+}
+
+/** A settings page: top bar and a scrolling column of cards. */
+@Composable
+private fun SettingsPage(title: String, onBack: () -> Unit, content: @Composable () -> Unit) {
     Column(
         Modifier
             .fillMaxSize()
             .background(ClockTheme.colors.background),
     ) {
         ClockTopBar(
-            title = stringResource(R.string.settings_title),
-            navigationIcon = {
-                TopBarIconButton(R.drawable.ic_arrow_back, stringResource(R.string.action_back), onBack)
-            },
+            title = title,
+            navigationIcon = { TopBarIconButton(R.drawable.ic_arrow_back, stringResource(R.string.action_back), onBack) },
         )
         Column(
             Modifier
@@ -108,192 +371,39 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
                 .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(bottom = 24.dp),
-        ) {
-            SectionHeader(stringResource(R.string.settings_section_appearance))
-
-            SettingLabel(stringResource(R.string.settings_theme))
-            ThemeSelector(selected = appearance.themeMode, onSelect = viewModel::setThemeMode)
-
-            SettingLabel(stringResource(R.string.settings_accent))
-            AccentSelector(
-                selected = AccentPalette.matching(appearance.accentArgb),
-                customArgb = appearance.accentArgb?.takeIf { AccentPalette.matching(it) == null },
-                onSelect = { accent ->
-                    viewModel.setAccent(if (accent == AccentPalette.Default) null else accent.color.toArgb())
-                },
-                onCustom = viewModel::setAccent,
-            )
-
-            SwitchRow(
-                title = stringResource(R.string.settings_reduce_transparency),
-                summary = stringResource(
-                    if (systemReducesEffects) {
-                        R.string.settings_reduce_transparency_forced
-                    } else {
-                        R.string.settings_reduce_transparency_summary
-                    },
-                ),
-                checked = appearance.reduceTransparency || systemReducesEffects,
-                enabled = !systemReducesEffects,
-                onCheckedChange = viewModel::setReduceTransparency,
-            )
-
-            SectionHeader(stringResource(R.string.settings_section_alarms))
-            SettingLabel(stringResource(R.string.settings_volume_button))
-            Text(
-                text = stringResource(R.string.settings_volume_button_summary),
-                style = ClockTheme.typography.caption,
-                color = ClockTheme.colors.contentMuted,
-                modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 8.dp),
-            )
-            val volumeAction by viewModel.volumeButtonAction.collectAsStateWithLifecycle()
-            RadioList(
-                options = listOf(
-                    VolumeButtonAction.OFF to R.string.volume_button_off,
-                    VolumeButtonAction.SILENCE_SOUND to R.string.volume_button_sound,
-                    VolumeButtonAction.SILENCE_SOUND_AND_VIBRATION to R.string.volume_button_sound_vibration,
-                ),
-                selected = volumeAction,
-                onSelect = viewModel::setVolumeButtonAction,
-            )
-
-            SettingLabel(stringResource(R.string.settings_notices))
-            Text(
-                text = stringResource(R.string.settings_notices_summary),
-                style = ClockTheme.typography.caption,
-                color = ClockTheme.colors.contentMuted,
-                modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 10.dp),
-            )
-            val notices by viewModel.noticeMinutes.collectAsStateWithLifecycle()
-            NoticeChips(selected = notices, onToggle = viewModel::toggleNotice)
-            val defaultLayout by viewModel.defaultLayout.collectAsStateWithLifecycle()
-            ClickableRow(
-                title = stringResource(R.string.settings_layouts),
-                summary = stringResource(R.string.settings_layouts_summary, defaultLayout?.let { layoutName(it) }.orEmpty()),
-                onClick = onOpenLayouts,
-            )
-            ClickableRow(
-                title = stringResource(R.string.settings_trash),
-                summary = stringResource(R.string.settings_trash_summary),
-                onClick = onOpenTrash,
-            )
-
-            SectionHeader(stringResource(R.string.settings_section_sound))
-            Text(
-                text = stringResource(R.string.settings_default_sound_summary),
-                style = ClockTheme.typography.caption,
-                color = ClockTheme.colors.contentMuted,
-                modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
-            )
-            val defaultSound by viewModel.defaultSound.collectAsStateWithLifecycle()
-            SoundSection(
-                sound = defaultSound,
-                onChange = viewModel::setDefaultSound,
-                onSystemTonePicked = viewModel::setDefaultSystemTone,
-                onFilePicked = { uri ->
-                    viewModel.importDefaultTone(uri) {
-                        Toast.makeText(context, R.string.sound_import_failed, Toast.LENGTH_SHORT).show()
-                    }
-                },
-                onPreviewVibration = viewModel::previewVibration,
-                modifier = Modifier.padding(horizontal = 24.dp),
-            )
-            SettingLabel(stringResource(R.string.audio_output))
-            val output by viewModel.audioOutput.collectAsStateWithLifecycle()
-            RadioList(
-                options = listOf(
-                    AudioOutput.PHONE_AND_BLUETOOTH to R.string.output_both,
-                    AudioOutput.PHONE_ONLY to R.string.output_phone,
-                    AudioOutput.BLUETOOTH_ONLY to R.string.output_bluetooth,
-                ),
-                selected = output,
-                onSelect = viewModel::setAudioOutput,
-            )
-            Text(
-                text = stringResource(R.string.output_bluetooth_summary),
-                style = ClockTheme.typography.caption,
-                color = ClockTheme.colors.contentMuted,
-                modifier = Modifier.padding(horizontal = 24.dp),
-            )
-            val warnLow by viewModel.warnLowVolume.collectAsStateWithLifecycle()
-            SwitchRow(
-                title = stringResource(R.string.settings_warn_low_volume),
-                summary = stringResource(R.string.settings_warn_low_volume_summary),
-                checked = warnLow,
-                enabled = true,
-                onCheckedChange = viewModel::setWarnLowVolume,
-            )
-
-            SectionHeader(stringResource(R.string.settings_section_timers))
-            SettingLabel(stringResource(R.string.settings_timer_sound))
-            val timerTone by viewModel.timerTone.collectAsStateWithLifecycle()
-            Box(Modifier.padding(horizontal = 24.dp)) {
-                ToneField(
-                    title = timerTone.ringtoneTitle,
-                    onSystemTonePicked = viewModel::setTimerSystemTone,
-                    onFilePicked = { uri ->
-                        viewModel.importTimerTone(uri) {
-                            Toast.makeText(context, R.string.sound_import_failed, Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                )
-            }
-
-            SectionHeader(stringResource(R.string.settings_section_general))
-            SettingLabel(stringResource(R.string.settings_time_format))
-            val timeFormat by viewModel.timeFormat.collectAsStateWithLifecycle()
-            SegmentedControl(
-                options = listOf(
-                    TimeFormat.SYSTEM to stringResource(R.string.time_format_system),
-                    TimeFormat.H24 to stringResource(R.string.time_format_24),
-                    TimeFormat.H12 to stringResource(R.string.time_format_12),
-                ),
-                selected = timeFormat,
-                onSelect = viewModel::setTimeFormat,
-                modifier = Modifier.padding(horizontal = 24.dp),
-            )
-            Spacer(Modifier.height(8.dp))
-            ZoneSetting(viewModel)
-            ClickableRow(
-                title = stringResource(R.string.settings_reliability),
-                summary = stringResource(R.string.settings_reliability_summary),
-                onClick = onOpenReliability,
-            )
-            // Per-app language settings exist from Android 13; on Android 12 the app follows the system.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                ClickableRow(
-                    title = stringResource(R.string.settings_language),
-                    summary = stringResource(R.string.settings_language_summary),
-                    onClick = {
-                        context.startActivity(
-                            Intent(Settings.ACTION_APP_LOCALE_SETTINGS, "package:${context.packageName}".toUri()),
-                        )
-                    },
-                )
-            }
-
-            ClickableRow(
-                title = stringResource(R.string.settings_about),
-                summary = stringResource(R.string.settings_about_summary),
-                onClick = onOpenAbout,
-            )
-
-            if (onOpenGlassLab != null) {
-                SectionHeader(stringResource(R.string.settings_section_developer))
-                ClickableRow(
-                    title = stringResource(R.string.settings_glass_lab),
-                    summary = stringResource(R.string.settings_glass_lab_summary),
-                    onClick = onOpenGlassLab,
-                )
-                val testLabel = stringResource(R.string.test_alarm_label)
-                ClickableRow(
-                    title = stringResource(R.string.settings_test_alarm),
-                    summary = stringResource(R.string.settings_test_alarm_summary),
-                    onClick = { viewModel.createTestAlarm(testLabel) },
-                )
-            }
-        }
+        ) { content() }
     }
+}
+
+/** A group of related settings on a solid card, so each group reads as one block. */
+@Composable
+private fun SettingsCard(content: @Composable () -> Unit) {
+    val colors = ClockTheme.colors
+    val shape = RoundedCornerShape(24.dp)
+    Column(
+        Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .fillMaxWidth()
+            .clip(shape)
+            .background(colors.surface, shape)
+            .border(1.dp, colors.outline, shape),
+    ) { content() }
+}
+
+/** Between rows of a card; [afterIcon] lines it up with the text of rows that have an icon. */
+@Composable
+private fun CardDivider(afterIcon: Boolean = true) {
+    HorizontalDivider(Modifier.padding(start = if (afterIcon) 64.dp else 20.dp), thickness = 1.dp, color = ClockTheme.colors.outline)
+}
+
+@Composable
+private fun Hint(text: String) {
+    Text(
+        text = text,
+        style = ClockTheme.typography.caption,
+        color = ClockTheme.colors.contentMuted,
+        modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 10.dp),
+    )
 }
 
 /** Automatic (the phone's zone) or a manual zone for every alarm without its own (docs/PLANO.md 3.6). */
@@ -310,7 +420,7 @@ private fun ZoneSetting(viewModel: SettingsViewModel) {
             text = stringResource(R.string.settings_zone_manual_hint, ZoneNames.city(zone, locale)),
             style = ClockTheme.typography.caption,
             color = ClockTheme.colors.contentMuted,
-            modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 8.dp),
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp),
         )
     }
     if (choosing) {
@@ -343,7 +453,7 @@ private fun SettingLabel(text: String) {
         text = text,
         style = ClockTheme.typography.body,
         color = ClockTheme.colors.content,
-        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 10.dp),
+        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 10.dp),
     )
 }
 
@@ -357,7 +467,7 @@ private fun ThemeSelector(selected: ThemeMode, onSelect: (ThemeMode) -> Unit) {
         ),
         selected = selected,
         onSelect = onSelect,
-        modifier = Modifier.padding(horizontal = 24.dp),
+        modifier = Modifier.padding(horizontal = 20.dp),
     )
 }
 
@@ -372,7 +482,7 @@ private fun AccentSelector(
     var picking by rememberSaveable { mutableStateOf(false) }
     Row(
         modifier = Modifier
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 16.dp)
             .selectableGroup(),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
@@ -445,7 +555,7 @@ private fun ContrastWarning(color: Color, padded: Boolean = true) {
         stringResource(text),
         style = ClockTheme.typography.caption,
         color = ClockTheme.colors.contentMuted,
-        modifier = Modifier.padding(horizontal = if (padded) 24.dp else 0.dp, vertical = 8.dp),
+        modifier = Modifier.padding(horizontal = if (padded) 20.dp else 0.dp, vertical = 8.dp),
     )
 }
 
@@ -461,7 +571,7 @@ private fun SwitchRow(
         modifier = Modifier
             .fillMaxWidth()
             .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange)
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RowText(title, summary, Modifier.weight(1f))
@@ -471,14 +581,18 @@ private fun SwitchRow(
 }
 
 @Composable
-private fun ClickableRow(title: String, summary: String, onClick: () -> Unit) {
+private fun ClickableRow(title: String, summary: String, onClick: () -> Unit, @DrawableRes icon: Int? = null) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (icon != null) {
+            Icon(painterResource(icon), contentDescription = null, tint = ClockTheme.colors.content, modifier = Modifier.size(26.dp))
+            Spacer(Modifier.width(18.dp))
+        }
         RowText(title, summary, Modifier.weight(1f))
         Icon(
             painter = painterResource(R.drawable.ic_chevron_right),
@@ -508,7 +622,7 @@ private fun <T> RadioList(options: List<Pair<T, Int>>, selected: T, onSelect: (T
                 Modifier
                     .fillMaxWidth()
                     .selectable(selected = isSelected, role = Role.RadioButton, onClick = { onSelect(value) })
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
@@ -527,34 +641,79 @@ private fun <T> RadioList(options: List<Pair<T, Int>>, selected: T, onSelect: (T
 
 private val NoticePresets = listOf(5, 10, 15, 30, 60, 120, 1440)
 
+/**
+ * Notices before each alarm: any number of them, from presets or a custom length in days, hours
+ * and minutes. Custom ones show as their own chips; tapping a chosen chip removes it.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun NoticeChips(selected: Set<Int>, onToggle: (Int) -> Unit) {
     val colors = ClockTheme.colors
+    val resources = LocalResources.current
+    var picking by rememberSaveable { mutableStateOf(false) }
     FlowRow(
-        modifier = Modifier.padding(horizontal = 24.dp),
+        modifier = Modifier.padding(horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        NoticePresets.forEach { minutes ->
-            val isSelected = minutes in selected
-            val label = when {
-                minutes >= 1440 -> pluralStringResource(R.plurals.notice_days, minutes / 1440, minutes / 1440)
-                minutes >= 60 -> stringResource(R.string.duration_hours, minutes / 60)
-                else -> stringResource(R.string.duration_minutes, minutes)
-            }
-            Box(
-                Modifier
-                    .clip(CapsuleShape)
-                    .background(if (isSelected) colors.accent else colors.background, CapsuleShape)
-                    .border(1.dp, if (isSelected) colors.accent else colors.outline, CapsuleShape)
-                    .toggleable(value = isSelected, role = Role.Checkbox, onValueChange = { onToggle(minutes) })
-                    .heightIn(min = 40.dp)
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(label, style = ClockTheme.typography.label, color = if (isSelected) colors.onAccent else colors.content)
+        (NoticePresets + selected).distinct().sorted().forEach { minutes ->
+            ChoiceChip(
+                label = formatNotice(resources, minutes),
+                selected = minutes in selected,
+                onClick = { onToggle(minutes) },
+            )
+        }
+        Box(
+            Modifier
+                .clip(CapsuleShape)
+                .border(1.dp, colors.content.copy(alpha = 0.4f), CapsuleShape)
+                .clickable(role = Role.Button) { picking = true }
+                .heightIn(min = 40.dp)
+                .padding(horizontal = 14.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(painterResource(R.drawable.ic_add), contentDescription = null, tint = colors.content, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.duration_custom), style = ClockTheme.typography.label, color = colors.content)
             }
         }
     }
+    Text(
+        stringResource(R.string.settings_notices_skipped),
+        style = ClockTheme.typography.caption,
+        color = colors.contentMuted,
+        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp),
+    )
+    if (picking) {
+        DurationPickerDialog(
+            title = stringResource(R.string.settings_notice_custom_title),
+            initialMinutes = 60,
+            maxDays = MAX_NOTICE_DAYS,
+            onPick = { minutes ->
+                if (minutes !in selected) onToggle(minutes)
+                picking = false
+            },
+            onDismiss = { picking = false },
+        )
+    }
 }
+
+@Composable
+private fun ChoiceChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    val colors = ClockTheme.colors
+    Box(
+        Modifier
+            .clip(CapsuleShape)
+            .background(if (selected) colors.accent else colors.background, CapsuleShape)
+            .border(1.dp, if (selected) colors.accent else colors.outline, CapsuleShape)
+            .toggleable(value = selected, role = Role.Checkbox, onValueChange = { onClick() })
+            .heightIn(min = 40.dp)
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(label, style = ClockTheme.typography.label, color = if (selected) colors.onAccent else colors.content)
+    }
+}
+
+private const val MAX_NOTICE_DAYS = 30

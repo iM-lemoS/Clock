@@ -85,6 +85,18 @@ fun formatSnooze(resources: Resources, minutes: Int): String = when {
     else -> resources.getString(R.string.duration_hours_minutes, minutes / 60, minutes % 60)
 }
 
+/** A notice length such as "1 day 2 h 30 min" (days, hours and minutes, each only when present). */
+fun formatNotice(resources: Resources, minutes: Int): String {
+    val days = minutes / (24 * 60)
+    val hours = minutes % (24 * 60) / 60
+    val rest = minutes % 60
+    return buildList {
+        if (days > 0) add(resources.getQuantityString(R.plurals.notice_days, days, days))
+        if (hours > 0) add(resources.getString(R.string.duration_hours, hours))
+        if (rest > 0 || (days == 0 && hours == 0)) add(resources.getString(R.string.duration_minutes, rest))
+    }.joinToString(" ")
+}
+
 /** Like [formatSnooze] but "1h30" for mixed lengths, to fit a snooze dial bubble. */
 fun formatSnoozeCompact(resources: Resources, minutes: Int): String =
     if (minutes < 60 || minutes % 60 == 0) formatSnooze(resources, minutes) else resources.getString(R.string.duration_hours_minutes_compact, minutes / 60, minutes % 60)

@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.navigation
 
+import io.github.imlemos.clock.settings.SettingsSection
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.navigation3.runtime.NavKey
@@ -46,6 +47,10 @@ data object StopwatchDestination : TopLevelDestination {
 
 @Serializable
 data object SettingsDestination : NavKey
+
+/** One settings category on its own page. */
+@Serializable
+data class SettingsSectionDestination(val section: SettingsSection) : NavKey
 
 /** Alarm editor; [alarmId] 0 creates a new alarm, in [zoneId] when given (from the world clock). */
 @Serializable

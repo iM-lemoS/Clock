@@ -25,6 +25,7 @@
     <!-- Settings -->
     <string name="settings_title">Definições</string>
     <string name="settings_section_appearance">Aspeto</string>
+    <string name="settings_appearance_summary">Tema, cor de destaque e transparência</string>
     <string name="settings_theme">Tema</string>
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Claro</string>
@@ -40,6 +41,8 @@
     <string name="settings_reduce_transparency_summary">Usa superfícies sólidas em vez de vidro.</string>
     <string name="settings_reduce_transparency_forced">Ativado pelo sistema, por exemplo pela poupança de bateria.</string>
     <string name="settings_section_general">Geral</string>
+    <string name="settings_section_datetime">Data e hora</string>
+    <string name="settings_datetime_summary">Formato das horas e fuso horário</string>
     <string name="settings_language">Idioma</string>
     <string name="settings_language_summary">Segue o sistema, a menos que escolhas outro.</string>
     <string name="settings_section_developer">Programador</string>
@@ -119,6 +122,7 @@
     <string name="test_alarm_label">Alarme de teste</string>
     <string name="alarm_silenced">Som silenciado</string>
     <string name="settings_section_alarms">Alarmes</string>
+    <string name="settings_alarms_summary">Avisos antes dos alarmes e botões de volume</string>
     <string name="settings_volume_button">Baixar volume enquanto toca</string>
     <string name="settings_volume_button_summary">Uma forma rápida de calar um alarme a tocar sem o desligar. O toque seguinte é normal.</string>
     <string name="volume_button_off">Não fazer nada (muda o volume)</string>
@@ -169,6 +173,8 @@
     <string name="trash_deleted_automatically">Apagado depois do último toque, a %1$s</string>
     <string name="settings_notices">Avisos antes do alarme</string>
     <string name="settings_notices_summary">Uma notificação antes de cada alarme deixa-te desligá-lo mais cedo.</string>
+    <string name="settings_notices_skipped">Podes ter vários. Um aviso que calharia antes de criares o alarme é ignorado: um aviso de 1 dia para um alarme daqui a 2 horas não aparece.</string>
+    <string name="settings_notice_custom_title">Aviso antes do alarme</string>
     <plurals name="notice_days">
         <item quantity="one">%d dia</item>
         <item quantity="many">%d dias</item>
@@ -203,6 +209,7 @@
     <string name="snooze_custom_title">Adiar durante</string>
     <string name="ring_duration_custom_title">Tocar durante</string>
     <string name="settings_section_sound">Som dos alarmes</string>
+    <string name="settings_sound_summary">Som, vibração, duração e adiar dos alarmes novos</string>
     <string name="settings_default_sound_summary">Usado nos alarmes novos. Os alarmes que já existem mantêm o seu som.</string>
     <string name="audio_output">Saída de áudio</string>
     <string name="output_both">Telemóvel e Bluetooth</string>
@@ -459,6 +466,7 @@
     <string name="world_day">Dia</string>
     <string name="world_night">Noite</string>
     <string name="settings_section_timers">Temporizadores</string>
+    <string name="settings_timers_summary">Som quando um temporizador acaba</string>
     <string name="settings_timer_sound">Som dos temporizadores</string>
     <string name="accent_custom">Cor personalizada</string>
     <string name="accent_low_contrast_dark">Esta cor vê-se mal no tema escuro.</string>

@@ -30,6 +30,7 @@
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_appearance_summary">Theme, accent colour and transparency</string>
     <string name="settings_theme">Theme</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
@@ -45,6 +46,8 @@
     <string name="settings_reduce_transparency_summary">Use solid surfaces instead of glass.</string>
     <string name="settings_reduce_transparency_forced">Turned on by the system, for example by battery saver.</string>
     <string name="settings_section_general">General</string>
+    <string name="settings_section_datetime">Date and time</string>
+    <string name="settings_datetime_summary">Time format and time zone</string>
     <string name="settings_language">Language</string>
     <string name="settings_language_summary">Follows the system unless you choose another one.</string>
     <string name="settings_section_developer">Developer</string>
@@ -128,6 +131,7 @@
     <string name="test_alarm_label">Test alarm</string>
     <string name="alarm_silenced">Sound silenced</string>
     <string name="settings_section_alarms">Alarms</string>
+    <string name="settings_alarms_summary">Notices before alarms and the volume buttons</string>
     <string name="settings_volume_button">Volume down while ringing</string>
     <string name="settings_volume_button_summary">A quick way to silence a ringing alarm without dismissing it. The next ring plays normally.</string>
     <string name="volume_button_off">Do nothing (changes the volume)</string>
@@ -177,6 +181,8 @@
     <string name="trash_deleted_automatically">Deleted after its last ring on %1$s</string>
     <string name="settings_notices">Notices before the alarm</string>
     <string name="settings_notices_summary">A notification before each alarm lets you dismiss it early.</string>
+    <string name="settings_notices_skipped">You can have several. A notice that would come before you set the alarm is skipped: a 1-day notice for an alarm in 2 hours does not appear.</string>
+    <string name="settings_notice_custom_title">Notice before the alarm</string>
     <plurals name="notice_days">
         <item quantity="one">%d day</item>
         <item quantity="other">%d days</item>
@@ -210,6 +216,7 @@
     <string name="snooze_custom_title">Snooze for</string>
     <string name="ring_duration_custom_title">Ring for</string>
     <string name="settings_section_sound">Alarm sound</string>
+    <string name="settings_sound_summary">Sound, vibration, ring time and snooze for new alarms</string>
     <string name="settings_default_sound_summary">Used for new alarms. Existing alarms keep their own sound.</string>
     <string name="audio_output">Audio output</string>
     <string name="output_both">Phone and Bluetooth</string>
@@ -461,6 +468,7 @@
     <string name="world_day">Daytime</string>
     <string name="world_night">Night</string>
     <string name="settings_section_timers">Timers</string>
+    <string name="settings_timers_summary">Sound when a timer ends</string>
     <string name="settings_timer_sound">Timer sound</string>
     <string name="accent_custom">Custom colour</string>
     <string name="accent_low_contrast_dark">This colour is hard to see on the dark theme.</string>
