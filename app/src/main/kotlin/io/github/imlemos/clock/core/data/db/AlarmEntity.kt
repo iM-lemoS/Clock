@@ -44,4 +44,6 @@ data class AlarmEntity(
     val ringtoneTitle: String? = null,
     /** At most one group per alarm. Added in schema 4. */
     val groupId: Long? = null,
+    /** Alarm screen layout; `null` uses the default layout. Added in schema 5. */
+    val layoutId: Long? = null,
 )

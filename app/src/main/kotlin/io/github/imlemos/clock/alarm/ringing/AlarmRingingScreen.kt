@@ -35,6 +35,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.alarm.layout.LayoutSpec
+import io.github.imlemos.clock.alarm.layout.render.AlarmLayoutView
+import io.github.imlemos.clock.alarm.layout.render.LayoutLabel
+import io.github.imlemos.clock.core.designsystem.glass.GlassBackdrop
 import io.github.imlemos.clock.alarm.ui.formatAlarmTime
 import io.github.imlemos.clock.alarm.ui.formatSnooze
 import io.github.imlemos.clock.alarm.ui.formatTimeOfDay
@@ -52,25 +56,36 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-@OptIn(ExperimentalFoundationApi::class)
+/**
+ * The alarm screen, drawn with the alarm's layout (docs/PLANO.md 3.7). Also used by "Test alarm",
+ * where dismissing and snoozing just close the preview.
+ */
 @Composable
-fun AlarmRingingScreen(session: RingingSession, onDismiss: () -> Unit, onSnooze: (minutes: Int?) -> Unit) {
+fun AlarmRingingScreen(
+    session: RingingSession,
+    spec: LayoutSpec,
+    onDismiss: () -> Unit,
+    onSnooze: (minutes: Int?) -> Unit,
+) {
     val context = LocalContext.current
-    val colors = ClockTheme.colors
     val backdrop = rememberGlassBackdrop()
     val now by rememberCurrentMinute()
-    val nowTime = TimeOfDay(now.hour, now.minute)
-    val parts = timeParts(context, nowTime)
     val alarm = session.primary
     val dismissLabel = stringResource(R.string.alarm_action_dismiss)
     val snoozeLabel = stringResource(R.string.alarm_action_snooze, formatSnooze(LocalResources.current, alarm.snoozeMinutes))
     val chooseLabel = stringResource(R.string.snooze_choose)
     var choosingSnooze by rememberSaveable { mutableStateOf(false) }
+    val defaultLabel = stringResource(R.string.alarm_notification_title)
+    val labels = session.alarms.map { ringing ->
+        LayoutLabel(
+            text = ringing.label.ifBlank { defaultLabel },
+            detail = ringing.zone?.let { formatAlarmTime(context, ringing.time, it) },
+        )
+    }
 
     Box(
         Modifier
             .fillMaxSize()
-            .background(colors.background)
             // TalkBack users get both actions directly, without gestures (docs/PLANO.md 3.3).
             .semantics {
                 customActions = listOf(
@@ -80,81 +95,25 @@ fun AlarmRingingScreen(session: RingingSession, onDismiss: () -> Unit, onSnooze:
                 )
             },
     ) {
-        DotGrid(Modifier.fillMaxSize().glassBackdropSource(backdrop), fadeStart = 0f)
-
-        Column(
-            Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing)
-                .padding(horizontal = 24.dp, vertical = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Spacer(Modifier.weight(1f))
-            DotTime(
-                hours = parts.hours,
-                minutes = parts.minutes,
-                dayPeriod = parts.dayPeriod,
-                contentDescription = formatTimeOfDay(context, nowTime),
-                style = ClockTheme.typography.timeDisplay,
-            )
-            Spacer(Modifier.height(12.dp))
-            Text(
-                text = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(now),
-                style = ClockTheme.typography.body,
-                color = colors.contentMuted,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(Modifier.height(32.dp))
-            session.alarms.forEach { ringing ->
-                Text(
-                    text = ringing.label.ifBlank { stringResource(R.string.alarm_notification_title) },
-                    style = ClockTheme.typography.headline,
-                    color = colors.content,
-                    textAlign = TextAlign.Center,
+        AlarmLayoutView(
+            spec = spec,
+            time = TimeOfDay(now.hour, now.minute),
+            date = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(now),
+            labels = labels,
+            backdrop = backdrop,
+            controls = {
+                AlarmControls(
+                    backdrop = backdrop,
+                    snoozeLabel = snoozeLabel,
+                    chooseLabel = chooseLabel,
+                    dismissLabel = dismissLabel,
+                    note = if (session.silenced) stringResource(R.string.alarm_silenced) else null,
+                    onSnooze = { onSnooze(null) },
+                    onChooseSnooze = { choosingSnooze = true },
+                    onDismiss = onDismiss,
                 )
-                if (ringing.zone != null) {
-                    Text(
-                        text = formatAlarmTime(context, ringing.time, ringing.zone),
-                        style = ClockTheme.typography.body,
-                        color = colors.contentMuted,
-                        textAlign = TextAlign.Center,
-                    )
-                }
-            }
-            if (session.silenced) {
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    text = stringResource(R.string.alarm_silenced),
-                    style = ClockTheme.typography.label,
-                    color = colors.contentMuted,
-                )
-            }
-            Spacer(Modifier.weight(1.4f))
-
-            GlassSurface(
-                backdrop = backdrop,
-                modifier = Modifier
-                    .clip(CapsuleShape)
-                    .combinedClickable(
-                        role = Role.Button,
-                        onLongClickLabel = chooseLabel,
-                        onLongClick = { choosingSnooze = true },
-                        onClick = { onSnooze(null) },
-                    )
-                    .heightIn(min = 64.dp)
-                    .padding(horizontal = 32.dp),
-            ) {
-                Text(snoozeLabel, style = ClockTheme.typography.title, color = colors.content)
-            }
-            Spacer(Modifier.height(20.dp))
-            DismissSlider(
-                backdrop = backdrop,
-                label = stringResource(R.string.alarm_slide_to_dismiss),
-                actionLabel = dismissLabel,
-                onDismiss = onDismiss,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
+            },
+        )
         if (choosingSnooze) {
             SnoozeWheel(
                 backdrop = backdrop,
@@ -163,6 +122,56 @@ fun AlarmRingingScreen(session: RingingSession, onDismiss: () -> Unit, onSnooze:
                 onClose = { choosingSnooze = false },
             )
         }
+    }
+}
+
+/**
+ * Snooze (tap, or long press for the wheel) and the dismiss slider. With [interactive] off (the
+ * layout editor) they only show how they look.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun AlarmControls(
+    backdrop: GlassBackdrop,
+    snoozeLabel: String,
+    chooseLabel: String,
+    dismissLabel: String,
+    onSnooze: () -> Unit,
+    onChooseSnooze: () -> Unit,
+    onDismiss: () -> Unit,
+    note: String? = null,
+    interactive: Boolean = true,
+) {
+    val colors = ClockTheme.colors
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        if (note != null) {
+            Text(note, style = ClockTheme.typography.label, color = colors.contentMuted)
+            Spacer(Modifier.height(12.dp))
+        }
+        GlassSurface(
+            backdrop = backdrop,
+            modifier = Modifier
+                .clip(CapsuleShape)
+                .combinedClickable(
+                    enabled = interactive,
+                    role = Role.Button,
+                    onLongClickLabel = chooseLabel,
+                    onLongClick = onChooseSnooze,
+                    onClick = onSnooze,
+                )
+                .heightIn(min = 64.dp),
+        ) {
+            // Padding inside the glass, so the label never touches its rim.
+            Text(snoozeLabel, style = ClockTheme.typography.title, color = colors.content, modifier = Modifier.padding(horizontal = 32.dp))
+        }
+        Spacer(Modifier.height(20.dp))
+        DismissSlider(
+            backdrop = backdrop,
+            label = stringResource(R.string.alarm_slide_to_dismiss),
+            actionLabel = dismissLabel,
+            onDismiss = onDismiss,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 

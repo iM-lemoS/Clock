@@ -40,6 +40,11 @@ interface SettingsRepository {
 
     suspend fun setManualZone(zone: ZoneId?)
 
+    /** Layout for alarms without their own (docs/PLANO.md 3.7); `null` is the app's preset. */
+    val defaultLayoutId: Flow<Long?>
+
+    suspend fun setDefaultLayoutId(id: Long?)
+
     val volumeButtonAction: Flow<VolumeButtonAction>
 
     suspend fun setVolumeButtonAction(action: VolumeButtonAction)

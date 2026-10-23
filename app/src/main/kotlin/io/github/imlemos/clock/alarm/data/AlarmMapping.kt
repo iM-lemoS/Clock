@@ -51,6 +51,7 @@ internal fun AlarmEntity.toAlarm(): Alarm = Alarm(
     ),
     singleUse = singleUse,
     groupId = groupId,
+    layoutId = layoutId,
     createdAt = Instant.ofEpochMilli(createdAt),
     armedAt = Instant.ofEpochMilli(if (armedAt == 0L) createdAt else armedAt),
 )
@@ -85,6 +86,7 @@ internal fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
     gradualSeconds = sound.gradual.seconds,
     ringtoneTitle = sound.ringtoneTitle,
     groupId = groupId,
+    layoutId = layoutId,
 )
 
 internal fun AlarmGroupEntity.toGroup(): AlarmGroup =

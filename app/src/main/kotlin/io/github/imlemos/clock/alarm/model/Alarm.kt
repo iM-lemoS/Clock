@@ -20,6 +20,8 @@ data class Alarm(
     val sound: AlarmSound = AlarmSound(),
     val singleUse: Boolean = false,
     val groupId: Long? = null,
+    /** Alarm screen layout (docs/PLANO.md 3.7); `null` uses the default layout from settings. */
+    val layoutId: Long? = null,
     val createdAt: Instant,
     /** When the alarm was last saved or switched on (see AlarmCalculator.missedOccurrence). */
     val armedAt: Instant = createdAt,

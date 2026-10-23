@@ -19,6 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.alarm.layout.LayoutRepository
 import io.github.imlemos.clock.alarm.scheduling.AlarmIntents
 import io.github.imlemos.clock.alarm.scheduling.AlarmScheduler
 import io.github.imlemos.clock.alarm.ui.formatAlarmTime
@@ -54,6 +55,7 @@ class RingingService : Service() {
     @Inject lateinit var notifications: AlarmNotifications
     @Inject lateinit var settings: SettingsRepository
     @Inject lateinit var scheduler: AlarmScheduler
+    @Inject lateinit var layouts: LayoutRepository
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var timeoutJob: Job? = null
@@ -125,6 +127,7 @@ class RingingService : Service() {
             RingingAlarm(
                 alarm.id, alarm.time, alarm.label, alarm.sound.snoozeMinutes, alarm.createdAt,
                 zone = scheduler.displayZone(alarm, occurrence),
+                layout = layouts.resolve(alarm.layoutId),
             ),
         )
         // In a collision the alarm created first leads (docs/PLANO.md 3.11), even if another

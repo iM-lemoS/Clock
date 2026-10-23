@@ -31,6 +31,7 @@ class AlarmMappingTest {
             ringDurationSeconds = 120,
             snoozeMinutes = 10,
         ),
+        layoutId = -2,
         createdAt = Instant.parse("2026-10-01T00:00:00Z"),
     )
 

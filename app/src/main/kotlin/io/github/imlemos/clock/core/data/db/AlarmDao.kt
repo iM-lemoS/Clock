@@ -34,4 +34,8 @@ interface AlarmDao {
 
     @Query("UPDATE alarm SET groupId = NULL WHERE groupId = :groupId")
     suspend fun ungroup(groupId: Long)
+
+    /** Alarms using a deleted layout go back to the default one. */
+    @Query("UPDATE alarm SET layoutId = NULL WHERE layoutId = :layoutId")
+    suspend fun clearLayout(layoutId: Long)
 }

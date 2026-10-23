@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.time.Instant
 import java.time.ZoneId
+import io.github.imlemos.clock.alarm.layout.LayoutSpec
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,6 +18,8 @@ data class RingingAlarm(
     val createdAt: Instant,
     /** The alarm's zone when its time is not the phone's, shown next to it (docs/PLANO.md 3.3). */
     val zone: ZoneId? = null,
+    /** The alarm's screen layout, resolved when it fires (docs/PLANO.md 3.7). */
+    val layout: LayoutSpec = LayoutSpec(),
 )
 
 /**

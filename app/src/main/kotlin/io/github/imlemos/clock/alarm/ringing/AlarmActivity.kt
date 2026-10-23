@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.alarm.ringing
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
@@ -10,12 +11,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.imlemos.clock.alarm.layout.LayoutRepository
+import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.scheduling.AlarmIntents
+import io.github.imlemos.clock.core.scheduling.TimeOfDay
+import java.time.Instant
+import java.time.ZoneId
 import io.github.imlemos.clock.core.data.prefs.AppearanceSettings
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.data.prefs.VolumeButtonAction
@@ -35,8 +44,24 @@ class AlarmActivity : ComponentActivity() {
 
     @Inject lateinit var ringingState: RingingState
     @Inject lateinit var settings: SettingsRepository
+    @Inject lateinit var layouts: LayoutRepository
 
     private var volumeButtonAction = VolumeButtonAction.OFF
+
+    // "Test alarm" from the layout editor: the real screen, but nothing rings and both actions
+    // close it. A real alarm arriving meanwhile (single instance) replaces the preview.
+    private var previewLayoutId by mutableLongStateOf(NO_PREVIEW)
+    private var previewLabel = ""
+
+    private fun readPreview(intent: Intent) {
+        previewLabel = intent.getStringExtra(EXTRA_PREVIEW_LABEL).orEmpty()
+        previewLayoutId = intent.getLongExtra(EXTRA_PREVIEW_LAYOUT_ID, NO_PREVIEW)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        readPreview(intent)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setShowWhenLocked(true)
@@ -55,10 +80,16 @@ class AlarmActivity : ComponentActivity() {
             }
         }
 
+        readPreview(intent)
+
         setContent {
-            val session by ringingState.session.collectAsStateWithLifecycle()
+            val ringing by ringingState.session.collectAsStateWithLifecycle()
             val appearance by settings.appearance.collectAsStateWithLifecycle(AppearanceSettings())
-            LaunchedEffect(session) { if (session == null) finish() }
+            val preview by produceState<RingingSession?>(null, previewLayoutId) {
+                value = if (previewLayoutId != NO_PREVIEW) previewSession(previewLayoutId, previewLabel) else null
+            }
+            val session = if (previewLayoutId != NO_PREVIEW) preview else ringing
+            LaunchedEffect(ringing, previewLayoutId) { if (previewLayoutId == NO_PREVIEW && ringing == null) finish() }
             val current = session ?: return@setContent
             // The alarm screen is always dark: a white screen at night is harsh.
             ClockTheme(
@@ -68,8 +99,10 @@ class AlarmActivity : ComponentActivity() {
             ) {
                 AlarmRingingScreen(
                     session = current,
-                    onDismiss = { send(AlarmIntents.ACTION_DISMISS) },
+                    spec = current.primary.layout,
+                    onDismiss = { if (previewLayoutId != NO_PREVIEW) finish() else send(AlarmIntents.ACTION_DISMISS) },
                     onSnooze = { minutes ->
+                        if (previewLayoutId != NO_PREVIEW) return@AlarmRingingScreen finish()
                         startService(
                             Intent(this, RingingService::class.java)
                                 .setAction(AlarmIntents.ACTION_SNOOZE)
@@ -97,7 +130,36 @@ class AlarmActivity : ComponentActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
+    private suspend fun previewSession(layoutId: Long, label: String): RingingSession {
+        val now = Instant.now()
+        val time = now.atZone(ZoneId.systemDefault())
+        return RingingSession(
+            listOf(
+                RingingAlarm(
+                    id = -1,
+                    time = TimeOfDay(time.hour, time.minute),
+                    label = label,
+                    snoozeMinutes = Alarm.DEFAULT_SNOOZE_MINUTES,
+                    createdAt = now,
+                    layout = layouts.resolve(layoutId),
+                ),
+            ),
+        )
+    }
+
     private fun send(action: String) {
         startService(Intent(this, RingingService::class.java).setAction(action))
+    }
+
+    companion object {
+        private const val EXTRA_PREVIEW_LAYOUT_ID = "preview_layout_id"
+        private const val EXTRA_PREVIEW_LABEL = "preview_label"
+        private const val NO_PREVIEW = Long.MIN_VALUE
+
+        /** Opens the alarm screen with [layoutId] as a silent preview. */
+        fun previewIntent(context: Context, layoutId: Long, label: String): Intent =
+            Intent(context, AlarmActivity::class.java)
+                .putExtra(EXTRA_PREVIEW_LAYOUT_ID, layoutId)
+                .putExtra(EXTRA_PREVIEW_LABEL, label)
     }
 }

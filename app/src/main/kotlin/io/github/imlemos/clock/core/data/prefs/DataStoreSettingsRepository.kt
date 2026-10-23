@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.model.AlarmSound
@@ -114,6 +115,14 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { prefs -> if (zone == null) prefs.remove(Keys.MANUAL_ZONE) else prefs[Keys.MANUAL_ZONE] = zone.id }
     }
 
+    override val defaultLayoutId: Flow<Long?> = dataStore.data
+        .map { it[Keys.DEFAULT_LAYOUT_ID] }
+        .distinctUntilChanged()
+
+    override suspend fun setDefaultLayoutId(id: Long?) {
+        dataStore.edit { prefs -> if (id == null) prefs.remove(Keys.DEFAULT_LAYOUT_ID) else prefs[Keys.DEFAULT_LAYOUT_ID] = id }
+    }
+
     override val volumeButtonAction: Flow<VolumeButtonAction> = dataStore.data
         .map { prefs ->
             prefs[Keys.VOLUME_BUTTON_ACTION]
@@ -188,6 +197,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val WARN_LOW_VOLUME = booleanPreferencesKey("warn_low_volume")
         val TIME_FORMAT = stringPreferencesKey("time_format")
         val MANUAL_ZONE = stringPreferencesKey("manual_zone")
+        val DEFAULT_LAYOUT_ID = longPreferencesKey("default_layout_id")
     }
 
     private fun String.toIntSet(): Set<Int> = split(',').mapNotNull(String::toIntOrNull).toSet()

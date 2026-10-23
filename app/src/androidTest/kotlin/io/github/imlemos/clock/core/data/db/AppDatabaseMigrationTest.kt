@@ -119,6 +119,28 @@ class AppDatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun migrates4To5AddingLayouts() = runTest {
+        helper.createDatabase(4).use { connection ->
+            connection.execSQL(
+                "INSERT INTO alarm (id, hour, minute, recurrenceType, weekDays, dates, label, enabled, " +
+                    "snoozeMinutes, ringDurationSeconds, vibrate, createdAt, singleUse, armedAt, vibrationPattern, " +
+                    "gradualEnabled, gradualTargetPercent, gradualSeconds) " +
+                    "VALUES (1, 7, 0, 'ONCE', 0, '', '', 1, 5, 60, 1, 1000, 0, 1000, 'SYNC', 0, 100, 60)",
+            )
+        }
+        helper.runMigrationsAndValidate(5, emptyList()).use { connection ->
+            connection.prepare("SELECT layoutId FROM alarm WHERE id = 1").use { stmt ->
+                assertTrue(stmt.step())
+                assertTrue(stmt.isNull(0))
+            }
+            connection.prepare("SELECT COUNT(*) FROM alarm_layout").use { stmt ->
+                assertTrue(stmt.step())
+                assertEquals(0, stmt.getInt(0))
+            }
+        }
+    }
+
     private companion object {
         const val TEST_DB = "migration-test.db"
     }

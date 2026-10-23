@@ -16,6 +16,7 @@ import dagger.hilt.components.SingletonComponent
 import io.github.imlemos.clock.core.data.db.AlarmDao
 import io.github.imlemos.clock.core.data.db.AlarmGroupDao
 import io.github.imlemos.clock.core.data.db.AppDatabase
+import io.github.imlemos.clock.core.data.db.LayoutDao
 import io.github.imlemos.clock.core.data.db.TrashDao
 import io.github.imlemos.clock.core.data.prefs.DataStoreSettingsRepository
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
@@ -56,6 +57,9 @@ object DataModule {
 
     @Provides
     fun provideGroupDao(database: AppDatabase): AlarmGroupDao = database.groupDao()
+
+    @Provides
+    fun provideLayoutDao(database: AppDatabase): LayoutDao = database.layoutDao()
 
     /**
      * Built on an explicit device-protected path: `preferencesDataStoreFile()` resolves against the
