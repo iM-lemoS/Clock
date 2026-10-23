@@ -1,8 +1,23 @@
 package io.github.imlemos.clock.alarm.ringing
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.changedToUp
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.onLongClick
+import androidx.compose.ui.semantics.role
+import io.github.imlemos.clock.alarm.model.Alarm
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -75,6 +90,10 @@ fun AlarmRingingScreen(
     val snoozeLabel = stringResource(R.string.alarm_action_snooze, formatSnooze(LocalResources.current, alarm.snoozeMinutes))
     val chooseLabel = stringResource(R.string.snooze_choose)
     var choosingSnooze by rememberSaveable { mutableStateOf(false) }
+    var dial by remember { mutableStateOf<SnoozeDialState?>(null) }
+    val haptics = LocalHapticFeedback.current
+    val density = LocalDensity.current
+    val window = LocalWindowInfo.current
     val defaultLabel = stringResource(R.string.alarm_notification_title)
     val labels = session.alarms.map { ringing ->
         LayoutLabel(
@@ -111,9 +130,40 @@ fun AlarmRingingScreen(
                     onSnooze = { onSnooze(null) },
                     onChooseSnooze = { choosingSnooze = true },
                     onDismiss = onDismiss,
+                    onDialStart = { center ->
+                        val width = window.containerSize.width.toFloat()
+                        val edge = with(density) { DIAL_EDGE.toPx() }
+                        // As wide as the screen allows, and the whole half circle on screen.
+                        val radius = minOf(with(density) { DIAL_RADIUS.toPx() }, width / 2f - edge)
+                        val reach = radius + edge
+                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        dial = SnoozeDialState(
+                            center = center.copy(x = center.x.coerceIn(reach, (width - reach).coerceAtLeast(reach))),
+                            up = center.y > reach + with(density) { 80.dp.toPx() },
+                            radius = radius,
+                        )
+                    },
+                    onDialMove = { finger ->
+                        dial?.let { current ->
+                            val offset = finger - current.center
+                            val choice = SnoozeDialMath.choiceAt(
+                                offset.x, offset.y, Alarm.SNOOZE_CHOICES.size, with(density) { DIAL_DEAD_ZONE.toPx() }, current.up,
+                            )
+                            if (choice != current.selected) {
+                                haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                dial = current.copy(selected = choice)
+                            }
+                        }
+                    },
+                    onDialEnd = {
+                        val choice = dial?.selected
+                        dial = null
+                        if (choice != null) onSnooze(Alarm.SNOOZE_CHOICES[choice])
+                    },
                 )
             },
         )
+        dial?.let { SnoozeDialOverlay(it, Alarm.SNOOZE_CHOICES) }
         if (choosingSnooze) {
             SnoozeWheel(
                 backdrop = backdrop,
@@ -126,10 +176,11 @@ fun AlarmRingingScreen(
 }
 
 /**
- * Snooze (tap, or long press for the wheel) and the dismiss slider. With [interactive] off (the
- * layout editor) they only show how they look.
+ * Snooze and the dismiss slider. A tap on Snooze uses the alarm's length; holding it opens the
+ * dial ([onDialStart] with the button's centre in root coordinates), the finger moves over it
+ * ([onDialMove]) and letting go chooses ([onDialEnd]). TalkBack gets the accessible wheel through
+ * [onChooseSnooze]. With [interactive] off (the layout editor) they only show how they look.
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AlarmControls(
     backdrop: GlassBackdrop,
@@ -141,7 +192,15 @@ fun AlarmControls(
     onDismiss: () -> Unit,
     note: String? = null,
     interactive: Boolean = true,
+    onDialStart: (Offset) -> Unit = {},
+    onDialMove: (Offset) -> Unit = {},
+    onDialEnd: () -> Unit = {},
 ) {
+    var buttonCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    val currentOnSnooze by rememberUpdatedState(onSnooze)
+    val currentOnDialStart by rememberUpdatedState(onDialStart)
+    val currentOnDialMove by rememberUpdatedState(onDialMove)
+    val currentOnDialEnd by rememberUpdatedState(onDialEnd)
     val colors = ClockTheme.colors
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         if (note != null) {
@@ -152,12 +211,41 @@ fun AlarmControls(
             backdrop = backdrop,
             modifier = Modifier
                 .clip(CapsuleShape)
-                .combinedClickable(
-                    enabled = interactive,
-                    role = Role.Button,
-                    onLongClickLabel = chooseLabel,
-                    onLongClick = onChooseSnooze,
-                    onClick = onSnooze,
+                .onGloballyPositioned { buttonCoordinates = it }
+                .semantics {
+                    role = Role.Button
+                    onClick { onSnooze(); true }
+                    onLongClick(chooseLabel) { onChooseSnooze(); true }
+                }
+                .then(
+                    if (!interactive) {
+                        Modifier
+                    } else {
+                        Modifier.pointerInput(Unit) {
+                            awaitEachGesture {
+                                val down = awaitFirstDown()
+                                val held = awaitLongPressOrCancellation(down.id)
+                                if (held == null) {
+                                    // Released before the long-press timeout: a tap, if it ended on the button.
+                                    val up = currentEvent.changes.firstOrNull { it.id == down.id }
+                                    val inside = up != null && up.position.x in 0f..size.width.toFloat() && up.position.y in 0f..size.height.toFloat()
+                                    if (up != null && up.changedToUp() && !up.isConsumed && inside) currentOnSnooze()
+                                    return@awaitEachGesture
+                                }
+                                val coordinates = buttonCoordinates ?: return@awaitEachGesture
+                                currentOnDialStart(coordinates.localToRoot(Offset(size.width / 2f, size.height / 2f)))
+                                currentOnDialMove(coordinates.localToRoot(held.position))
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                                    if (change.changedToUp()) break
+                                    currentOnDialMove(coordinates.localToRoot(change.position))
+                                    change.consume()
+                                }
+                                currentOnDialEnd()
+                            }
+                        }
+                    },
                 )
                 .heightIn(min = 64.dp),
         ) {

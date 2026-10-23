@@ -388,4 +388,5 @@
     <string name="font_rounded">Arredondada</string>
     <string name="layout_preset_tall">Alto</string>
     <string name="layout_preset_classic">Clássico</string>
+    <string name="snooze_dial_hint">Desliza até ao tempo e larga</string>
 </resources>

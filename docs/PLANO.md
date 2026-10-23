@@ -109,7 +109,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 ### 3.3 Ecrã do alarme (interação)
 
 - **Desligar**: arrastar para o lado.
-- **Snooze**: **toque simples** → duração padrão (**5 min**, configurável por alarme, em lote e nas predefinições); **pressão longa** → **roda** com **5, 10, 15, 20, 30, 45 min, 1 h**. **Sem limite** de snoozes. Com TalkBack, "Escolher quanto tempo adiar" abre a roda.
+- **Snooze**: **toque simples** → duração padrão (**5 min**, configurável por alarme, em lote e nas predefinições); **pressão longa** → abre um **dial** em meia-lua à volta do botão com **5, 10, 15, 20, 30, 45 min, 1 h**: sem levantar o dedo, desliza-se até ao tempo e **larga-se para adiar** (largar junto ao botão cancela). Um só gesto, rápido. **Sem limite** de snoozes. Com TalkBack, "Escolher quanto tempo adiar" abre uma roda acessível.
 - **Acessibilidade**: com TalkBack, desligar e snooze ficam disponíveis como ações diretas, sem gestos.
 - Se o alarme tem fuso diferente do local, mostra **as duas horas**.
 - **Botão de baixar volume** (definição, desligado por defeito): enquanto o alarme toca, carregar em "baixar volume" **cala só aquele toque** — só o som, ou som e vibração, conforme a definição — sem desligar o alarme nem o adiar. O toque seguinte (snooze ou outro alarme) é normal.
@@ -145,6 +145,8 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - Layouts incluídos (Pontos, Ondas, Matriz de pontos, Analógico) não se editam: duplicam-se. Apagar um layout devolve os alarmes que o usavam ao predefinido.
 - Se num ecrã pequeno ou com letra grande dois elementos se tocam, o de baixo desce até deixar de tocar.
 - No editor, com TalkBack, cada elemento tem ações para mover e mudar de tamanho, sem gestos.
+- Relógios: estilos digital, empilhado, analógico com pontos e analógico com traços; 7 letras (Doto, JetBrains Mono, Outfit, Playfair Display, Orbitron, Big Shoulders Display, Comfortaa, todas OFL e variáveis); espessura ajustável e, na Doto, pontos mais ou menos redondos.
+- A app fica sempre na vertical (o Android 16 pode ignorar isto em ecrãs grandes, ≥ 600 dp).
 - Cores: seletor completo (tom, saturação/brilho e opacidade) com cores rápidas e "cor automática".
 - Foto e vídeo: no separador Fundo, arrastar e afastar os dedos posiciona e amplia (sem nunca deixar margens vazias). Elementos escondidos desaparecem também no editor.
 - "Testar" abre o ecrã do alarme verdadeiro, sem som; adiar ou desligar só fecham a pré-visualização.

@@ -391,4 +391,5 @@
     <string name="font_rounded">Rounded</string>
     <string name="layout_preset_tall">Tall</string>
     <string name="layout_preset_classic">Classic</string>
+    <string name="snooze_dial_hint">Slide to a time and let go</string>
 </resources>
