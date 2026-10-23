@@ -195,6 +195,62 @@ class AlarmCalculatorTest {
             val result = AlarmCalculator.nextOccurrence(schedule, at("2026-11-02T21:00"), LISBON)
             assertEquals(at("2026-11-02T22:00"), result?.toInstant())
         }
+
+        @Test
+        fun `follows the alarm zone's DST end while the device zone already ended it`() {
+            // The EU falls back on 2026-10-25, the US on 2026-11-01. In between New York is UTC-4 and
+            // Lisbon UTC+0, so 08:00 New York is 12:00 in Lisbon; from 2026-11-02 it is 13:00 again.
+            val schedule = AlarmSchedule(TimeOfDay(8, 0), Recurrence.Weekly(setOf(MONDAY))).copy(zone = NEW_YORK)
+            assertEquals(at("2026-10-26T12:00"), AlarmCalculator.nextOccurrence(schedule, at("2026-10-26T06:00"), LISBON)?.toInstant())
+            assertEquals(at("2026-11-02T13:00"), AlarmCalculator.nextOccurrence(schedule, at("2026-10-27T06:00"), LISBON)?.toInstant())
+        }
+
+        @Test
+        fun `weekdays are the alarm zone's weekdays`() {
+            // Monday 07:00 in Tokyo is Sunday 22:00 in Lisbon; Sunday evening in Lisbon it rings.
+            val schedule = AlarmSchedule(TimeOfDay(7, 0), Recurrence.Weekly(setOf(MONDAY))).copy(zone = TOKYO)
+            val result = AlarmCalculator.nextOccurrence(schedule, at("2026-11-01T12:00"), LISBON)
+            assertEquals(at("2026-11-01T22:00"), result?.toInstant())
+            assertEquals(MONDAY, result?.dayOfWeek)
+        }
+
+        @Test
+        fun `dates are the alarm zone's dates`() {
+            val schedule = AlarmSchedule(TimeOfDay(7, 0), Recurrence.Dates(setOf(LocalDate.parse("2026-11-03")))).copy(zone = TOKYO)
+            val result = AlarmCalculator.nextOccurrence(schedule, at("2026-11-01T12:00"), LISBON)
+            assertEquals(at("2026-11-02T22:00"), result?.toInstant())
+        }
+
+        @Test
+        fun `the alarm zone's spring-forward gap applies, not the device's`() {
+            // New York skips 02:00-03:00 on 2027-03-14; Lisbon has no transition that day.
+            val schedule = once(2, 30).copy(zone = NEW_YORK)
+            val result = AlarmCalculator.nextOccurrence(schedule, at("2027-03-14T00:00"), LISBON)
+            assertEquals(Instant.parse("2027-03-14T07:00:00Z"), result?.toInstant())
+        }
+
+        @Test
+        fun `a manual app zone is used for alarms without their own zone`() {
+            // A phone in New York with the app set to Lisbon: 07:30 is Lisbon time.
+            val manual = AlarmCalculator.effectiveZone(null, LISBON, NEW_YORK)
+            val result = AlarmCalculator.nextOccurrence(once(7, 30), at("2026-11-02T00:00", NEW_YORK), manual)
+            assertEquals(at("2026-11-02T07:30"), result?.toInstant())
+        }
+
+        @Test
+        fun `a missed occurrence is found in the alarm zone`() {
+            val schedule = once(8, 0).copy(zone = NEW_YORK)
+            val result = AlarmCalculator.missedOccurrence(schedule, at("2026-11-02T12:00"), at("2026-11-02T14:00"), LISBON)
+            assertEquals(at("2026-11-02T13:00"), result?.toInstant())
+        }
+
+        @Test
+        fun `shows the local time only when the wall-clock times differ`() {
+            val instant = at("2026-11-02T13:00")
+            assertEquals(true, AlarmCalculator.showsLocalTime(instant, NEW_YORK, LISBON))
+            assertEquals(false, AlarmCalculator.showsLocalTime(instant, ZoneId.of("Europe/London"), LISBON))
+            assertEquals(false, AlarmCalculator.showsLocalTime(instant, LISBON, LISBON))
+        }
     }
 
     @Nested

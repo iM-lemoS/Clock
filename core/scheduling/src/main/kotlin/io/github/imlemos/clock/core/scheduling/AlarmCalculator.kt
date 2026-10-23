@@ -23,6 +23,13 @@ public object AlarmCalculator {
         alarmZone ?: manualZone ?: systemZone
 
     /**
+     * Whether an occurrence at [at] needs a second time "here" next to the alarm's own (docs/PLANO.md
+     * 3.6): only when the wall-clock times differ, so zones that share the offset show one time.
+     */
+    public fun showsLocalTime(at: Instant, alarmZone: ZoneId, hereZone: ZoneId): Boolean =
+        at.atZone(alarmZone).toLocalDateTime() != at.atZone(hereZone).toLocalDateTime()
+
+    /**
      * The first scheduled occurrence strictly after [after] (and after the last triggered one),
      * ignoring snooze and skipping [AlarmSchedule.skippedOccurrence]. `null` when nothing is left
      * (a `Dates` alarm past its last date).
