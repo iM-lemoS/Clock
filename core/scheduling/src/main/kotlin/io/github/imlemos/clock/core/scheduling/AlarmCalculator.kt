@@ -32,8 +32,40 @@ public object AlarmCalculator {
         val lowerBound = maxOf(after, schedule.lastTriggeredOccurrence ?: Instant.MIN)
         return candidateDates(schedule.recurrence, lowerBound.atZone(zone).toLocalDate())
             .map { date -> resolve(date, schedule.time, zone) }
+            .take(MAX_CANDIDATES)
             .filter { it.toInstant() > lowerBound && it.toInstant() != schedule.skippedOccurrence }
             .firstOrNull()
+    }
+
+    /**
+     * The occurrence "Skip next" would skip: the next one ignoring any current skip. Used to show
+     * and toggle the skip on recurring alarms.
+     */
+    public fun upcomingOccurrence(schedule: AlarmSchedule, now: Instant, appZone: ZoneId): ZonedDateTime? =
+        nextOccurrence(schedule.copy(skippedOccurrence = null), now, appZone)
+
+    /**
+     * The most recent occurrence that should have rung but did not, e.g. because the phone was off.
+     * Only occurrences after [armedAt] (when the alarm was last saved or switched on) and after the
+     * last triggered one count, so editing or re-enabling an alarm never reports old occurrences.
+     */
+    public fun missedOccurrence(
+        schedule: AlarmSchedule,
+        armedAt: Instant,
+        now: Instant,
+        appZone: ZoneId,
+    ): ZonedDateTime? {
+        if (!schedule.enabled) return null
+        val zone = schedule.zone ?: appZone
+        val lowerBound = maxOf(armedAt, schedule.lastTriggeredOccurrence ?: Instant.MIN)
+        if (lowerBound >= now) return null
+        val firstDay = lowerBound.atZone(zone).toLocalDate().minusDays(1)
+        val lastDay = now.atZone(zone).toLocalDate()
+        return candidateDates(schedule.recurrence, firstDay.plusDays(1))
+            .takeWhile { it <= lastDay }
+            .map { date -> resolve(date, schedule.time, zone) }
+            .filter { it.toInstant() > lowerBound && it.toInstant() <= now && it.toInstant() != schedule.skippedOccurrence }
+            .lastOrNull()
     }
 
     /**
@@ -71,14 +103,13 @@ public object AlarmCalculator {
     private fun candidateDates(recurrence: Recurrence, from: LocalDate): Sequence<LocalDate> {
         val start = from.minusDays(1)
         return when (recurrence) {
-            Recurrence.Once -> generateSequence(start) { it.plusDays(1) }.take(4)
+            Recurrence.Once -> generateSequence(start) { it.plusDays(1) }
             is Recurrence.Weekly -> generateSequence(start) { it.plusDays(1) }
-                .take(DAYS_TO_SCAN_WEEKLY)
                 .filter { it.dayOfWeek in recurrence.days }
             is Recurrence.Dates -> recurrence.dates.sorted().asSequence().filter { it >= start }
         }
     }
 
-    // Two full weeks: enough to step over a skipped occurrence of a single-day weekly alarm.
-    private const val DAYS_TO_SCAN_WEEKLY = 16
+    // Enough to step over a skipped occurrence of a single-day weekly alarm (about two weeks).
+    private const val MAX_CANDIDATES = 32
 }

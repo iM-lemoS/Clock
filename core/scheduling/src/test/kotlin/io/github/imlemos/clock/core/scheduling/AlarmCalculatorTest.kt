@@ -276,4 +276,62 @@ class AlarmCalculatorTest {
             )
         }
     }
+
+    @Nested
+    inner class UpcomingAndMissed {
+        private val weeklyMonday = AlarmSchedule(TimeOfDay(7, 0), Recurrence.Weekly(setOf(MONDAY)))
+
+        @Test
+        fun `upcoming ignores the current skip so it can be toggled`() {
+            val skipped = weeklyMonday.copy(skippedOccurrence = at("2026-11-09T07:00"))
+            assertEquals(at("2026-11-09T07:00"), AlarmCalculator.upcomingOccurrence(skipped, at("2026-11-02T08:00"), LISBON)?.toInstant())
+        }
+
+        @Test
+        fun `an occurrence while the phone was off is missed`() {
+            val missed = AlarmCalculator.missedOccurrence(
+                weeklyMonday,
+                armedAt = at("2026-11-01T12:00"),
+                now = at("2026-11-02T07:20"),
+                appZone = LISBON,
+            )
+            assertEquals(at("2026-11-02T07:00"), missed?.toInstant())
+        }
+
+        @Test
+        fun `occurrences before the alarm was armed are not missed`() {
+            val missed = AlarmCalculator.missedOccurrence(
+                weeklyMonday,
+                armedAt = at("2026-11-02T07:10"),
+                now = at("2026-11-02T07:20"),
+                appZone = LISBON,
+            )
+            assertNull(missed)
+        }
+
+        @Test
+        fun `an occurrence that already rang is not missed`() {
+            val rang = weeklyMonday.copy(lastTriggeredOccurrence = at("2026-11-02T07:00"))
+            assertNull(AlarmCalculator.missedOccurrence(rang, at("2026-11-01T12:00"), at("2026-11-02T07:20"), LISBON))
+        }
+
+        @Test
+        fun `after several days off only the latest occurrence is reported`() {
+            val daily = AlarmSchedule(TimeOfDay(7, 0), Recurrence.Weekly(java.time.DayOfWeek.entries.toSet()))
+            val missed = AlarmCalculator.missedOccurrence(daily, at("2026-10-30T12:00"), at("2026-11-02T09:00"), LISBON)
+            assertEquals(at("2026-11-02T07:00"), missed?.toInstant())
+        }
+
+        @Test
+        fun `disabled alarms are never missed`() {
+            assertNull(
+                AlarmCalculator.missedOccurrence(
+                    weeklyMonday.copy(enabled = false),
+                    at("2026-11-01T12:00"),
+                    at("2026-11-02T07:20"),
+                    LISBON,
+                ),
+            )
+        }
+    }
 }
