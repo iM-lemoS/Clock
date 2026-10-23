@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.alarm.ui
 
+import io.github.imlemos.clock.core.designsystem.animatedColor
 import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import io.github.imlemos.clock.core.designsystem.component.SheetOption
 import io.github.imlemos.clock.core.designsystem.component.OptionsSheet
@@ -316,8 +317,8 @@ internal fun <T> ChipRow(options: List<Pair<T, String>>, selected: T, onSelect: 
             Box(
                 Modifier
                     .clip(CapsuleShape)
-                    .background(if (isSelected) colors.accent else colors.background, CapsuleShape)
-                    .border(1.dp, if (isSelected) colors.accent else colors.outline, CapsuleShape)
+                    .background(animatedColor(if (isSelected) colors.accent else colors.background), CapsuleShape)
+                    .border(1.dp, animatedColor(if (isSelected) colors.accent else colors.outline), CapsuleShape)
                     .toggleable(value = isSelected, role = Role.RadioButton, onValueChange = {
                         haptics.tick()
                         onSelect(value)
@@ -326,7 +327,7 @@ internal fun <T> ChipRow(options: List<Pair<T, String>>, selected: T, onSelect: 
                     .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(label, style = ClockTheme.typography.label, color = if (isSelected) colors.onAccent else colors.content)
+                Text(label, style = ClockTheme.typography.label, color = animatedColor(if (isSelected) colors.onAccent else colors.content))
             }
         }
     }

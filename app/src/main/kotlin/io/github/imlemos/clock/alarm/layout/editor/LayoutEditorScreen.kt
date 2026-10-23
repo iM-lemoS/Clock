@@ -1,5 +1,12 @@
 package io.github.imlemos.clock.alarm.layout.editor
 
+import io.github.imlemos.clock.core.designsystem.Motion
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.AnimatedVisibility
+import io.github.imlemos.clock.core.designsystem.animatedColor
 import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -233,17 +240,23 @@ fun LayoutEditorScreen(
                     stringResource(if (panelVisible) R.string.layout_panel_hide else R.string.layout_panel_show),
                     accent = false,
                 ) { panelVisible = !panelVisible }
-                if (panelVisible) {
-                    Spacer(Modifier.height(8.dp))
-                    // At most about half the screen, so the preview above stays visible; the options scroll.
-                    val maxPanel = with(LocalDensity.current) { (LocalWindowInfo.current.containerSize.height * 0.45f).toDp() }
-                    GlassSurface(
-                        backdrop = backdrop,
-                        shape = RoundedCornerShape(28.dp),
-                        modifier = Modifier.fillMaxWidth().heightIn(max = maxPanel),
-                        contentAlignment = Alignment.TopStart,
-                    ) {
-                        EditorPanel(state, viewModel)
+                // At most about half the screen, so the preview above stays visible; the options scroll.
+                val maxPanel = with(LocalDensity.current) { (LocalWindowInfo.current.containerSize.height * 0.45f).toDp() }
+                AnimatedVisibility(
+                    visible = panelVisible,
+                    enter = fadeIn(Motion.medium()) + slideInVertically(Motion.medium()) { it / 3 },
+                    exit = fadeOut(Motion.fast()) + slideOutVertically(Motion.fast()) { it / 3 },
+                ) {
+                    Column {
+                        Spacer(Modifier.height(8.dp))
+                        GlassSurface(
+                            backdrop = backdrop,
+                            shape = RoundedCornerShape(28.dp),
+                            modifier = Modifier.fillMaxWidth().heightIn(max = maxPanel),
+                            contentAlignment = Alignment.TopStart,
+                        ) {
+                            EditorPanel(state, viewModel)
+                        }
                     }
                 }
             }
@@ -685,8 +698,8 @@ private fun ToggleChips(options: List<Pair<String, Boolean>>, onToggle: (index: 
             Row(
                 Modifier
                     .clip(shape)
-                    .background(if (on) colors.accent.copy(alpha = 0.18f) else colors.content.copy(alpha = 0.06f), shape)
-                    .border(if (on) 2.dp else 1.dp, if (on) colors.accent else colors.content.copy(alpha = 0.2f), shape)
+                    .background(animatedColor(if (on) colors.accent.copy(alpha = 0.18f) else colors.content.copy(alpha = 0.06f)), shape)
+                    .border(if (on) 2.dp else 1.dp, animatedColor(if (on) colors.accent else colors.content.copy(alpha = 0.2f)), shape)
                     .toggleable(value = on, role = Role.Checkbox) {
                         haptics.toggle(it)
                         onToggle(index, it)
@@ -721,8 +734,8 @@ private fun <T> OptionChips(options: List<Pair<T, String>>, selected: T, onSelec
             Row(
                 Modifier
                     .clip(shape)
-                    .background(if (isSelected) colors.accent.copy(alpha = 0.18f) else colors.content.copy(alpha = 0.06f), shape)
-                    .border(if (isSelected) 2.dp else 1.dp, if (isSelected) colors.accent else colors.content.copy(alpha = 0.2f), shape)
+                    .background(animatedColor(if (isSelected) colors.accent.copy(alpha = 0.18f) else colors.content.copy(alpha = 0.06f)), shape)
+                    .border(if (isSelected) 2.dp else 1.dp, animatedColor(if (isSelected) colors.accent else colors.content.copy(alpha = 0.2f)), shape)
                     .selectable(selected = isSelected, role = Role.RadioButton) {
                         if (!isSelected) haptics.tick()
                         onSelect(value)

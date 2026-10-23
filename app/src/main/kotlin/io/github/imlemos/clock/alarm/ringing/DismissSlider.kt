@@ -96,20 +96,11 @@ fun DismissSlider(
                 onDismiss()
             }
 
-            Text(
-                text = label,
-                style = ClockTheme.typography.label,
-                color = colors.contentMuted,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .graphicsLayer { alpha = 1f - progress },
-            )
+            // The gesture lives on the track, which stays still: on the moving thumb each step would
+            // be measured against a thumb that had already moved, and the drag fell behind the finger.
             Box(
                 Modifier
-                    .align(Alignment.CenterStart)
-                    .offset { IntOffset(offset.roundToInt(), 0) }
-                    .size(ThumbSize)
-                    .background(colors.accent, CircleShape)
+                    .fillMaxSize()
                     .draggable(
                         orientation = Orientation.Horizontal,
                         enabled = !dismissed,
@@ -130,6 +121,21 @@ fun DismissSlider(
                             }
                         },
                     ),
+            )
+            Text(
+                text = label,
+                style = ClockTheme.typography.label,
+                color = colors.contentMuted,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .graphicsLayer { alpha = 1f - progress },
+            )
+            Box(
+                Modifier
+                    .align(Alignment.CenterStart)
+                    .offset { IntOffset(offset.roundToInt(), 0) }
+                    .size(ThumbSize)
+                    .background(colors.accent, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(

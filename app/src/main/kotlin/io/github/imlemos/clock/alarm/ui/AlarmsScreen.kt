@@ -1,5 +1,8 @@
 package io.github.imlemos.clock.alarm.ui
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.Box
 import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -188,21 +191,24 @@ fun AlarmsScreen(
                 state.entries.forEach { entry ->
                     when (entry) {
                         is ListEntry.Single -> item(key = entry.key) {
-                            AlarmCard(entry.item, state, selecting, onAlarmClick, viewModel)
+                            // Items slide into place when the order changes and fade in and out.
+                            Box(Modifier.animateItem()) { AlarmCard(entry.item, state, selecting, onAlarmClick, viewModel) }
                         }
                         is ListEntry.Group -> {
                             item(key = entry.key) {
-                                GroupCard(
-                                    entry = entry,
-                                    state = state,
-                                    onToggleExpanded = { viewModel.toggleExpanded(entry.group) },
-                                    onSwitch = { viewModel.setGroupEnabled(entry.group.id, it) },
-                                    onLongClick = { dialog = ListDialog.GroupMenu(entry.group) },
-                                )
+                                Box(Modifier.animateItem()) {
+                                    GroupCard(
+                                        entry = entry,
+                                        state = state,
+                                        onToggleExpanded = { viewModel.toggleExpanded(entry.group) },
+                                        onSwitch = { viewModel.setGroupEnabled(entry.group.id, it) },
+                                        onLongClick = { dialog = ListDialog.GroupMenu(entry.group) },
+                                    )
+                                }
                             }
                             if (entry.group.expanded) {
                                 items(entry.items, key = { "alarm-${it.alarm.id}" }) { item ->
-                                    AlarmCard(item, state, selecting, onAlarmClick, viewModel, Modifier.padding(start = 20.dp))
+                                    AlarmCard(item, state, selecting, onAlarmClick, viewModel, Modifier.animateItem().padding(start = 20.dp))
                                 }
                             }
                         }
@@ -369,6 +375,7 @@ private fun GroupCard(
     val locale = LocalConfiguration.current.locales[0]
     val group = entry.group
     val haptics = rememberHaptics()
+    val chevron by animateFloatAsState(if (group.expanded) 0f else -90f, tween(200), label = "chevron")
     val shape = RoundedCornerShape(28.dp)
     val nextLine = entry.next?.nextRing?.let { next ->
         val day = java.time.format.DateTimeFormatter
@@ -399,7 +406,7 @@ private fun GroupCard(
             tint = colors.contentMuted,
             modifier = Modifier
                 .size(28.dp)
-                .rotate(if (group.expanded) 0f else -90f),
+                .rotate(chevron),
         )
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {

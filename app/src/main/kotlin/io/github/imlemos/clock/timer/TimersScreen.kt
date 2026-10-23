@@ -88,6 +88,7 @@ fun TimersScreen(
             ) {
                 items(list, key = { it.id }) { timer ->
                     TimerCard(
+                        modifier = Modifier.animateItem(),
                         timer = timer,
                         now = now,
                         onClick = { if (timer.status == TimerStatus.IDLE) onEditTimer(timer.id) else options = timer },
@@ -133,6 +134,7 @@ private fun TimerCard(
     onReset: () -> Unit,
     onAddMinute: () -> Unit,
     onStop: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val colors = ClockTheme.colors
     val haptics = rememberHaptics()
@@ -140,7 +142,7 @@ private fun TimerCard(
     val running = timer.status == TimerStatus.RUNNING
     val shape = RoundedCornerShape(28.dp)
     Column(
-        Modifier
+        modifier
             .fillMaxWidth()
             .clip(shape)
             .background(colors.surface, shape)

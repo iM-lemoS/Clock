@@ -1,5 +1,8 @@
 package io.github.imlemos.clock.alarm.ui
 
+import io.github.imlemos.clock.core.designsystem.Motion
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.Crossfade
 import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import io.github.imlemos.clock.core.designsystem.component.DialogButtonStyle
 import io.github.imlemos.clock.core.designsystem.component.DialogAction
@@ -143,22 +146,25 @@ fun AlarmEditorScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(8.dp))
-            if (keyboardInput) {
-                KeyboardTimeInput(
-                    hour = state.time.hour,
-                    minute = state.time.minute,
-                    is24Hour = is24Hour,
-                    onChange = { hour, minute -> viewModel.setTime(TimeOfDay(hour, minute)) },
-                    labels = rememberTimeWheelLabels(locale),
-                )
-            } else {
-                TimeWheels(
-                    hour = state.time.hour,
-                    minute = state.time.minute,
-                    is24Hour = is24Hour,
-                    onChange = { hour, minute -> viewModel.setTime(TimeOfDay(hour, minute)) },
-                    labels = rememberTimeWheelLabels(locale),
-                )
+            // Wheels and keyboard swap with a short cross-fade.
+            Crossfade(keyboardInput, animationSpec = Motion.medium(), label = "timeInput") { keyboard ->
+                if (keyboard) {
+                    KeyboardTimeInput(
+                        hour = state.time.hour,
+                        minute = state.time.minute,
+                        is24Hour = is24Hour,
+                        onChange = { hour, minute -> viewModel.setTime(TimeOfDay(hour, minute)) },
+                        labels = rememberTimeWheelLabels(locale),
+                    )
+                } else {
+                    TimeWheels(
+                        hour = state.time.hour,
+                        minute = state.time.minute,
+                        is24Hour = is24Hour,
+                        onChange = { hour, minute -> viewModel.setTime(TimeOfDay(hour, minute)) },
+                        labels = rememberTimeWheelLabels(locale),
+                    )
+                }
             }
             val hereTime = remember(state.time, state.zone, state.kind, state.weekDays, state.dates) { viewModel.hereTime(state) }
             if (hereTime != null) {
@@ -279,7 +285,8 @@ fun AlarmEditorScreen(
 @Composable
 private fun RecurrenceSection(state: AlarmEditorState, viewModel: AlarmEditorViewModel, locale: java.util.Locale) {
     val colors = ClockTheme.colors
-    Column(Modifier.fillMaxWidth()) {
+    // The days or the calendar grow in and out instead of jumping.
+    Column(Modifier.fillMaxWidth().animateContentSize(Motion.medium())) {
         Text(
             stringResource(R.string.alarm_editor_repeat),
             style = ClockTheme.typography.label,

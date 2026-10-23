@@ -175,6 +175,7 @@ fun LayoutLibraryScreen(
                 }
                 Row(
                     Modifier
+                        .animateItem()
                         .fillMaxWidth()
                         .clip(shape)
                         .background(colors.surface, shape)

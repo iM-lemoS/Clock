@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.core.designsystem.component
 
+import io.github.imlemos.clock.core.designsystem.animatedColor
 import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -45,8 +46,8 @@ fun WeekdayPicker(
                     .weight(1f)
                     .aspectRatio(1f)
                     .clip(CircleShape)
-                    .background(if (isSelected) colors.accent else colors.background, CircleShape)
-                    .border(1.dp, if (isSelected) colors.accent else colors.outline, CircleShape)
+                    .background(animatedColor(if (isSelected) colors.accent else colors.background), CircleShape)
+                    .border(1.dp, animatedColor(if (isSelected) colors.accent else colors.outline), CircleShape)
                     .toggleable(value = isSelected, role = Role.Checkbox, onValueChange = {
                         haptics.toggle(it)
                         onToggle(day)

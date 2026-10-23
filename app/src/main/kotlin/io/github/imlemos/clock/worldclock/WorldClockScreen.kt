@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.worldclock
 
+import androidx.compose.foundation.layout.Box
 import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import android.content.res.Resources
 import android.text.format.DateFormat
@@ -142,7 +143,7 @@ fun WorldClockScreen(
                 }
             }
             items(list, key = { it.id }) { zone ->
-                CityCard(zone, here, now, locale, onClick = { options = zone })
+                Box(Modifier.animateItem()) { CityCard(zone, here, now, locale, onClick = { options = zone }) }
             }
         }
     }

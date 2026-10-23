@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.navigation
 
+import androidx.compose.animation.core.EaseOutCubic
 import android.app.KeyguardManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -167,10 +168,17 @@ fun ClockShell(
                 // A short slide gives depth (forward from the right, back from the left) without
                 // getting in the way.
                 transitionSpec = {
-                    (fadeIn(tween(220)) + slideInHorizontally(tween(260)) { it / 16 }) togetherWith fadeOut(tween(120))
+                    (fadeIn(tween(220, easing = EaseOutCubic)) + slideInHorizontally(tween(280, easing = EaseOutCubic)) { it / 12 }) togetherWith
+                        fadeOut(tween(140))
                 },
                 popTransitionSpec = {
-                    (fadeIn(tween(220)) + slideInHorizontally(tween(260)) { -it / 16 }) togetherWith fadeOut(tween(120))
+                    (fadeIn(tween(220, easing = EaseOutCubic)) + slideInHorizontally(tween(280, easing = EaseOutCubic)) { -it / 12 }) togetherWith
+                        fadeOut(tween(140))
+                },
+                // The system back gesture previews the same transition as it is dragged.
+                predictivePopTransitionSpec = {
+                    (fadeIn(tween(220, easing = EaseOutCubic)) + slideInHorizontally(tween(280, easing = EaseOutCubic)) { -it / 12 }) togetherWith
+                        fadeOut(tween(140))
                 },
                 entryProvider = entryProvider {
                     entry<AlarmsDestination> {

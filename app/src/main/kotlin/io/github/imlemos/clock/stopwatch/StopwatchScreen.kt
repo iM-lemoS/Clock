@@ -131,7 +131,10 @@ fun StopwatchScreen(contentPadding: PaddingValues, onOpenSettings: () -> Unit, v
                         extremes?.second -> stringResource(R.string.stopwatch_slowest)
                         else -> null
                     }
-                    LapRow(lap.number, lap.durationMillis, lap.totalMillis, note, highlight = lap.number == extremes?.second, separator = separator)
+                    LapRow(
+                        lap.number, lap.durationMillis, lap.totalMillis, note,
+                        highlight = lap.number == extremes?.second, separator = separator, modifier = Modifier.animateItem(),
+                    )
                 }
             }
         }
@@ -139,9 +142,9 @@ fun StopwatchScreen(contentPadding: PaddingValues, onOpenSettings: () -> Unit, v
 }
 
 @Composable
-private fun LapRow(number: Int, duration: Long, total: Long, note: String?, highlight: Boolean, separator: Char) {
+private fun LapRow(number: Int, duration: Long, total: Long, note: String?, highlight: Boolean, separator: Char, modifier: Modifier = Modifier) {
     val colors = ClockTheme.colors
-    Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Text(stringResource(R.string.stopwatch_lap_number, number), style = ClockTheme.typography.body, color = colors.content)
             note?.let { Text(it, style = ClockTheme.typography.caption, color = if (highlight) colors.accent else colors.contentMuted) }

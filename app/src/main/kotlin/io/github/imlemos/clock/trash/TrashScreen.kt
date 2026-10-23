@@ -141,15 +141,17 @@ fun TrashScreen(onBack: () -> Unit, viewModel: TrashViewModel = hiltViewModel())
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(items, key = { it.trashId }) { item ->
-                    when (item) {
-                        is TrashedAlarm -> TrashRow(item, onRestore = { viewModel.restore(item.trashId) })
-                        is TrashedLayout -> TrashLayoutRow(item, onRestore = { viewModel.restoreLayout(item.trashId) })
-                        is TrashedGroup -> TrashGroupRow(
-                            item,
-                            onRestore = {
-                                if (item.alarms.size > 1) restoringGroup = item else viewModel.restore(item.trashId)
-                            },
-                        )
+                    Box(Modifier.animateItem()) {
+                        when (item) {
+                            is TrashedAlarm -> TrashRow(item, onRestore = { viewModel.restore(item.trashId) })
+                            is TrashedLayout -> TrashLayoutRow(item, onRestore = { viewModel.restoreLayout(item.trashId) })
+                            is TrashedGroup -> TrashGroupRow(
+                                item,
+                                onRestore = {
+                                    if (item.alarms.size > 1) restoringGroup = item else viewModel.restore(item.trashId)
+                                },
+                            )
+                        }
                     }
                 }
             }
