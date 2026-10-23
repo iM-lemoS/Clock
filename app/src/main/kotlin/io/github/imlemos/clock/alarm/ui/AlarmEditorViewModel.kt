@@ -48,6 +48,8 @@ data class AlarmEditorState(
     val singleUse: Boolean = false,
     val sound: AlarmSound = AlarmSound(),
     val groupId: Long? = null,
+    /** A group named in this editor; it is only created when the alarm is saved. */
+    val newGroupName: String? = null,
     val groups: List<AlarmGroup> = emptyList(),
     /** The alarm's own zone; `null` follows the app (docs/PLANO.md 3.6). */
     val zone: ZoneId? = null,
@@ -186,14 +188,12 @@ class AlarmEditorViewModel @AssistedInject constructor(
 
     fun previewVibration(vibration: Vibration) = player.previewVibration(vibration)
 
-    fun setGroup(groupId: Long?) = _state.update { it.copy(groupId = groupId) }
+    fun setGroup(groupId: Long?) = _state.update { it.copy(groupId = groupId, newGroupName = null) }
 
+    /** Puts the alarm in a new group, created together with the alarm (never if it is not saved). */
     fun createGroup(name: String) {
         if (name.isBlank()) return
-        viewModelScope.launch {
-            val group = controller.createGroup(name)
-            _state.update { it.copy(groupId = group.id) }
-        }
+        _state.update { it.copy(groupId = null, newGroupName = name.trim()) }
     }
 
     fun setZone(zone: ZoneId?) = _state.update { it.copy(zone = zone) }
@@ -254,7 +254,8 @@ class AlarmEditorViewModel @AssistedInject constructor(
                 }
             }
             _state.update { it.copy(collision = null) }
-            val saved = controller.save(edited)
+            val groupId = current.newGroupName?.let { controller.createGroup(it).id } ?: edited.groupId
+            val saved = controller.save(edited.copy(groupId = groupId))
             onSaved(SavedAlarm(scheduler.nextTrigger(saved)?.at?.atZone(zone), clock.instant().atZone(zone)))
         }
     }

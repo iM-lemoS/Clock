@@ -91,6 +91,8 @@ fun AlarmRingingScreen(
     val chooseLabel = stringResource(R.string.snooze_choose)
     var choosingSnooze by rememberSaveable { mutableStateOf(false) }
     var dial by remember { mutableStateOf<SnoozeDialState?>(null) }
+    // A custom snooze length joins the usual ones on the dial.
+    val snoozeChoices = remember(alarm.snoozeMinutes) { Alarm.snoozeChoices(alarm.snoozeMinutes) }
     val haptics = LocalHapticFeedback.current
     val density = LocalDensity.current
     val window = LocalWindowInfo.current
@@ -147,7 +149,7 @@ fun AlarmRingingScreen(
                         dial?.let { current ->
                             val offset = finger - current.center
                             val choice = SnoozeDialMath.choiceAt(
-                                offset.x, offset.y, Alarm.SNOOZE_CHOICES.size, with(density) { DIAL_DEAD_ZONE.toPx() }, current.up,
+                                offset.x, offset.y, snoozeChoices.size, with(density) { DIAL_DEAD_ZONE.toPx() }, current.up,
                             )
                             if (choice != current.selected) {
                                 haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
@@ -158,12 +160,12 @@ fun AlarmRingingScreen(
                     onDialEnd = {
                         val choice = dial?.selected
                         dial = null
-                        if (choice != null) onSnooze(Alarm.SNOOZE_CHOICES[choice])
+                        if (choice != null) onSnooze(snoozeChoices[choice])
                     },
                 )
             },
         )
-        dial?.let { SnoozeDialOverlay(it, Alarm.SNOOZE_CHOICES) }
+        dial?.let { SnoozeDialOverlay(it, snoozeChoices) }
         if (choosingSnooze) {
             SnoozeWheel(
                 backdrop = backdrop,

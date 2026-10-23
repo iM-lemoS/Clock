@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.ui.formatSnooze
+import io.github.imlemos.clock.alarm.ui.formatSnoozeCompact
 import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -58,7 +59,7 @@ fun SnoozeDialOverlay(state: SnoozeDialState, choices: List<Int>) {
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    formatSnooze(resources, choices[index]),
+                    formatSnoozeCompact(resources, choices[index]),
                     style = if (selected) ClockTheme.typography.label else ClockTheme.typography.caption,
                     color = if (selected) colors.onAccent else colors.content,
                     textAlign = TextAlign.Center,

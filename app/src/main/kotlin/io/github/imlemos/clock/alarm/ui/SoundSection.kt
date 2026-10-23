@@ -49,12 +49,13 @@ import io.github.imlemos.clock.alarm.model.AlarmSound
 import io.github.imlemos.clock.alarm.model.GradualVolume
 import io.github.imlemos.clock.alarm.model.Vibration
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
+import io.github.imlemos.clock.core.designsystem.component.DurationPickerDialog
 import io.github.imlemos.clock.core.designsystem.glass.CapsuleShape
 import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
 import kotlin.math.roundToInt
 
-/** Ring durations offered, in minutes (docs/PLANO.md 3.2: 1 minute by default). */
-private val RingDurationsMinutes = listOf(1, 2, 3, 5, 10, 15, 20, 30)
+/** Ring durations offered, in minutes (docs/PLANO.md 3.2: 1 minute by default); any other is custom. */
+private val RingDurationsMinutes = listOf(1, 2, 5, 10, 15, 30)
 
 /**
  * Sound, vibration, gradual volume and ring duration. Shared by the alarm editor (one alarm) and
@@ -189,10 +190,11 @@ fun GradualField(gradual: GradualVolume, onChange: (GradualVolume) -> Unit) {
 fun RingDurationField(seconds: Int, onSelect: (Int) -> Unit) {
     Column(Modifier.fillMaxWidth()) {
         Label(stringResource(R.string.ring_duration))
-        ChipRow(
-            options = RingDurationsMinutes.map { it * 60 to stringResource(R.string.duration_minutes, it) },
-            selected = seconds,
-            onSelect = onSelect,
+        DurationChips(
+            presets = RingDurationsMinutes,
+            selected = (seconds / 60).coerceAtLeast(1),
+            customTitle = stringResource(R.string.ring_duration_custom_title),
+            onSelect = { onSelect(it * 60) },
         )
         Text(
             stringResource(R.string.ring_duration_summary),
@@ -208,9 +210,10 @@ fun RingDurationField(seconds: Int, onSelect: (Int) -> Unit) {
 fun SnoozeField(minutes: Int, onSelect: (Int) -> Unit) {
     Column(Modifier.fillMaxWidth()) {
         Label(stringResource(R.string.snooze_field))
-        ChipRow(
-            options = Alarm.SNOOZE_CHOICES.map { it to formatSnooze(LocalResources.current, it) },
+        DurationChips(
+            presets = Alarm.SNOOZE_CHOICES,
             selected = minutes,
+            customTitle = stringResource(R.string.snooze_custom_title),
             onSelect = onSelect,
         )
         Text(
@@ -222,6 +225,35 @@ fun SnoozeField(minutes: Int, onSelect: (Int) -> Unit) {
     }
 }
 
+/**
+ * Preset lengths in minutes plus "Custom…", which opens hour and minute wheels (never days). A
+ * custom value shows on its chip.
+ */
+@Composable
+private fun DurationChips(presets: List<Int>, selected: Int, customTitle: String, onSelect: (Int) -> Unit) {
+    val resources = LocalResources.current
+    var picking by rememberSaveable { mutableStateOf(false) }
+    val custom = selected !in presets
+    ChipRow(
+        options = presets.map { it to formatSnooze(resources, it) } + (CUSTOM to if (custom) {
+            stringResource(R.string.duration_custom_value, formatSnooze(resources, selected))
+        } else {
+            stringResource(R.string.duration_custom)
+        }),
+        selected = if (custom) CUSTOM else selected,
+        onSelect = { if (it == CUSTOM) picking = true else onSelect(it) },
+    )
+    if (picking) {
+        DurationPickerDialog(
+            title = customTitle,
+            initialMinutes = selected,
+            onPick = { onSelect(it); picking = false },
+            onDismiss = { picking = false },
+        )
+    }
+}
+
+private const val CUSTOM = -1
 
 @Composable
 private fun GradualSliders(gradual: GradualVolume, onChange: (GradualVolume) -> Unit) {

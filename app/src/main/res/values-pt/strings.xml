@@ -57,6 +57,7 @@
     <string name="duration_minutes">%1$d min</string>
     <string name="duration_hours">%1$d h</string>
     <string name="duration_hours_minutes">%1$d h %2$d min</string>
+    <string name="duration_hours_minutes_compact">%1$dh%2$02d</string>
     <string name="action_edit_alarm">Editar alarme</string>
     <string name="action_delete_alarm">Apagar alarme</string>
     <string name="action_save">Guardar</string>
@@ -197,6 +198,10 @@
     <string name="duration_seconds">%1$d s</string>
     <string name="ring_duration">Duração do toque</string>
     <string name="ring_duration_summary">Depois disto o alarme para e fica uma notificação de alarme perdido.</string>
+    <string name="duration_custom">Personalizado…</string>
+    <string name="duration_custom_value">Personalizado: %1$s</string>
+    <string name="snooze_custom_title">Adiar durante</string>
+    <string name="ring_duration_custom_title">Tocar durante</string>
     <string name="settings_section_sound">Som dos alarmes</string>
     <string name="settings_default_sound_summary">Usado nos alarmes novos. Os alarmes que já existem mantêm o seu som.</string>
     <string name="audio_output">Saída de áudio</string>
@@ -249,6 +254,7 @@
     <string name="group_field">Grupo</string>
     <string name="group_none">Sem grupo</string>
     <string name="group_new">Novo grupo</string>
+    <string name="group_created_on_save">Criado quando guardares o alarme</string>
     <string name="group_name">Nome</string>
     <string name="group_rename">Mudar o nome do grupo</string>
     <string name="group_delete">Apagar grupo</string>
@@ -405,6 +411,7 @@
     <string name="timer_edit_title">Editar temporizador</string>
     <string name="timer_name">Nome</string>
     <string name="wheel_seconds">Segundos</string>
+    <string name="wheel_days">Dias</string>
     <plurals name="timers_running">
         <item quantity="one">%d temporizador</item>
         <item quantity="many">%d temporizadores</item>

@@ -48,7 +48,7 @@ fun SnoozeWheel(
     onClose: () -> Unit,
 ) {
     val resources = LocalResources.current
-    val choices = Alarm.SNOOZE_CHOICES
+    val choices = Alarm.snoozeChoices(initialMinutes)
     var index by rememberSaveable { mutableIntStateOf(choices.indexOf(initialMinutes).coerceAtLeast(0)) }
     val colors = ClockTheme.colors
     Box(

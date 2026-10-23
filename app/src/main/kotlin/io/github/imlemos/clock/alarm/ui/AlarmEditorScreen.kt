@@ -66,7 +66,8 @@ import io.github.imlemos.clock.alarm.layout.newLayoutName
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
 import io.github.imlemos.clock.core.designsystem.component.ClockTopBar
 import io.github.imlemos.clock.core.designsystem.component.MultiDateCalendar
-import io.github.imlemos.clock.core.designsystem.component.OptionsDialog
+import io.github.imlemos.clock.core.designsystem.component.OptionsSheet
+import io.github.imlemos.clock.core.designsystem.component.SheetOption
 import io.github.imlemos.clock.core.designsystem.component.TextInputDialog
 import io.github.imlemos.clock.core.designsystem.component.SegmentedControl
 import io.github.imlemos.clock.core.designsystem.component.TimeWheelLabels
@@ -370,7 +371,9 @@ private fun GroupField(state: AlarmEditorState, viewModel: AlarmEditorViewModel)
     val colors = ClockTheme.colors
     var choosing by rememberSaveable { mutableStateOf(false) }
     var creating by rememberSaveable { mutableStateOf(false) }
-    val groupName = state.groups.firstOrNull { it.id == state.groupId }?.name ?: stringResource(R.string.group_none)
+    val groupName = state.newGroupName
+        ?: state.groups.firstOrNull { it.id == state.groupId }?.name
+        ?: stringResource(R.string.group_none)
     Column(Modifier.fillMaxWidth()) {
         Text(
             stringResource(R.string.group_field).uppercase(),
@@ -393,11 +396,19 @@ private fun GroupField(state: AlarmEditorState, viewModel: AlarmEditorViewModel)
         }
     }
     if (choosing) {
-        OptionsDialog(
+        val none = state.groupId == null && state.newGroupName == null
+        OptionsSheet(
             title = stringResource(R.string.group_field),
-            options = listOf(stringResource(R.string.group_none) to { viewModel.setGroup(null); choosing = false }) +
-                state.groups.map { group -> group.name to { viewModel.setGroup(group.id); choosing = false } } +
-                listOf(stringResource(R.string.group_new) to { choosing = false; creating = true }),
+            options = buildList {
+                add(SheetOption(stringResource(R.string.group_none), R.drawable.ic_close, selected = none) { viewModel.setGroup(null); choosing = false })
+                state.groups.forEach { group ->
+                    add(SheetOption(group.name, R.drawable.ic_folder, selected = group.id == state.groupId) { viewModel.setGroup(group.id); choosing = false })
+                }
+                state.newGroupName?.let { name ->
+                    add(SheetOption(name, R.drawable.ic_folder, selected = true, summary = stringResource(R.string.group_created_on_save)) { choosing = false })
+                }
+                add(SheetOption(stringResource(R.string.group_new), R.drawable.ic_add) { choosing = false; creating = true })
+            },
             onDismiss = { choosing = false },
         )
     }

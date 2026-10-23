@@ -43,6 +43,9 @@ data class Alarm(
 
         /** Choices on the snooze wheel and in the editor (docs/PLANO.md 3.3). */
         val SNOOZE_CHOICES = listOf(5, 10, 15, 20, 30, 45, 60)
+
+        /** [SNOOZE_CHOICES] plus the alarm's own length when it is a custom one, in order. */
+        fun snoozeChoices(own: Int): List<Int> = (SNOOZE_CHOICES + own).distinct().sorted()
         const val DEFAULT_RING_DURATION_SECONDS = 60
     }
 }

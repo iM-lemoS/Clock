@@ -79,8 +79,15 @@ fun formatHereTime(context: Context, here: ZonedDateTime, alarmDate: LocalDate, 
 }
 
 /** A snooze length: "15 min" or "1 h". */
-fun formatSnooze(resources: Resources, minutes: Int): String =
-    if (minutes % 60 == 0) resources.getString(R.string.duration_hours, minutes / 60) else resources.getString(R.string.duration_minutes, minutes)
+fun formatSnooze(resources: Resources, minutes: Int): String = when {
+    minutes < 60 -> resources.getString(R.string.duration_minutes, minutes)
+    minutes % 60 == 0 -> resources.getString(R.string.duration_hours, minutes / 60)
+    else -> resources.getString(R.string.duration_hours_minutes, minutes / 60, minutes % 60)
+}
+
+/** Like [formatSnooze] but "1h30" for mixed lengths, to fit a snooze dial bubble. */
+fun formatSnoozeCompact(resources: Resources, minutes: Int): String =
+    if (minutes < 60 || minutes % 60 == 0) formatSnooze(resources, minutes) else resources.getString(R.string.duration_hours_minutes_compact, minutes / 60, minutes % 60)
 
 /** "in 7 h 30 min" for the next 24 hours, otherwise the localized weekday and date. */
 fun describeNextRing(resources: Resources, now: ZonedDateTime, next: ZonedDateTime, locale: Locale): String {
