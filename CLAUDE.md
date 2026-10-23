@@ -142,7 +142,8 @@ Launch the debug app: `adb shell am start -n io.github.imlemos.clock.debug/io.gi
    adb shell am broadcast -a io.github.imlemos.clock.debug.TEST_ALARM -n $C --ei in_minutes 1 --es label "'Test'"
    adb shell am broadcast -a io.github.imlemos.clock.debug.DELETE_ALL_ALARMS -n $C
    ```
-   START_TIMER `--ei seconds 10 --es name Tea` creates and starts a timer.
+   START_TIMER `--ei seconds 10 --es name Tea` creates and starts a timer. TEST_ALARM takes
+   `--ei snooze_minutes 25` for a custom snooze length.
    TEST_ALARM also takes `--es zone <id>` and `--el layout <id>` (presets are negative: -1 dots,
    -2 waves, -3 matrix, -4 analog); SET_MANUAL_ZONE sets the app's manual zone.
    Add `--include-stopped-packages` if the app was force-stopped.

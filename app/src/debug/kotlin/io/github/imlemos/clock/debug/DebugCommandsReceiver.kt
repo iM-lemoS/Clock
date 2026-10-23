@@ -113,6 +113,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                 defaults.gradual
             },
             ringDurationSeconds = intent.getIntExtra("ring_seconds", defaults.ringDurationSeconds),
+            snoozeMinutes = intent.getIntExtra("snooze_minutes", defaults.snoozeMinutes),
         )
     }
 

@@ -3,6 +3,7 @@ package io.github.imlemos.clock.alarm.ringing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,6 +22,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import android.content.res.Resources
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.ui.formatSnooze
 import io.github.imlemos.clock.alarm.ui.formatSnoozeCompact
@@ -43,12 +46,17 @@ fun SnoozeDialOverlay(state: SnoozeDialState, choices: List<Int>) {
     val radiusPx = state.radius
     val labelGapPx = with(LocalDensity.current) { 72.dp.toPx() }
     val direction = if (state.up) -1f else 1f
+    val angles = SnoozeDialMath.angles(choices.size)
+    // Bubbles shrink when many choices (a custom snooze adds one) share a narrow arc.
+    val step = if (angles.size > 1) Math.toRadians((angles[0] - angles[1]).toDouble()) else Math.PI
+    val chord = with(LocalDensity.current) { (2 * radiusPx * sin(step / 2).toFloat()).toDp() }
+    val bubble = minOf(56.dp, chord - 4.dp)
     Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.55f))) {
-        SnoozeDialMath.angles(choices.size).forEachIndexed { index, angle ->
+        angles.forEachIndexed { index, angle ->
             val radians = Math.toRadians(angle.toDouble())
             val point = state.center + Offset(cos(radians).toFloat(), direction * sin(radians).toFloat()) * radiusPx
             val selected = index == state.selected
-            val size: Dp = if (selected) 68.dp else 54.dp
+            val size: Dp = if (selected) bubble + 14.dp else bubble
             Box(
                 Modifier
                     .centeredAt(point)
@@ -58,12 +66,13 @@ fun SnoozeDialOverlay(state: SnoozeDialState, choices: List<Int>) {
                     .border(1.dp, if (selected) colors.accent else colors.outline, CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    formatSnoozeCompact(resources, choices[index]),
-                    style = if (selected) ClockTheme.typography.label else ClockTheme.typography.caption,
-                    color = if (selected) colors.onAccent else colors.content,
-                    textAlign = TextAlign.Center,
-                )
+                // The number large and the unit small under it, so "20 min" fits a small bubble.
+                val (amount, unit) = dialLabel(resources, choices[index])
+                val color = if (selected) colors.onAccent else colors.content
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(amount, style = ClockTheme.typography.label, color = color, textAlign = TextAlign.Center, maxLines = 1)
+                    if (unit != null) Text(unit, style = ClockTheme.typography.caption.copy(fontSize = 10.sp, lineHeight = 12.sp), color = color, maxLines = 1)
+                }
             }
         }
         val label = state.selected?.let { stringResource(R.string.snooze_wheel_confirm, formatSnooze(resources, choices[it])) }
@@ -81,6 +90,13 @@ fun SnoozeDialOverlay(state: SnoozeDialState, choices: List<Int>) {
                 .padding(horizontal = 20.dp, vertical = 10.dp),
         )
     }
+}
+
+/** "20" and "min", "1" and "h", or "1h30" alone. */
+private fun dialLabel(resources: Resources, minutes: Int): Pair<String, String?> = when {
+    minutes < 60 -> minutes.toString() to resources.getString(R.string.unit_minutes_short)
+    minutes % 60 == 0 -> (minutes / 60).toString() to resources.getString(R.string.unit_hours_short)
+    else -> formatSnoozeCompact(resources, minutes) to null
 }
 
 /** Places the element with its centre on [point] (pixels from the parent's top-left). */
