@@ -130,7 +130,9 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - **Definição geral**: Automático (padrão) ou Manual (todos os alarmes seguem um fuso escolhido; ex.: em viagem, continuar à hora de casa).
 - **Por alarme**: fuso próprio, com **prioridade sobre o geral** (ex.: acordar à mesma hora que alguém noutro país).
 - Contas corretas, incluindo mudanças de hora de verão dos dois lados.
-- Na lista: "8:00 Nova Iorque · 13:00 aqui".
+- Na lista: "8:00 Nova Iorque · 13:00 aqui" (com o dia da semana quando o dia aqui é outro: "dom 22:00 aqui"). A hora "aqui" só aparece quando as horas são diferentes; um alarme com fuso próprio mostra sempre a cidade. O mesmo no editor (por baixo das rodas), nas notificações e no ecrã do alarme.
+- Escolha do fuso por cidade ou país, com nomes no idioma do telemóvel (dados ICU do sistema, nada é descarregado).
+- Com fuso manual, "aqui" continua a ser o fuso do telemóvel.
 
 ### 3.7 Layouts do ecrã do alarme
 

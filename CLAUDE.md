@@ -50,6 +50,7 @@ the maintainer's phone.
   core/designsystem/         theme (colors, typography), glass/, component/
   core/data/                 Room 3 database (db/), DataStore settings (prefs/), Hilt modules (di/)
   core/oem/                  manufacturer-specific behaviour behind OemProfile
+  core/zones/                localized zone names (system ICU data) and the zone picker
   (core/audio, core/notifications arrive in later phases)
 :core:scheduling             pure Kotlin/JVM: scheduling maths, JUnit 6 tests
 ```
@@ -142,6 +143,10 @@ Launch the debug app: `adb shell am start -n io.github.imlemos.clock.debug/io.gi
    `emulator -avd clock_api31 -no-window -no-audio -gpu swiftshader_indirect` and target it with
    `ANDROID_SERIAL=emulator-5554` (zsh does not split `adb -s ...` stored in a variable). Use it for
    what ColorOS blocks (appops, time zone changes, `adb root`) and for Android 12 behaviour.
+   It has PIN **1234** (for direct-boot tests): unlock with `input text 1234` + `KEYCODE_ENTER`,
+   or launcher activities resolve as missing. Time zone: `adb root`, then
+   `adb shell service call alarm 3 s16 Asia/Tokyo`; clock: `settings put global auto_time 0`, then
+   `adb shell date -u MMDDhhmmYYYY.ss`. Restore `auto_time`/`auto_time_zone` to 1 afterwards.
 6. Screen staying on: `adb shell svc power stayon usb` during a session; restore with
    `adb shell svc power stayon false` at the end.
 7. At the end of each test session give a short summary: what passed, what failed, what the
