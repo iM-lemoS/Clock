@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -45,6 +46,7 @@ import io.github.imlemos.clock.core.designsystem.glass.GlassBackdrop
 import io.github.imlemos.clock.core.designsystem.glass.glassBackdropSource
 import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
+import java.time.LocalDate
 import kotlin.math.roundToInt
 
 enum class LayoutElementId { CLOCK, DATE, LABEL, CONTROLS }
@@ -55,10 +57,13 @@ data class LayoutLabel(val text: String, val detail: String? = null)
 /**
  * Hooks for the layout editor: elements become selectable, draggable and pinch-resizable. With
  * [onBackgroundTransform], dragging and pinching empty space moves and zooms a photo or video.
+ * Dragging only selects ([onSelect]); a tap, pressed and let go without moving, opens the
+ * element's options ([onOpen]; `null` is the background).
  */
 class LayoutEditing(
     val selected: LayoutElementId?,
     val onSelect: (LayoutElementId?) -> Unit,
+    val onOpen: (LayoutElementId?) -> Unit,
     val onPlacementChange: (LayoutElementId, Placement) -> Unit,
     val onBackgroundTransform: ((dx: Float, dy: Float, zoom: Float, area: Size2, mediaAspect: Float) -> Unit)? = null,
 )
@@ -72,7 +77,7 @@ class LayoutEditing(
 fun AlarmLayoutView(
     spec: LayoutSpec,
     time: TimeOfDay,
-    date: String,
+    date: LocalDate?,
     labels: List<LayoutLabel>,
     backdrop: GlassBackdrop,
     controls: @Composable () -> Unit,
@@ -81,6 +86,7 @@ fun AlarmLayoutView(
     editing: LayoutEditing? = null,
 ) {
     val colors = ClockTheme.colors
+    val locale = LocalConfiguration.current.locales[0]
     val currentSpec by rememberUpdatedState(spec)
     // Scaled element sizes and the area, written while measuring, read by the editor's gestures.
     val measured = remember { mutableMapOf<LayoutElementId, Pair<Size2, Size2>>() }
@@ -151,7 +157,8 @@ fun AlarmLayoutView(
                                 }
                             }
                         }
-                        .pointerInput(id) { detectTapGestures { editing.onSelect(id) } }
+                        // Holding (with or without moving) is not a tap: onLongPress swallows it.
+                        .pointerInput(id) { detectTapGestures(onLongPress = { editing.onSelect(id) }) { editing.onOpen(id) } }
                         .pointerInput(id) {
                             detectTransformGestures { _, pan, zoom, _ ->
                                 editing.onSelect(id)
@@ -182,7 +189,7 @@ fun AlarmLayoutView(
             Box(
                 Modifier
                     .fillMaxSize()
-                    .pointerInput(Unit) { detectTapGestures { editing.onSelect(null) } }
+                    .pointerInput(Unit) { detectTapGestures(onLongPress = {}) { editing.onOpen(null) } }
                     .then(
                         if (onBackground == null) {
                             Modifier
@@ -205,13 +212,18 @@ fun AlarmLayoutView(
                     }
                 },
                 {
-                    Element(LayoutElementId.DATE, spec.date.visible) {
-                        Text(
-                            date,
-                            style = ClockTheme.typography.body,
-                            color = spec.date.color?.let(::Color) ?: colors.contentMuted,
-                            textAlign = TextAlign.Center,
-                        )
+                    val lines = date?.let { layoutDateLines(it, spec.date.dateParts, locale) }.orEmpty()
+                    Element(LayoutElementId.DATE, spec.date.visible && lines.isNotEmpty()) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            lines.forEach { line ->
+                                Text(
+                                    line,
+                                    style = ClockTheme.typography.body,
+                                    color = spec.date.color?.let(::Color) ?: colors.contentMuted,
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                        }
                     }
                 },
                 {

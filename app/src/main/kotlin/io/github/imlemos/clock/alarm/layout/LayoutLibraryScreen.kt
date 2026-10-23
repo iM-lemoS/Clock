@@ -302,6 +302,7 @@ fun LayoutThumbnail(spec: LayoutSpec, modifier: Modifier = Modifier, width: Dp =
 private fun ThumbnailContent(spec: LayoutSpec, modifier: Modifier, width: Float) {
     val backdrop = rememberGlassBackdrop()
     val now = remember { java.time.LocalTime.now() }
+    val today = remember { java.time.LocalDate.now() }
     Box(
         modifier
             .size(width.dp, (width * PHONE_RATIO).dp)
@@ -319,7 +320,7 @@ private fun ThumbnailContent(spec: LayoutSpec, modifier: Modifier, width: Float)
             AlarmLayoutView(
                 spec = spec,
                 time = TimeOfDay(now.hour, now.minute),
-                date = "",
+                date = today,
                 labels = listOf(LayoutLabel("")),
                 backdrop = backdrop,
                 controls = { ThumbnailControls() },

@@ -57,12 +57,40 @@ data class ClockElement(
     }
 }
 
+/** [dateParts] only applies to the date element. */
 @Serializable
 data class TextElement(
     val placement: Placement,
     val color: Int? = null,
     val visible: Boolean = true,
+    val dateParts: DateParts = DateParts(),
 )
+
+/**
+ * Which parts of the date show and, when the weekday shows with other parts, whether it shares
+ * their line or sits on its own line above or below them.
+ */
+@Serializable
+data class DateParts(
+    val weekday: Boolean = true,
+    val day: Boolean = true,
+    val month: Boolean = true,
+    val year: Boolean = true,
+    val arrangement: DateArrangement = DateArrangement.INLINE,
+) {
+    /** Day, month or year: what goes with the weekday. */
+    val hasRest: Boolean get() = day || month || year
+
+    /** The weekday on its own line only makes sense when there is something else to show. */
+    val split: Boolean get() = weekday && hasRest && arrangement != DateArrangement.INLINE
+}
+
+@Serializable
+enum class DateArrangement { INLINE, WEEKDAY_ABOVE, WEEKDAY_BELOW }
+
+/** Which way a gradient background runs, from the first colour to the second. */
+@Serializable
+enum class GradientDirection { DOWN, ACROSS, DIAGONAL_DOWN, DIAGONAL_UP }
 
 /** Snooze and the dismiss slider, kept together and always at least their minimum size. */
 @Serializable
@@ -76,7 +104,13 @@ sealed interface Background {
     /** Drawn in code. [colorA]/[colorB] are ARGB; `null` uses the preset's own colours. */
     @Serializable
     @SerialName("preset")
-    data class Preset(val kind: PresetKind, val colorA: Int? = null, val colorB: Int? = null) : Background
+    data class Preset(
+        val kind: PresetKind,
+        val colorA: Int? = null,
+        val colorB: Int? = null,
+        /** Gradients only. */
+        val direction: GradientDirection = GradientDirection.DOWN,
+    ) : Background
 
     /**
      * A photo copied into app storage. [dim] darkens it so text stays readable (0..0.8); [frame]

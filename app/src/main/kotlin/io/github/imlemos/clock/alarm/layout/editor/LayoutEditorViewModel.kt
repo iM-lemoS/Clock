@@ -8,6 +8,8 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.imlemos.clock.alarm.layout.Background
+import io.github.imlemos.clock.alarm.layout.DateParts
+import io.github.imlemos.clock.alarm.layout.GradientDirection
 import io.github.imlemos.clock.alarm.layout.BackgroundStore
 import io.github.imlemos.clock.alarm.layout.ClockFont
 import io.github.imlemos.clock.alarm.layout.ClockStyle
@@ -81,6 +83,16 @@ class LayoutEditorViewModel @AssistedInject constructor(
 
     /** Tapping an element on the canvas shows its options; empty space shows the background's. */
     fun select(id: LayoutElementId?) = _state.update { it.copy(selected = id, tab = id) }
+
+    /** Dragging or holding an element only marks it; its options stay as they were. */
+    fun highlight(id: LayoutElementId?) = _state.update { it.copy(selected = id) }
+
+    fun setDateParts(parts: DateParts) = edit { it.copy(date = it.date.copy(dateParts = parts)) }
+
+    fun setGradientDirection(direction: GradientDirection) = edit { spec ->
+        val background = spec.background as? Background.Preset ?: return@edit spec
+        spec.copy(background = background.copy(direction = direction))
+    }
 
     fun showTab(tab: LayoutElementId?) = _state.update { it.copy(tab = tab, selected = tab) }
 

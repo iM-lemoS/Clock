@@ -66,6 +66,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.layout.Background
+import io.github.imlemos.clock.alarm.layout.DateArrangement
+import io.github.imlemos.clock.alarm.layout.DateParts
+import io.github.imlemos.clock.alarm.layout.GradientDirection
 import io.github.imlemos.clock.alarm.layout.ClockElement
 import io.github.imlemos.clock.alarm.layout.ClockFont
 import io.github.imlemos.clock.alarm.layout.ClockStyle
@@ -103,8 +106,6 @@ import io.github.imlemos.clock.core.designsystem.glass.rememberGlassBackdrop
 import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 /**
  * The layout editor (docs/PLANO.md 3.7): the alarm screen at full size, where elements are dragged
@@ -142,7 +143,7 @@ fun LayoutEditorScreen(
             AlarmLayoutView(
                 spec = state.spec,
                 time = TimeOfDay(now.hour, now.minute),
-                date = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(now),
+                date = now.toLocalDate(),
                 labels = listOf(LayoutLabel(sampleLabel)),
                 backdrop = backdrop,
                 controls = {
@@ -162,8 +163,9 @@ fun LayoutEditorScreen(
                 },
                 editing = LayoutEditing(
                     selected = state.selected,
+                    onSelect = viewModel::highlight,
                     // Tapping an element (or empty space, for the background) opens its options.
-                    onSelect = { id ->
+                    onOpen = { id ->
                         viewModel.select(id)
                         panelVisible = true
                     },
@@ -316,6 +318,7 @@ private fun EditorPanel(state: LayoutEditorState, viewModel: LayoutEditorViewMod
             LayoutElementId.DATE, LayoutElementId.LABEL -> {
                 val element = if (tab == LayoutElementId.DATE) spec.date else spec.label
                 ShowSwitch(element.visible) { viewModel.setVisible(tab, it) }
+                if (tab == LayoutElementId.DATE) DateOptions(element.dateParts, viewModel::setDateParts)
                 SizeSlider(tab, state.spec.placementOf(tab).scale, viewModel)
                 ColorSwatches(element.color, allowAuto = true) { viewModel.setColor(tab, it) }
             }
@@ -468,6 +471,20 @@ private fun BackgroundOptions(
     Spacer(Modifier.height(8.dp))
     when (background) {
         is Background.Preset -> {
+            if (background.kind == PresetKind.GRADIENT) {
+                Label(stringResource(R.string.layout_gradient_direction))
+                OptionChips(
+                    options = listOf(
+                        GradientDirection.DOWN to stringResource(R.string.layout_gradient_down),
+                        GradientDirection.ACROSS to stringResource(R.string.layout_gradient_across),
+                        GradientDirection.DIAGONAL_DOWN to stringResource(R.string.layout_gradient_diagonal_down),
+                        GradientDirection.DIAGONAL_UP to stringResource(R.string.layout_gradient_diagonal_up),
+                    ),
+                    selected = background.direction,
+                    onSelect = { onBackground(background.copy(direction = it)) },
+                )
+                Spacer(Modifier.height(12.dp))
+            }
             ColorSwatches(background.colorA, allowAuto = true) { onBackground(background.copy(colorA = it)) }
             if (background.kind == PresetKind.GRADIENT || background.kind == PresetKind.DOTS ||
                 background.kind == PresetKind.WAVES || background.kind == PresetKind.MATRIX
@@ -596,6 +613,73 @@ private fun EditorTabs(selected: LayoutElementId?, onSelect: (LayoutElementId?) 
             }
         }
         HorizontalDivider(thickness = 1.dp, color = colors.content.copy(alpha = 0.16f))
+    }
+}
+
+/**
+ * Which parts of the date show (at least one stays on) and, with the weekday and something else,
+ * how they are arranged.
+ */
+@Composable
+private fun DateOptions(parts: DateParts, onChange: (DateParts) -> Unit) {
+    Spacer(Modifier.height(8.dp))
+    Label(stringResource(R.string.layout_date_parts))
+    val options = listOf(
+        stringResource(R.string.layout_date_weekday) to parts.weekday,
+        stringResource(R.string.layout_date_day) to parts.day,
+        stringResource(R.string.layout_date_month) to parts.month,
+        stringResource(R.string.layout_date_year) to parts.year,
+    )
+    ToggleChips(options) { index, on ->
+        val next = when (index) {
+            0 -> parts.copy(weekday = on)
+            1 -> parts.copy(day = on)
+            2 -> parts.copy(month = on)
+            else -> parts.copy(year = on)
+        }
+        if (next.weekday || next.hasRest) onChange(next)
+    }
+    if (parts.weekday && parts.hasRest) {
+        Spacer(Modifier.height(12.dp))
+        Label(stringResource(R.string.layout_date_arrangement))
+        OptionChips(
+            options = listOf(
+                DateArrangement.INLINE to stringResource(R.string.layout_date_inline),
+                DateArrangement.WEEKDAY_ABOVE to stringResource(R.string.layout_date_weekday_above),
+                DateArrangement.WEEKDAY_BELOW to stringResource(R.string.layout_date_weekday_below),
+            ),
+            selected = parts.arrangement,
+            onSelect = { onChange(parts.copy(arrangement = it)) },
+        )
+    }
+    Spacer(Modifier.height(4.dp))
+}
+
+/** Several options that can be on together, in the same style as [OptionChips]. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ToggleChips(options: List<Pair<String, Boolean>>, onToggle: (index: Int, on: Boolean) -> Unit) {
+    val colors = ClockTheme.colors
+    val shape = RoundedCornerShape(12.dp)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        options.forEachIndexed { index, (label, on) ->
+            Row(
+                Modifier
+                    .clip(shape)
+                    .background(if (on) colors.accent.copy(alpha = 0.18f) else colors.content.copy(alpha = 0.06f), shape)
+                    .border(if (on) 2.dp else 1.dp, if (on) colors.accent else colors.content.copy(alpha = 0.2f), shape)
+                    .toggleable(value = on, role = Role.Checkbox) { onToggle(index, it) }
+                    .heightIn(min = 40.dp)
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (on) {
+                    Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = colors.accent, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                }
+                Text(label, style = ClockTheme.typography.label, color = colors.content)
+            }
+        }
     }
 }
 

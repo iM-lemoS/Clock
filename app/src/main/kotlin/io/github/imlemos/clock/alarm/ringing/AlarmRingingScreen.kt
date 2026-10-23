@@ -68,8 +68,6 @@ import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 
 /**
  * The alarm screen, drawn with the alarm's layout (docs/PLANO.md 3.7). Also used by "Test alarm",
@@ -119,7 +117,7 @@ fun AlarmRingingScreen(
         AlarmLayoutView(
             spec = spec,
             time = TimeOfDay(now.hour, now.minute),
-            date = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).format(now),
+            date = now.toLocalDate(),
             labels = labels,
             backdrop = backdrop,
             controls = {

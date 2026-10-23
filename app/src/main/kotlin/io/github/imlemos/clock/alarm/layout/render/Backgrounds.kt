@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import io.github.imlemos.clock.alarm.layout.Background
+import io.github.imlemos.clock.alarm.layout.GradientDirection
 import io.github.imlemos.clock.alarm.layout.Frame
 import io.github.imlemos.clock.alarm.layout.LayoutGeometry
 import io.github.imlemos.clock.alarm.layout.Size2
@@ -114,10 +115,22 @@ private fun PresetBackground(preset: Background.Preset, animate: Boolean) {
             DotGrid(Modifier.fillMaxSize(), fadeStart = 0f, color = colorA)
         }
         PresetKind.SOLID -> Box(Modifier.fillMaxSize().background(colorA))
-        PresetKind.GRADIENT -> Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(colorA, colorB))))
+        PresetKind.GRADIENT -> Box(Modifier.fillMaxSize().background(gradient(preset.direction, colorA, colorB)))
         PresetKind.WAVES -> WaveDots(colorA, colorB, phase)
         PresetKind.MATRIX -> MatrixDots(colorA, colorB, phase)
     }
+}
+
+/** From [from] to [to] in [direction]; diagonals run corner to corner. */
+private fun gradient(direction: GradientDirection, from: Color, to: Color): Brush = when (direction) {
+    GradientDirection.DOWN -> Brush.verticalGradient(listOf(from, to))
+    GradientDirection.ACROSS -> Brush.horizontalGradient(listOf(from, to))
+    GradientDirection.DIAGONAL_DOWN -> Brush.linearGradient(listOf(from, to), start = Offset.Zero, end = Offset.Infinite)
+    GradientDirection.DIAGONAL_UP -> Brush.linearGradient(
+        listOf(from, to),
+        start = Offset(0f, Float.POSITIVE_INFINITY),
+        end = Offset(Float.POSITIVE_INFINITY, 0f),
+    )
 }
 
 /** Rows of dots following slow sine waves. */
