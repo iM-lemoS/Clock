@@ -160,8 +160,11 @@ Launch the debug app: `adb shell am start -n io.github.imlemos.clock.debug/io.gi
   `adb uninstall` + reinstall. Some `pm grant`/`appops` changes may hit the same restriction.
 - If installs start failing, check Developer options > **"Install via USB"** (may require an
   OPPO account).
-- Also blocked from adb on ColorOS: `appops set`, time zone changes (`cmd time_zone_detector`).
-  Use the emulator for those scenarios.
+- Also blocked from adb on ColorOS: `appops set`, `pm grant`, time zone changes
+  (`cmd time_zone_detector`). Use the emulator for those scenarios. **Do not try `appops set` on
+  ColorOS**: the attempt fails, yet the full-screen alarm screen stopped opening for the app until it
+  was uninstalled. After a reinstall, grant notifications through the app's own dialog (the phone
+  must be unlocked); without notifications the alarm rings but its screen never opens.
 - After a reboot, adb is unavailable until the first unlock (USB data is off while locked), so
   direct-boot ringing must be observed by the maintainer; verify afterwards in
   `adb logcat -b events | grep am_proc_start` (LOCKED_BOOT_COMPLETED and ALARM_FIRE entries).
