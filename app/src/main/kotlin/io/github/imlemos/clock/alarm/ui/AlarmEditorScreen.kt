@@ -113,7 +113,7 @@ fun AlarmEditorScreen(
         )
         if (!state.loaded) return@Column
 
-        val is24Hour = android.text.format.DateFormat.is24HourFormat(context)
+        val is24Hour = is24Hour(context)
 
         Column(
             Modifier

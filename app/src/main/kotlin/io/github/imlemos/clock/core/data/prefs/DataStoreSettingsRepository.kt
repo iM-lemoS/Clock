@@ -95,6 +95,14 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { it[Keys.WARN_LOW_VOLUME] = enabled }
     }
 
+    override val timeFormat: Flow<TimeFormat> = dataStore.data
+        .map { prefs -> prefs[Keys.TIME_FORMAT]?.let { name -> TimeFormat.entries.firstOrNull { it.name == name } } ?: TimeFormat.SYSTEM }
+        .distinctUntilChanged()
+
+    override suspend fun setTimeFormat(format: TimeFormat) {
+        dataStore.edit { it[Keys.TIME_FORMAT] = format.name }
+    }
+
     override val volumeButtonAction: Flow<VolumeButtonAction> = dataStore.data
         .map { prefs ->
             prefs[Keys.VOLUME_BUTTON_ACTION]
@@ -166,6 +174,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val DEFAULT_RING_SECONDS = intPreferencesKey("default_ring_seconds")
         val AUDIO_OUTPUT = stringPreferencesKey("audio_output")
         val WARN_LOW_VOLUME = booleanPreferencesKey("warn_low_volume")
+        val TIME_FORMAT = stringPreferencesKey("time_format")
     }
 
     private fun String.toIntSet(): Set<Int> = split(',').mapNotNull(String::toIntOrNull).toSet()

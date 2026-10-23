@@ -37,3 +37,6 @@ enum class AudioOutput {
     /** Falls back to the phone when no Bluetooth device is connected, so an alarm is never silent. */
     BLUETOOTH_ONLY,
 }
+
+/** Clock format: follows the phone by default (docs/PLANO.md 6). */
+enum class TimeFormat { SYSTEM, H24, H12 }

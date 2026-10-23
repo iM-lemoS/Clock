@@ -223,4 +223,9 @@
     <string name="volume_low_body">Os alarmes vão tocar no volume mínimo. Toca para o aumentar.</string>
     <string name="settings_warn_low_volume">Avisar quando o volume de alarme está muito baixo</string>
     <string name="settings_warn_low_volume_summary">Mostra um aviso na lista de alarmes quando o volume de alarme está no mínimo.</string>
+    <string name="settings_time_format">Formato de hora</string>
+    <string name="time_format_system">Telemóvel</string>
+    <string name="time_format_24">24 h</string>
+    <string name="time_format_12">12 h</string>
+    <string name="action_close">Fechar</string>
 </resources>

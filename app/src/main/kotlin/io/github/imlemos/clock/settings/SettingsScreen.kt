@@ -54,6 +54,7 @@ import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.ui.SoundSection
 import io.github.imlemos.clock.core.data.prefs.AudioOutput
 import io.github.imlemos.clock.core.data.prefs.ThemeMode
+import io.github.imlemos.clock.core.data.prefs.TimeFormat
 import io.github.imlemos.clock.core.data.prefs.VolumeButtonAction
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
 import io.github.imlemos.clock.core.designsystem.component.ClockTopBar
@@ -206,6 +207,19 @@ fun SettingsScreen(
             )
 
             SectionHeader(stringResource(R.string.settings_section_general))
+            SettingLabel(stringResource(R.string.settings_time_format))
+            val timeFormat by viewModel.timeFormat.collectAsStateWithLifecycle()
+            SegmentedControl(
+                options = listOf(
+                    TimeFormat.SYSTEM to stringResource(R.string.time_format_system),
+                    TimeFormat.H24 to stringResource(R.string.time_format_24),
+                    TimeFormat.H12 to stringResource(R.string.time_format_12),
+                ),
+                selected = timeFormat,
+                onSelect = viewModel::setTimeFormat,
+                modifier = Modifier.padding(horizontal = 24.dp),
+            )
+            Spacer(Modifier.height(8.dp))
             ClickableRow(
                 title = stringResource(R.string.settings_reliability),
                 summary = stringResource(R.string.settings_reliability_summary),

@@ -27,6 +27,10 @@ interface SettingsRepository {
 
     suspend fun setWarnLowVolume(enabled: Boolean)
 
+    val timeFormat: Flow<TimeFormat>
+
+    suspend fun setTimeFormat(format: TimeFormat)
+
     val volumeButtonAction: Flow<VolumeButtonAction>
 
     suspend fun setVolumeButtonAction(action: VolumeButtonAction)

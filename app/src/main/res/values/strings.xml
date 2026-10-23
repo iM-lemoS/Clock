@@ -229,4 +229,9 @@
     <string name="volume_low_body">Alarms will ring at the minimum volume. Tap to raise it.</string>
     <string name="settings_warn_low_volume">Warn when alarm volume is very low</string>
     <string name="settings_warn_low_volume_summary">Shows a notice on the alarm list when the alarm volume is at its minimum.</string>
+    <string name="settings_time_format">Time format</string>
+    <string name="time_format_system">Phone</string>
+    <string name="time_format_24">24 h</string>
+    <string name="time_format_12">12 h</string>
+    <string name="action_close">Close</string>
 </resources>

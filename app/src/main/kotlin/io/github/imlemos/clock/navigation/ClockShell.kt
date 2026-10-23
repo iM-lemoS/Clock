@@ -15,10 +15,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.semantics.Role
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -177,7 +180,12 @@ fun ClockShell(
                 val addAction = currentTab?.addAction
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     AnimatedVisibility(visible = pendingUndo.isNotEmpty(), enter = fadeIn() + scaleIn(), exit = fadeOut() + scaleOut()) {
-                        UndoPopup(backdrop = backdrop, count = pendingUndo.size, onUndo = shellViewModel::undo)
+                        UndoPopup(
+                            backdrop = backdrop,
+                            count = pendingUndo.size,
+                            onUndo = shellViewModel::undo,
+                            onDismiss = shellViewModel::dismissUndo,
+                        )
                     }
                     Spacer(Modifier.weight(1f).width(12.dp))
                 AnimatedVisibility(visible = addAction != null, enter = scaleIn() + fadeIn(), exit = scaleOut() + fadeOut()) {
@@ -224,7 +232,7 @@ private fun NavBackStack<NavKey>.selectTab(tab: TopLevelDestination) {
 
 /** Discreet glass pop-up offering to restore alarms deleted moments ago. */
 @Composable
-private fun UndoPopup(backdrop: GlassBackdrop, count: Int, onUndo: () -> Unit) {
+private fun UndoPopup(backdrop: GlassBackdrop, count: Int, onUndo: () -> Unit, onDismiss: () -> Unit) {
     val colors = ClockTheme.colors
     GlassSurface(backdrop = backdrop, modifier = Modifier.heightIn(min = 56.dp)) {
         Row(
@@ -246,6 +254,16 @@ private fun UndoPopup(backdrop: GlassBackdrop, count: Int, onUndo: () -> Unit) {
                     .clip(CapsuleShape)
                     .clickable(role = Role.Button, onClick = onUndo)
                     .padding(horizontal = 14.dp, vertical = 14.dp),
+            )
+            Icon(
+                painter = painterResource(R.drawable.ic_close),
+                contentDescription = stringResource(R.string.action_close),
+                tint = colors.contentMuted,
+                modifier = Modifier
+                    .clip(CapsuleShape)
+                    .clickable(role = Role.Button, onClick = onDismiss)
+                    .padding(12.dp)
+                    .size(20.dp),
             )
         }
     }

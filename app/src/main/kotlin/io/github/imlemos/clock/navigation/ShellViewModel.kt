@@ -40,6 +40,11 @@ class ShellViewModel @Inject constructor(
         undoSeen = false
     }
 
+    /** The "x" on the pop-up: drop the offer now (items stay in the trash). */
+    fun dismissUndo() {
+        viewModelScope.launch { settings.clearPendingUndo() }
+    }
+
     fun undo() {
         viewModelScope.launch { pendingUndo.value.forEach { controller.restore(it.trashId) } }
     }

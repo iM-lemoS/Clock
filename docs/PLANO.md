@@ -76,7 +76,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 
 ### 3.1 Configuração base
 
-- Hora e minutos, escolhidos com **rodas de deslocar (estilo iPhone)**; o teclado fica como alternativa. As mesmas rodas servem os timers (h/m/s).
+- Hora e minutos, escolhidos com **rodas de deslocar (estilo iPhone)**; o teclado fica como alternativa. As mesmas rodas servem os timers (h/m/s). A roda AM/PM só aparece no formato de 12 h.
 - **Recorrência**, uma de três:
   - **Uma vez**: próxima ocorrência dessa hora.
   - **Dias da semana**: qualquer combinação seg–dom (primeiro dia da semana segue a região do sistema).
@@ -84,6 +84,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - **Alarmes "Uma vez"** (só hora): por defeito, depois de tocar e de serem desligados, ficam na lista **desativados** e **não voltam a tocar** até serem ligados à mão.
 - **Opção "Utilização única"** (interruptor, desligado por defeito): o alarme toca na próxima ocorrência e, **assim que é desligado, vai para o caixote do lixo**.
 - **Alarmes com datas apagam-se sozinhos depois da última data.**
+- Quando um alarme é apagado (pelo utilizador ou automaticamente), o pop-up "Anular" tem também um **×** para o fechar logo.
 - Quando um alarme é apagado automaticamente (datas ou utilização única):
   - vai para o **caixote do lixo**;
   - **notificação**: "Este alarme tocou pela última vez e foi apagado — toca para anular";

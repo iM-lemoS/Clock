@@ -14,6 +14,7 @@ import io.github.imlemos.clock.core.data.prefs.AudioOutput
 import io.github.imlemos.clock.core.data.prefs.AppearanceSettings
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.data.prefs.ThemeMode
+import io.github.imlemos.clock.core.data.prefs.TimeFormat
 import io.github.imlemos.clock.core.data.prefs.VolumeButtonAction
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -60,6 +61,13 @@ class SettingsViewModel @Inject constructor(
 
     fun setWarnLowVolume(enabled: Boolean) {
         viewModelScope.launch { settings.setWarnLowVolume(enabled) }
+    }
+
+    val timeFormat: StateFlow<TimeFormat> = settings.timeFormat
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TimeFormat.SYSTEM)
+
+    fun setTimeFormat(format: TimeFormat) {
+        viewModelScope.launch { settings.setTimeFormat(format) }
     }
 
     fun setAudioOutput(output: AudioOutput) {
