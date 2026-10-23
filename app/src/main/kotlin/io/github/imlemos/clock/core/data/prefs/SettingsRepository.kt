@@ -19,6 +19,14 @@ interface SettingsRepository {
 
     suspend fun setDefaultSound(sound: AlarmSound)
 
+    /**
+     * Sound of finished timers (docs/PLANO.md 6): a ringtone URI and its title; `null` URI plays
+     * the system default alarm sound.
+     */
+    val timerTone: Flow<AlarmSound>
+
+    suspend fun setTimerTone(uri: String?, title: String?)
+
     val audioOutput: Flow<AudioOutput>
 
     suspend fun setAudioOutput(output: AudioOutput)

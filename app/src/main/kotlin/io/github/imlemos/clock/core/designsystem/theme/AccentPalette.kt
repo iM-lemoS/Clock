@@ -26,5 +26,19 @@ enum class AccentPalette(val color: Color, @param:StringRes val label: Int) {
 
         fun matching(argb: Int?): AccentPalette? =
             if (argb == null) Default else entries.firstOrNull { it.color.toArgb() == argb }
+
+        /** Minimum contrast against the background for an accent to stay visible (WCAG non-text). */
+        const val MIN_CONTRAST = 3f
+
+        /** Whether [color] is too dark for the black theme and/or too light for the white one. */
+        fun contrastProblems(color: Color): ContrastProblems = ContrastProblems(
+            tooDarkForDark = contrastRatio(color, Color.Black) < MIN_CONTRAST,
+            tooLightForLight = contrastRatio(color, Color.White) < MIN_CONTRAST,
+        )
     }
+}
+
+/** A custom accent's visibility on each theme. */
+data class ContrastProblems(val tooDarkForDark: Boolean, val tooLightForLight: Boolean) {
+    val any: Boolean get() = tooDarkForDark || tooLightForLight
 }

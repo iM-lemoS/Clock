@@ -50,6 +50,20 @@ class SettingsViewModel @Inject constructor(
     val audioOutput: StateFlow<AudioOutput> = settings.audioOutput
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AudioOutput.PHONE_AND_BLUETOOTH)
 
+    val timerTone: StateFlow<AlarmSound> = settings.timerTone
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AlarmSound())
+
+    fun setTimerSystemTone(uri: Uri?) {
+        viewModelScope.launch { settings.setTimerTone(uri?.toString(), uri?.let(ringtones::systemTitle)) }
+    }
+
+    fun importTimerTone(uri: Uri, onFailed: () -> Unit) {
+        viewModelScope.launch {
+            val tone = ringtones.import(uri) ?: return@launch onFailed()
+            settings.setTimerTone(tone.uri, tone.title)
+        }
+    }
+
     fun setDefaultSound(sound: AlarmSound) {
         viewModelScope.launch { settings.setDefaultSound(sound) }
     }

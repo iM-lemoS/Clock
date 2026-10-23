@@ -91,8 +91,13 @@ class TimerRingingService : Service() {
         val first = state.timers.value.isEmpty()
         state.add(RingingTimer(id, timer.name.ifBlank { formatDuration(timer.run.durationMillis) }, timer.ringingSince ?: Instant.now()))
         if (first) {
-            // The default sound from settings, at once (no gradual volume): a timer is a reminder.
-            val sound = settings.defaultSound.first().copy(gradual = GradualVolume())
+            // The timer sound from settings with the default vibration, at once (no gradual volume).
+            val tone = settings.timerTone.first()
+            val sound = settings.defaultSound.first().copy(
+                ringtoneUri = tone.ringtoneUri,
+                ringtoneTitle = tone.ringtoneTitle,
+                gradual = GradualVolume(),
+            )
             player.start(sound, settings.audioOutput.first())
             timeoutJob = scope.launch {
                 delay(MAX_RING_MILLIS)

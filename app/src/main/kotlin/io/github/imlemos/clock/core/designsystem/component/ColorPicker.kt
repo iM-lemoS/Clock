@@ -63,13 +63,15 @@ fun ColorPickerDialog(
     allowAuto: Boolean,
     onPick: (Int?) -> Unit,
     onDismiss: () -> Unit,
+    showOpacity: Boolean = true,
+    footer: @Composable (argb: Int) -> Unit = {},
 ) {
     val colors = ClockTheme.colors
     val start = remember(initial) { FloatArray(3).also { android.graphics.Color.colorToHSV(initial ?: DEFAULT_PICK, it) } }
     var hue by remember { mutableFloatStateOf(start[0]) }
     var saturation by remember { mutableFloatStateOf(start[1]) }
     var brightness by remember { mutableFloatStateOf(start[2]) }
-    var alpha by remember { mutableFloatStateOf(((initial ?: DEFAULT_PICK) ushr 24) / 255f) }
+    var alpha by remember { mutableFloatStateOf(if (showOpacity) ((initial ?: DEFAULT_PICK) ushr 24) / 255f else 1f) }
     val argb = android.graphics.Color.HSVToColor((alpha * 255).roundToInt(), floatArrayOf(hue, saturation, brightness))
 
     fun setFrom(value: Int) {
@@ -77,7 +79,7 @@ fun ColorPickerDialog(
         hue = hsv[0]
         saturation = hsv[1]
         brightness = hsv[2]
-        alpha = (value ushr 24) / 255f
+        alpha = if (showOpacity) (value ushr 24) / 255f else 1f
     }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -98,7 +100,7 @@ fun ColorPickerDialog(
                 }
                 Spacer(Modifier.width(12.dp))
                 Text(
-                    "#%06X · %d%%".format(argb and 0xFFFFFF, (alpha * 100).roundToInt()),
+                    if (showOpacity) "#%06X · %d%%".format(argb and 0xFFFFFF, (alpha * 100).roundToInt()) else "#%06X".format(argb and 0xFFFFFF),
                     style = ClockTheme.typography.body,
                     color = colors.content,
                 )
@@ -114,16 +116,19 @@ fun ColorPickerDialog(
                 label = hueLabel,
                 stateText = "${hue.roundToInt()}°",
             )
-            Spacer(Modifier.height(12.dp))
             val opaque = Color.hsv(hue, saturation, brightness)
-            GradientBar(
-                value = alpha,
-                onValueChange = { alpha = it },
-                brush = Brush.horizontalGradient(listOf(opaque.copy(alpha = 0f), opaque)),
-                label = stringResource(R.string.color_opacity),
-                stateText = "${(alpha * 100).roundToInt()}%",
-                checkered = true,
-            )
+            if (showOpacity) {
+                Spacer(Modifier.height(12.dp))
+                GradientBar(
+                    value = alpha,
+                    onValueChange = { alpha = it },
+                    brush = Brush.horizontalGradient(listOf(opaque.copy(alpha = 0f), opaque)),
+                    label = stringResource(R.string.color_opacity),
+                    stateText = "${(alpha * 100).roundToInt()}%",
+                    checkered = true,
+                )
+            }
+            footer(argb)
             Spacer(Modifier.height(16.dp))
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 QuickColors.forEach { quick ->

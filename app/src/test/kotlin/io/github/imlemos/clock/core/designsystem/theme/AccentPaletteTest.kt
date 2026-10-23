@@ -55,4 +55,11 @@ class AccentPaletteTest {
             assertTrue(contrastRatio(colors.contentMuted, colors.surfaceRaised) >= 4.5f)
         }
     }
+
+    @Test
+    fun `custom accents are checked against both themes`() {
+        assertEquals(ContrastProblems(tooDarkForDark = false, tooLightForLight = false), AccentPalette.contrastProblems(AccentPalette.Blue.color))
+        assertTrue(AccentPalette.contrastProblems(Color(0xFF101030)).tooDarkForDark)
+        assertTrue(AccentPalette.contrastProblems(Color(0xFFFFF59D)).tooLightForLight)
+    }
 }

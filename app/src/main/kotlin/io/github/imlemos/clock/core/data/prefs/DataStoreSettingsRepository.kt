@@ -80,6 +80,17 @@ class DataStoreSettingsRepository @Inject constructor(
         }
     }
 
+    override val timerTone: Flow<AlarmSound> = dataStore.data
+        .map { prefs -> AlarmSound(ringtoneUri = prefs[Keys.TIMER_RINGTONE_URI], ringtoneTitle = prefs[Keys.TIMER_RINGTONE_TITLE]) }
+        .distinctUntilChanged()
+
+    override suspend fun setTimerTone(uri: String?, title: String?) {
+        dataStore.edit { prefs ->
+            if (uri == null) prefs.remove(Keys.TIMER_RINGTONE_URI) else prefs[Keys.TIMER_RINGTONE_URI] = uri
+            if (title == null) prefs.remove(Keys.TIMER_RINGTONE_TITLE) else prefs[Keys.TIMER_RINGTONE_TITLE] = title
+        }
+    }
+
     override val audioOutput: Flow<AudioOutput> = dataStore.data
         .map { prefs ->
             prefs[Keys.AUDIO_OUTPUT]?.let { name -> AudioOutput.entries.firstOrNull { it.name == name } }
@@ -210,6 +221,8 @@ class DataStoreSettingsRepository @Inject constructor(
         val MANUAL_ZONE = stringPreferencesKey("manual_zone")
         val DEFAULT_LAYOUT_ID = longPreferencesKey("default_layout_id")
         val WORLD_CLOCK_ZONES = stringPreferencesKey("world_clock_zones")
+        val TIMER_RINGTONE_URI = stringPreferencesKey("timer_ringtone_uri")
+        val TIMER_RINGTONE_TITLE = stringPreferencesKey("timer_ringtone_title")
     }
 
     private fun String.toIntSet(): Set<Int> = split(',').mapNotNull(String::toIntOrNull).toSet()

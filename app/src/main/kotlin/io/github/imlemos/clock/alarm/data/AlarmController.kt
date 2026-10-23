@@ -179,7 +179,7 @@ class AlarmController @Inject constructor(
         trash.prune()
         // Imported sound files still referenced by an alarm, the trash or the default sound.
         val inUse = (alarms + trash.allAlarms()).mapNotNull { it.sound.ringtoneUri } +
-            listOfNotNull(settings.defaultSound.first().ringtoneUri)
+            listOfNotNull(settings.defaultSound.first().ringtoneUri, settings.timerTone.first().ringtoneUri)
         ringtones.deleteUnused(inUse.toSet())
     }
 

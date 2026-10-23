@@ -55,6 +55,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.imlemos.clock.R
+import androidx.compose.ui.graphics.Color
+import io.github.imlemos.clock.core.designsystem.component.ColorPickerDialog
+import io.github.imlemos.clock.alarm.ui.ToneField
 import io.github.imlemos.clock.alarm.layout.layoutName
 import io.github.imlemos.clock.alarm.ui.SoundSection
 import io.github.imlemos.clock.core.data.prefs.AudioOutput
@@ -116,9 +119,11 @@ fun SettingsScreen(
             SettingLabel(stringResource(R.string.settings_accent))
             AccentSelector(
                 selected = AccentPalette.matching(appearance.accentArgb),
+                customArgb = appearance.accentArgb?.takeIf { AccentPalette.matching(it) == null },
                 onSelect = { accent ->
                     viewModel.setAccent(if (accent == AccentPalette.Default) null else accent.color.toArgb())
                 },
+                onCustom = viewModel::setAccent,
             )
 
             SwitchRow(
@@ -220,6 +225,21 @@ fun SettingsScreen(
                 enabled = true,
                 onCheckedChange = viewModel::setWarnLowVolume,
             )
+
+            SectionHeader(stringResource(R.string.settings_section_timers))
+            SettingLabel(stringResource(R.string.settings_timer_sound))
+            val timerTone by viewModel.timerTone.collectAsStateWithLifecycle()
+            Box(Modifier.padding(horizontal = 24.dp)) {
+                ToneField(
+                    title = timerTone.ringtoneTitle,
+                    onSystemTonePicked = viewModel::setTimerSystemTone,
+                    onFilePicked = { uri ->
+                        viewModel.importTimerTone(uri) {
+                            Toast.makeText(context, R.string.sound_import_failed, Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                )
+            }
 
             SectionHeader(stringResource(R.string.settings_section_general))
             SettingLabel(stringResource(R.string.settings_time_format))
@@ -338,8 +358,14 @@ private fun ThemeSelector(selected: ThemeMode, onSelect: (ThemeMode) -> Unit) {
 }
 
 @Composable
-private fun AccentSelector(selected: AccentPalette?, onSelect: (AccentPalette) -> Unit) {
+private fun AccentSelector(
+    selected: AccentPalette?,
+    customArgb: Int?,
+    onSelect: (AccentPalette) -> Unit,
+    onCustom: (Int) -> Unit,
+) {
     val colors = ClockTheme.colors
+    var picking by rememberSaveable { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .padding(horizontal = 20.dp)
@@ -366,7 +392,57 @@ private fun AccentSelector(selected: AccentPalette?, onSelect: (AccentPalette) -
                 )
             }
         }
+        // Any colour: the current custom one, or a "+" to pick it.
+        val customLabel = stringResource(R.string.accent_custom)
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .selectable(selected = customArgb != null, role = Role.RadioButton, onClick = { picking = true })
+                .semantics { contentDescription = customLabel },
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                Modifier
+                    .size(if (customArgb != null) 40.dp else 32.dp)
+                    .border(if (customArgb != null) 2.dp else 1.dp, if (customArgb != null) colors.content else colors.outline, CircleShape)
+                    .padding(if (customArgb != null) 5.dp else 0.dp)
+                    .background(customArgb?.let(::Color) ?: Color.Transparent, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (customArgb == null) Icon(painterResource(R.drawable.ic_add), contentDescription = null, tint = colors.content, modifier = Modifier.size(18.dp))
+            }
+        }
     }
+    customArgb?.let { ContrastWarning(Color(it)) }
+    if (picking) {
+        ColorPickerDialog(
+            initial = customArgb ?: colors.accent.toArgb(),
+            allowAuto = false,
+            showOpacity = false,
+            onPick = { argb -> argb?.let(onCustom); picking = false },
+            onDismiss = { picking = false },
+            footer = { argb -> ContrastWarning(Color(argb), padded = false) },
+        )
+    }
+}
+
+/** Tells when a custom accent would be hard to see on the dark or the light theme. */
+@Composable
+private fun ContrastWarning(color: Color, padded: Boolean = true) {
+    val problems = AccentPalette.contrastProblems(color)
+    if (!problems.any) return
+    val text = when {
+        problems.tooDarkForDark && problems.tooLightForLight -> R.string.accent_low_contrast_both
+        problems.tooDarkForDark -> R.string.accent_low_contrast_dark
+        else -> R.string.accent_low_contrast_light
+    }
+    Text(
+        stringResource(text),
+        style = ClockTheme.typography.caption,
+        color = ClockTheme.colors.contentMuted,
+        modifier = Modifier.padding(horizontal = if (padded) 24.dp else 0.dp, vertical = 8.dp),
+    )
 }
 
 @Composable
