@@ -86,6 +86,10 @@ the maintainer's phone.
 - `GlassLevel`: `Full` (Android 13+, refraction via AGSL), `BlurOnly` (Android 12),
   `Solid` (user "Reduce transparency" or battery saver). Resolved by `resolveGlassLevel`. Do not use
   `isCrossWindowBlurEnabled` as a signal: Samsung reports it as always off.
+- Dialogs and sheets are drawn inside the activity window by `OverlayRoot`/`Overlay`
+  (`core/designsystem/component`), so they can sample the screen: use `GlassDialog`,
+  `GlassAlertDialog`, `OptionsSheet`/`GlassSheet` and `DialogButton`, never Material
+  `AlertDialog`/`ModalBottomSheet` (separate windows; many phones have no cross-window blur).
 - Debug builds have **Settings > Developer > Glass lab** to compare the levels.
 
 ### Database rule
