@@ -52,4 +52,74 @@
     <string name="glass_level_full">Vidro</string>
     <string name="glass_level_blur">Só desfoque</string>
     <string name="glass_level_solid">Sólido</string>
+    <!-- Alarm list and editor -->
+    <string name="alarm_off">Desligado</string>
+    <string name="alarm_rings_in">Toca daqui a %1$s</string>
+    <string name="duration_minutes">%1$d min</string>
+    <string name="duration_hours">%1$d h</string>
+    <string name="duration_hours_minutes">%1$d h %2$d min</string>
+    <string name="action_edit_alarm">Editar alarme</string>
+    <string name="action_delete_alarm">Apagar alarme</string>
+    <string name="action_save">Guardar</string>
+    <string name="alarm_editor_new_title">Novo alarme</string>
+    <string name="alarm_editor_edit_title">Editar alarme</string>
+    <string name="alarm_editor_use_keyboard">Escrever a hora</string>
+    <string name="alarm_editor_use_dial">Usar o mostrador</string>
+    <string name="alarm_editor_label">Etiqueta</string>
+    <string name="alarm_set_toast">Alarme definido · %1$s</string>
+
+    <!-- Ringing -->
+    <string name="alarm_notification_title">Alarme</string>
+    <string name="alarm_action_dismiss">Desligar</string>
+    <plurals name="alarm_action_snooze_minutes">
+        <item quantity="one">Adiar · %d min</item>
+        <item quantity="many">Adiar · %d min</item>
+        <item quantity="other">Adiar · %d min</item>
+    </plurals>
+    <string name="alarm_slide_to_dismiss">Deslize para desligar</string>
+    <string name="alarm_missed_title">Alarme perdido · %1$s</string>
+    <string name="channel_alarm_ringing">Alarmes a tocar</string>
+    <string name="channel_alarm_ringing_description">Mostra o alarme no ecrã enquanto toca.</string>
+    <string name="channel_alarm_missed">Alarmes perdidos</string>
+    <string name="channel_alarm_missed_description">Alarmes que tocaram sem serem desligados.</string>
+
+    <!-- Reliability -->
+    <string name="reliability_title">Fiabilidade dos alarmes</string>
+    <string name="reliability_intro">O Android e alguns fabricantes podem parar aplicações em segundo plano. Confirme tudo o que está abaixo para que os alarmes toquem sempre.</string>
+    <string name="reliability_section_system">Definições do Android</string>
+    <string name="reliability_section_vendor">Definições do %1$s</string>
+    <string name="reliability_section_generic">O seu telemóvel</string>
+    <string name="reliability_notifications">Notificações</string>
+    <string name="reliability_notifications_body">Necessárias para mostrar o alarme enquanto toca.</string>
+    <string name="reliability_full_screen">Alarmes em ecrã inteiro</string>
+    <string name="reliability_full_screen_body">Permite que o alarme apareça por cima do ecrã de bloqueio.</string>
+    <string name="reliability_exact">Alarmes e lembretes</string>
+    <string name="reliability_exact_body">Permite que os alarmes toquem ao minuto certo.</string>
+    <string name="reliability_battery">Sem restrições de bateria</string>
+    <string name="reliability_battery_body">Impede que a otimização de bateria atrase ou bloqueie os alarmes.</string>
+    <string name="reliability_fix">Corrigir</string>
+    <string name="reliability_ok">Concluído</string>
+    <string name="reliability_needs_action">Precisa de atenção</string>
+    <string name="reliability_open_settings">Abrir definições</string>
+    <string name="reliability_more_info">Mais dicas para o seu telemóvel</string>
+    <string name="reliability_more_info_summary">Abre dontkillmyapp.com no navegador.</string>
+    <string name="reliability_banner_title">Os alarmes podem não tocar</string>
+    <string name="reliability_banner_body">Uma definição do sistema precisa de atenção. Toque para rever.</string>
+    <string name="oem_step_lock_recents_title">Bloquear a aplicação nas recentes</string>
+    <string name="oem_step_lock_recents_body">Abra as aplicações recentes, mantenha premido (ou deslize para baixo) o Clock e escolha Bloquear. Limpar as recentes deixa de a fechar.</string>
+    <string name="oem_coloros_background_title">Permitir atividade em segundo plano</string>
+    <string name="oem_coloros_background_body">Em Informações da aplicação, abra Utilização da bateria e escolha Permitir atividade em segundo plano.</string>
+    <string name="oem_xiaomi_autostart_title">Ativar o arranque automático</string>
+    <string name="oem_xiaomi_autostart_body">Em Segurança, abra Arranque automático e ative o Clock.</string>
+    <string name="oem_xiaomi_battery_title">Remover restrições de bateria</string>
+    <string name="oem_xiaomi_battery_body">Em Informações da aplicação, abra Poupança de bateria e escolha Sem restrições.</string>
+    <string name="oem_samsung_battery_title">Definir a bateria como Sem restrições</string>
+    <string name="oem_samsung_battery_body">Em Informações da aplicação, abra Bateria e escolha Sem restrições.</string>
+    <string name="oem_samsung_sleeping_title">Manter o Clock fora das aplicações em suspensão</string>
+    <string name="oem_samsung_sleeping_body">Em Definições, Bateria, Limites de utilização em segundo plano: confirme que o Clock não está em Aplicações em suspensão nem em Suspensão profunda.</string>
+    <string name="settings_reliability">Fiabilidade dos alarmes</string>
+    <string name="settings_reliability_summary">Verifique o que pode impedir os alarmes de tocar.</string>
+    <string name="settings_test_alarm">Alarme de teste daqui a um minuto</string>
+    <string name="settings_test_alarm_summary">Cria um alarme único para o minuto seguinte.</string>
+    <string name="test_alarm_label">Alarme de teste</string>
 </resources>

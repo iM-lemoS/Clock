@@ -5,4 +5,9 @@
         <item name="android:windowBackground">@android:color/white</item>
         <item name="android:windowSplashScreenBackground">@android:color/white</item>
     </style>
+
+    <!-- Alarm screen: always black, whatever the app theme (see AlarmActivity). -->
+    <style name="Theme.Clock.Alarm" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
 </resources>

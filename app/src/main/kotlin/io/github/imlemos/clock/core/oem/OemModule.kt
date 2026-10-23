@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.core.oem
 
+import android.os.Build
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -8,7 +9,6 @@ import dagger.hilt.components.SingletonComponent
 @Module
 @InstallIn(SingletonComponent::class)
 object OemModule {
-    // Vendor detection arrives in phase 1; until then every device gets the generic profile.
     @Provides
-    fun provideOemProfile(): OemProfile = GenericOemProfile
+    fun provideOemProfile(): OemProfile = OemProfiles.forDevice(Build.MANUFACTURER, Build.BRAND)
 }

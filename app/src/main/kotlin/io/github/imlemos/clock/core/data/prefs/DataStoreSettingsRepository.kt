@@ -41,10 +41,19 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { it[Keys.REDUCE_TRANSPARENCY] = enabled }
     }
 
+    override val reliabilityIntroShown: Flow<Boolean> = dataStore.data
+        .map { it[Keys.RELIABILITY_INTRO_SHOWN] ?: false }
+        .distinctUntilChanged()
+
+    override suspend fun setReliabilityIntroShown() {
+        dataStore.edit { it[Keys.RELIABILITY_INTRO_SHOWN] = true }
+    }
+
     // Stored names are persisted on users' devices: never rename them.
     private object Keys {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val ACCENT_ARGB = intPreferencesKey("accent_argb")
         val REDUCE_TRANSPARENCY = booleanPreferencesKey("reduce_transparency")
+        val RELIABILITY_INTRO_SHOWN = booleanPreferencesKey("reliability_intro_shown")
     }
 }

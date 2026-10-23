@@ -44,7 +44,8 @@ class MainActivity : ComponentActivity() {
                     systemReducesEffects = rememberSystemReducesEffects(),
                 ),
             ) {
-                ClockShell()
+                val showIntro by viewModel.showReliabilityIntro.collectAsStateWithLifecycle()
+                ClockShell(showReliabilityIntro = showIntro, onReliabilityIntroShown = viewModel::onReliabilityIntroShown)
             }
         }
     }

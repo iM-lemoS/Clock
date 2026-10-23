@@ -28,8 +28,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,6 +48,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.core.data.prefs.ThemeMode
+import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
 import io.github.imlemos.clock.core.designsystem.component.ClockTopBar
 import io.github.imlemos.clock.core.designsystem.component.TopBarIconButton
 import io.github.imlemos.clock.core.designsystem.glass.CapsuleShape
@@ -64,6 +63,7 @@ import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onOpenReliability: () -> Unit,
     onOpenGlassLab: (() -> Unit)?,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -116,9 +116,14 @@ fun SettingsScreen(
                 onCheckedChange = viewModel::setReduceTransparency,
             )
 
+            SectionHeader(stringResource(R.string.settings_section_general))
+            ClickableRow(
+                title = stringResource(R.string.settings_reliability),
+                summary = stringResource(R.string.settings_reliability_summary),
+                onClick = onOpenReliability,
+            )
             // Per-app language settings exist from Android 13; on Android 12 the app follows the system.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                SectionHeader(stringResource(R.string.settings_section_general))
                 ClickableRow(
                     title = stringResource(R.string.settings_language),
                     summary = stringResource(R.string.settings_language_summary),
@@ -136,6 +141,12 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_glass_lab),
                     summary = stringResource(R.string.settings_glass_lab_summary),
                     onClick = onOpenGlassLab,
+                )
+                val testLabel = stringResource(R.string.test_alarm_label)
+                ClickableRow(
+                    title = stringResource(R.string.settings_test_alarm),
+                    summary = stringResource(R.string.settings_test_alarm_summary),
+                    onClick = { viewModel.createTestAlarm(testLabel) },
                 )
             }
         }
@@ -244,7 +255,6 @@ private fun SwitchRow(
     enabled: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
-    val colors = ClockTheme.colors
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -254,23 +264,7 @@ private fun SwitchRow(
     ) {
         RowText(title, summary, Modifier.weight(1f))
         Spacer(Modifier.width(16.dp))
-        Switch(
-            checked = checked,
-            onCheckedChange = null,
-            enabled = enabled,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = colors.onAccent,
-                checkedTrackColor = colors.accent,
-                checkedBorderColor = colors.accent,
-                uncheckedThumbColor = colors.contentMuted,
-                uncheckedTrackColor = colors.background,
-                uncheckedBorderColor = colors.outline,
-                // Forced on by the system: still clearly "on", just dimmed.
-                disabledCheckedThumbColor = colors.onAccent,
-                disabledCheckedTrackColor = colors.accent.copy(alpha = 0.45f),
-                disabledCheckedBorderColor = colors.accent.copy(alpha = 0.45f),
-            ),
-        )
+        ClockSwitch(checked = checked, onCheckedChange = null, enabled = enabled)
     }
 }
 

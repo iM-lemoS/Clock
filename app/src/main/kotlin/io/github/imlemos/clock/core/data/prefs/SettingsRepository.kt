@@ -11,4 +11,9 @@ interface SettingsRepository {
     suspend fun setAccent(argb: Int?)
 
     suspend fun setReduceTransparency(enabled: Boolean)
+
+    /** Whether "Set up reliability" was already shown on first launch. */
+    val reliabilityIntroShown: Flow<Boolean>
+
+    suspend fun setReliabilityIntroShown()
 }

@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "477b44a887d5d8081545162cfba7b08f",
+    "identityHash": "b246b54bf6749f553ce3be509abd450c",
     "entities": [
       {
         "tableName": "alarm",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `hour` INTEGER NOT NULL, `minute` INTEGER NOT NULL, `label` TEXT NOT NULL, `enabled` INTEGER NOT NULL, `createdAtEpochMillis` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `hour` INTEGER NOT NULL, `minute` INTEGER NOT NULL, `recurrenceType` TEXT NOT NULL, `weekDays` INTEGER NOT NULL, `dates` TEXT NOT NULL, `label` TEXT NOT NULL, `enabled` INTEGER NOT NULL, `zoneId` TEXT, `skippedOccurrence` INTEGER, `lastTriggeredOccurrence` INTEGER, `snoozedUntil` INTEGER, `snoozeMinutes` INTEGER NOT NULL, `ringDurationSeconds` INTEGER NOT NULL, `vibrate` INTEGER NOT NULL, `ringtoneUri` TEXT, `createdAt` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -27,6 +27,24 @@
             "notNull": true
           },
           {
+            "fieldPath": "recurrenceType",
+            "columnName": "recurrenceType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weekDays",
+            "columnName": "weekDays",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dates",
+            "columnName": "dates",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "label",
             "columnName": "label",
             "affinity": "TEXT",
@@ -39,8 +57,51 @@
             "notNull": true
           },
           {
-            "fieldPath": "createdAtEpochMillis",
-            "columnName": "createdAtEpochMillis",
+            "fieldPath": "zoneId",
+            "columnName": "zoneId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "skippedOccurrence",
+            "columnName": "skippedOccurrence",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastTriggeredOccurrence",
+            "columnName": "lastTriggeredOccurrence",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "snoozedUntil",
+            "columnName": "snoozedUntil",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "snoozeMinutes",
+            "columnName": "snoozeMinutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ringDurationSeconds",
+            "columnName": "ringDurationSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vibrate",
+            "columnName": "vibrate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ringtoneUri",
+            "columnName": "ringtoneUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -55,7 +116,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '477b44a887d5d8081545162cfba7b08f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b246b54bf6749f553ce3be509abd450c')"
     ]
   }
 }

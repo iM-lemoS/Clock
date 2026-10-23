@@ -1,0 +1,42 @@
+package io.github.imlemos.clock.alarm.model
+
+import io.github.imlemos.clock.core.scheduling.AlarmSchedule
+import io.github.imlemos.clock.core.scheduling.Recurrence
+import io.github.imlemos.clock.core.scheduling.TimeOfDay
+import java.time.Instant
+import java.time.ZoneId
+
+/** An alarm as the rest of the app sees it. Scheduling decisions are delegated to `:core:scheduling`. */
+data class Alarm(
+    val id: Long = 0,
+    val time: TimeOfDay,
+    val recurrence: Recurrence = Recurrence.Once,
+    val label: String = "",
+    val enabled: Boolean = true,
+    val zone: ZoneId? = null,
+    val skippedOccurrence: Instant? = null,
+    val lastTriggeredOccurrence: Instant? = null,
+    val snoozedUntil: Instant? = null,
+    val snoozeMinutes: Int = DEFAULT_SNOOZE_MINUTES,
+    val ringDurationSeconds: Int = DEFAULT_RING_DURATION_SECONDS,
+    val vibrate: Boolean = true,
+    val ringtoneUri: String? = null,
+    val createdAt: Instant,
+) {
+    val schedule: AlarmSchedule
+        get() = AlarmSchedule(
+            time = time,
+            recurrence = recurrence,
+            enabled = enabled,
+            zone = zone,
+            skippedOccurrence = skippedOccurrence,
+            lastTriggeredOccurrence = lastTriggeredOccurrence,
+            snoozedUntil = snoozedUntil,
+        )
+
+    companion object {
+        // Defaults from docs/PLANO.md section 6; they become user settings in phase 8.
+        const val DEFAULT_SNOOZE_MINUTES = 5
+        const val DEFAULT_RING_DURATION_SECONDS = 60
+    }
+}

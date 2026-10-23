@@ -31,8 +31,9 @@ class AppDatabaseMigrationTest {
     fun createsVersion1() = runTest {
         helper.createDatabase(1).use { connection ->
             connection.execSQL(
-                "INSERT INTO alarm (hour, minute, label, enabled, createdAtEpochMillis) " +
-                    "VALUES (7, 30, '', 1, 0)",
+                "INSERT INTO alarm (hour, minute, recurrenceType, weekDays, dates, label, enabled, " +
+                    "snoozeMinutes, ringDurationSeconds, vibrate, createdAt) " +
+                    "VALUES (7, 30, 'ONCE', 0, '', '', 1, 5, 60, 1, 0)",
             )
         }
     }

@@ -40,6 +40,13 @@ data object StopwatchDestination : TopLevelDestination {
 @Serializable
 data object SettingsDestination : NavKey
 
+/** Alarm editor; [alarmId] 0 creates a new alarm. */
+@Serializable
+data class AlarmEditorDestination(val alarmId: Long) : NavKey
+
+@Serializable
+data object ReliabilityDestination : NavKey
+
 /** Debug builds only: compares the glass levels over busy content. */
 @Serializable
 data object GlassLabDestination : NavKey

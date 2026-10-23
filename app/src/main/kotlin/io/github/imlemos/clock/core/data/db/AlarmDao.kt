@@ -1,15 +1,31 @@
 package io.github.imlemos.clock.core.data.db
 
 import androidx.room3.Dao
+import androidx.room3.Insert
 import androidx.room3.Query
-import androidx.room3.Upsert
+import androidx.room3.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AlarmDao {
-    @Query("SELECT * FROM alarm ORDER BY hour, minute")
+    @Query("SELECT * FROM alarm")
     fun observeAll(): Flow<List<AlarmEntity>>
 
-    @Upsert
-    suspend fun upsert(alarm: AlarmEntity): Long
+    @Query("SELECT * FROM alarm")
+    suspend fun getAll(): List<AlarmEntity>
+
+    @Query("SELECT * FROM alarm WHERE id = :id")
+    fun observe(id: Long): Flow<AlarmEntity?>
+
+    @Query("SELECT * FROM alarm WHERE id = :id")
+    suspend fun get(id: Long): AlarmEntity?
+
+    @Insert
+    suspend fun insert(alarm: AlarmEntity): Long
+
+    @Update
+    suspend fun update(alarm: AlarmEntity)
+
+    @Query("DELETE FROM alarm WHERE id = :id")
+    suspend fun delete(id: Long)
 }

@@ -58,4 +58,76 @@
     <string name="glass_level_full">Glass</string>
     <string name="glass_level_blur">Blur only</string>
     <string name="glass_level_solid">Solid</string>
+    <!-- Alarm list and editor -->
+    <string name="alarm_off">Off</string>
+    <string name="alarm_rings_in">Rings in %1$s</string>
+    <string name="duration_minutes">%1$d min</string>
+    <string name="duration_hours">%1$d h</string>
+    <string name="duration_hours_minutes">%1$d h %2$d min</string>
+    <string name="action_edit_alarm">Edit alarm</string>
+    <string name="action_delete_alarm">Delete alarm</string>
+    <string name="action_save">Save</string>
+    <string name="alarm_editor_new_title">New alarm</string>
+    <string name="alarm_editor_edit_title">Edit alarm</string>
+    <string name="alarm_editor_use_keyboard">Type the time</string>
+    <string name="alarm_editor_use_dial">Use the dial</string>
+    <string name="alarm_editor_label">Label</string>
+    <string name="alarm_set_toast">Alarm set · %1$s</string>
+
+    <!-- Ringing -->
+    <string name="alarm_notification_title">Alarm</string>
+    <string name="alarm_action_dismiss">Dismiss</string>
+    <plurals name="alarm_action_snooze_minutes">
+        <item quantity="one">Snooze · %d min</item>
+        <item quantity="other">Snooze · %d min</item>
+    </plurals>
+    <string name="alarm_slide_to_dismiss">Slide to dismiss</string>
+    <string name="alarm_missed_title">Missed alarm · %1$s</string>
+    <string name="channel_alarm_ringing">Ringing alarms</string>
+    <string name="channel_alarm_ringing_description">Shows the alarm on screen while it rings.</string>
+    <string name="channel_alarm_missed">Missed alarms</string>
+    <string name="channel_alarm_missed_description">Alarms that rang without being dismissed.</string>
+
+    <!-- Reliability -->
+    <string name="reliability_title">Alarm reliability</string>
+    <string name="reliability_intro">Android and some manufacturers can stop apps in the background. Check everything below so your alarms always ring.</string>
+    <string name="reliability_section_system">Android settings</string>
+    <string name="reliability_section_vendor">%1$s settings</string>
+    <string name="reliability_section_generic">Your phone</string>
+    <string name="reliability_notifications">Notifications</string>
+    <string name="reliability_notifications_body">Needed to show the alarm while it rings.</string>
+    <string name="reliability_full_screen">Full-screen alarms</string>
+    <string name="reliability_full_screen_body">Lets the alarm appear over the lock screen.</string>
+    <string name="reliability_exact">Alarms and reminders</string>
+    <string name="reliability_exact_body">Lets alarms ring at the exact minute.</string>
+    <string name="reliability_battery">No battery restrictions</string>
+    <string name="reliability_battery_body">Stops battery optimisation from delaying or blocking alarms.</string>
+    <string name="reliability_fix">Fix</string>
+    <string name="reliability_ok">Done</string>
+    <string name="reliability_needs_action">Needs attention</string>
+    <string name="reliability_open_settings">Open settings</string>
+    <string name="reliability_more_info">More tips for your phone</string>
+    <string name="reliability_more_info_summary">Opens dontkillmyapp.com in your browser.</string>
+    <string name="reliability_banner_title">Alarms may not ring</string>
+    <string name="reliability_banner_body">A system setting needs attention. Tap to review.</string>
+    <string name="oem_step_lock_recents_title">Lock the app in recent apps</string>
+    <string name="oem_step_lock_recents_body">Open recent apps, then press and hold (or swipe down on) Clock and choose Lock. Cleaning recent apps will no longer close it.</string>
+    <string name="oem_name_coloros" translatable="false">ColorOS</string>
+    <string name="oem_name_xiaomi" translatable="false">HyperOS / MIUI</string>
+    <string name="oem_name_samsung" translatable="false">One UI</string>
+    <string name="oem_coloros_background_title">Allow background activity</string>
+    <string name="oem_coloros_background_body">In App info, open Battery usage and choose Allow background activity.</string>
+    <string name="oem_xiaomi_autostart_title">Turn on Autostart</string>
+    <string name="oem_xiaomi_autostart_body">In Security, open Autostart and enable Clock.</string>
+    <string name="oem_xiaomi_battery_title">Remove battery restrictions</string>
+    <string name="oem_xiaomi_battery_body">In App info, open Battery saver and choose No restrictions.</string>
+    <string name="oem_samsung_battery_title">Set battery to Unrestricted</string>
+    <string name="oem_samsung_battery_body">In App info, open Battery and choose Unrestricted.</string>
+    <string name="oem_samsung_sleeping_title">Keep Clock out of sleeping apps</string>
+    <string name="oem_samsung_sleeping_body">In Settings, Battery, Background usage limits: make sure Clock is not in Sleeping apps or Deep sleeping apps.</string>
+    <string name="settings_reliability">Alarm reliability</string>
+    <string name="settings_reliability_summary">Check what could stop alarms from ringing.</string>
+    <string name="settings_test_alarm">Test alarm in a minute</string>
+    <string name="settings_test_alarm_summary">Creates a one-off alarm for the next minute.</string>
+    <string name="test_alarm_label">Test alarm</string>
 </resources>

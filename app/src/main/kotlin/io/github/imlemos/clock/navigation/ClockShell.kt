@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -35,7 +36,10 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import io.github.imlemos.clock.BuildConfig
 import io.github.imlemos.clock.R
-import io.github.imlemos.clock.alarm.AlarmsScreen
+import io.github.imlemos.clock.alarm.ui.AlarmEditorScreen
+import io.github.imlemos.clock.alarm.ui.AlarmEditorViewModel
+import io.github.imlemos.clock.alarm.ui.AlarmsScreen
+import io.github.imlemos.clock.reliability.ReliabilityScreen
 import io.github.imlemos.clock.core.designsystem.component.FloatingNavBar
 import io.github.imlemos.clock.core.designsystem.component.GlassIconButton
 import io.github.imlemos.clock.core.designsystem.component.NavBarItem
@@ -50,13 +54,24 @@ import io.github.imlemos.clock.timer.TimersScreen
 /** Space reserved at the bottom of tab screens for the floating "+" and navigation capsule. */
 private val FloatingChromeHeight = 64.dp + 12.dp + 64.dp + 16.dp
 
+/**
+ * @param showReliabilityIntro Opens "Set up reliability" once, on the first launch.
+ */
 @Composable
-fun ClockShell() {
+fun ClockShell(showReliabilityIntro: Boolean, onReliabilityIntroShown: () -> Unit) {
     val backStack = rememberNavBackStack(AlarmsDestination)
+    LaunchedEffect(showReliabilityIntro) {
+        if (showReliabilityIntro) {
+            backStack.add(ReliabilityDestination)
+            onReliabilityIntroShown()
+        }
+    }
     val backdrop = rememberGlassBackdrop()
     val currentTab = backStack.lastOrNull() as? TopLevelDestination
     val tabPadding = PaddingValues(bottom = FloatingChromeHeight)
     val openSettings: () -> Unit = { backStack.add(SettingsDestination) }
+    val openReliability: () -> Unit = { backStack.add(ReliabilityDestination) }
+    val pop: () -> Unit = { backStack.removeLastOrNull() }
 
     Box(
         Modifier
@@ -76,16 +91,26 @@ fun ClockShell() {
             transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
             popTransitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
             entryProvider = entryProvider {
-                entry<AlarmsDestination> { AlarmsScreen(tabPadding, onOpenSettings = openSettings) }
+                entry<AlarmsDestination> {
+                    AlarmsScreen(
+                        contentPadding = tabPadding,
+                        onOpenSettings = openSettings,
+                        onEditAlarm = { backStack.add(AlarmEditorDestination(it)) },
+                        onOpenReliability = openReliability,
+                    )
+                }
                 entry<TimersDestination> { TimersScreen(tabPadding, onOpenSettings = openSettings) }
                 entry<StopwatchDestination> { StopwatchScreen(tabPadding, onOpenSettings = openSettings) }
                 entry<SettingsDestination> {
                     SettingsScreen(
-                        onBack = { backStack.removeLastOrNull() },
+                        onBack = pop,
+                        onOpenReliability = openReliability,
                         onOpenGlassLab = if (BuildConfig.DEBUG) ({ backStack.add(GlassLabDestination) }) else null,
                     )
                 }
-                entry<GlassLabDestination> { GlassLabScreen(onBack = { backStack.removeLastOrNull() }) }
+                entry<GlassLabDestination> { GlassLabScreen(onBack = pop) }
+                entry<AlarmEditorDestination> { key -> AlarmEditorScreen(alarmId = key.alarmId, onClose = pop) }
+                entry<ReliabilityDestination> { ReliabilityScreen(onBack = pop) }
             },
         )
 
@@ -111,8 +136,12 @@ fun ClockShell() {
                             backdrop = backdrop,
                             icon = R.drawable.ic_add,
                             contentDescription = stringResource(addAction),
-                            // Creating alarms and timers arrives in phases 1 and 7.
-                            onClick = {},
+                            onClick = {
+                                // Timers arrive in phase 7.
+                                if (currentTab == AlarmsDestination) {
+                                    backStack.add(AlarmEditorDestination(AlarmEditorViewModel.NEW_ALARM))
+                                }
+                            },
                         )
                     }
                 }

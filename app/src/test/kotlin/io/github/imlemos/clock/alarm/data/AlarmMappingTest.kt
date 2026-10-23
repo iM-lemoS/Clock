@@ -1,0 +1,52 @@
+package io.github.imlemos.clock.alarm.data
+
+import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.core.scheduling.Recurrence
+import io.github.imlemos.clock.core.scheduling.TimeOfDay
+import org.junit.Test
+import java.time.DayOfWeek
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import kotlin.test.assertEquals
+
+class AlarmMappingTest {
+
+    private val base = Alarm(
+        id = 7,
+        time = TimeOfDay(6, 45),
+        label = "Gym",
+        zone = ZoneId.of("America/New_York"),
+        skippedOccurrence = Instant.parse("2026-11-09T11:45:00Z"),
+        lastTriggeredOccurrence = Instant.parse("2026-11-02T11:45:00Z"),
+        snoozedUntil = Instant.parse("2026-11-02T11:50:00Z"),
+        snoozeMinutes = 10,
+        ringDurationSeconds = 120,
+        vibrate = false,
+        ringtoneUri = "content://media/internal/audio/media/42",
+        createdAt = Instant.parse("2026-10-01T00:00:00Z"),
+    )
+
+    @Test
+    fun `once alarm round-trips`() {
+        assertEquals(base, base.toEntity().toAlarm())
+    }
+
+    @Test
+    fun `weekly days round-trip through the bitmask`() {
+        val alarm = base.copy(recurrence = Recurrence.Weekly(setOf(DayOfWeek.MONDAY, DayOfWeek.SUNDAY)))
+        val entity = alarm.toEntity()
+        assertEquals(1 or (1 shl 6), entity.weekDays)
+        assertEquals(alarm, entity.toAlarm())
+    }
+
+    @Test
+    fun `dates are stored sorted and round-trip`() {
+        val alarm = base.copy(
+            recurrence = Recurrence.Dates(setOf(LocalDate.parse("2026-11-17"), LocalDate.parse("2026-11-03"))),
+        )
+        val entity = alarm.toEntity()
+        assertEquals("2026-11-03,2026-11-17", entity.dates)
+        assertEquals(alarm, entity.toAlarm())
+    }
+}
