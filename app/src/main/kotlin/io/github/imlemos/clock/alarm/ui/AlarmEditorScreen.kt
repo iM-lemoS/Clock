@@ -338,11 +338,11 @@ private fun KeyboardTimeInput(time: TimeOfDay, is24Hour: Boolean, onTimeChange: 
         timeSelectorSelectedContentColor = colors.content,
         timeSelectorUnselectedContentColor = colors.contentMuted,
     )
-    // The input draws its own ":" with displayLarge; use the mono face, not Doto's colon glyph.
+    // The input draws its digits and its own ":" with the display styles; use the mono face for
+    // both, not Doto, whose colon is two plus-shaped clusters.
+    val mono = ClockTheme.typography.headline.copy(fontSize = 52.sp, lineHeight = 60.sp)
     MaterialTheme(
-        typography = MaterialTheme.typography.copy(
-            displayLarge = ClockTheme.typography.headline.copy(fontSize = 52.sp, lineHeight = 60.sp),
-        ),
+        typography = MaterialTheme.typography.copy(displayLarge = mono, displayMedium = mono),
     ) {
         TimeInput(state = pickerState, colors = pickerColors)
     }
