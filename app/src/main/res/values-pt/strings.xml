@@ -214,4 +214,9 @@
     <string name="volume_zero_body">Os alarmes vão tocar sem som. Toca para o aumentar.</string>
     <string name="oem_coloros_dnd_title">Permitir alarmes no Não incomodar</string>
     <string name="oem_coloros_dnd_body">Nas definições de notificações da app, liga Permitir no modo Não incomodar. Sem isto, o ColorOS toca o alarme mas esconde o ecrã dele enquanto o Não incomodar está ligado.</string>
+    <string name="wheel_hours">Horas</string>
+    <string name="wheel_minutes">Minutos</string>
+    <string name="wheel_period">AM ou PM</string>
+    <string name="wheel_increase">Aumentar</string>
+    <string name="wheel_decrease">Diminuir</string>
 </resources>

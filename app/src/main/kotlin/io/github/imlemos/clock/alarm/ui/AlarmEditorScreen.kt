@@ -31,13 +31,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimeInput
-import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -60,6 +60,8 @@ import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
 import io.github.imlemos.clock.core.designsystem.component.ClockTopBar
 import io.github.imlemos.clock.core.designsystem.component.MultiDateCalendar
 import io.github.imlemos.clock.core.designsystem.component.SegmentedControl
+import io.github.imlemos.clock.core.designsystem.component.TimeWheelLabels
+import io.github.imlemos.clock.core.designsystem.component.TimeWheels
 import io.github.imlemos.clock.core.designsystem.component.WeekdayPicker
 import io.github.imlemos.clock.core.designsystem.component.TopBarIconButton
 import io.github.imlemos.clock.core.designsystem.glass.CapsuleShape
@@ -111,14 +113,7 @@ fun AlarmEditorScreen(
         )
         if (!state.loaded) return@Column
 
-        val pickerState = rememberTimePickerState(
-            initialHour = state.time.hour,
-            initialMinute = state.time.minute,
-            is24Hour = android.text.format.DateFormat.is24HourFormat(context),
-        )
-        LaunchedEffect(pickerState) {
-            snapshotFlow { TimeOfDay(pickerState.hour, pickerState.minute) }.collect(viewModel::setTime)
-        }
+        val is24Hour = android.text.format.DateFormat.is24HourFormat(context)
 
         Column(
             Modifier
@@ -129,34 +124,16 @@ fun AlarmEditorScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(Modifier.height(8.dp))
-            val pickerColors = TimePickerDefaults.colors(
-                clockDialColor = colors.surface,
-                clockDialSelectedContentColor = colors.onAccent,
-                clockDialUnselectedContentColor = colors.content,
-                selectorColor = colors.accent,
-                containerColor = colors.background,
-                periodSelectorBorderColor = colors.outline,
-                periodSelectorSelectedContainerColor = colors.content,
-                periodSelectorUnselectedContainerColor = colors.background,
-                periodSelectorSelectedContentColor = colors.background,
-                periodSelectorUnselectedContentColor = colors.content,
-                timeSelectorSelectedContainerColor = colors.surfaceRaised,
-                timeSelectorUnselectedContainerColor = colors.surface,
-                timeSelectorSelectedContentColor = colors.content,
-                timeSelectorUnselectedContentColor = colors.contentMuted,
-            )
-            // The picker draws its own ":" with displayLarge; use the mono face there instead of
-            // Doto, whose colon glyph does not fit the design (DotTime draws its own).
-            MaterialTheme(
-                typography = MaterialTheme.typography.copy(
-                    displayLarge = ClockTheme.typography.headline.copy(fontSize = 52.sp, lineHeight = 60.sp),
-                ),
-            ) {
-                if (keyboardInput) {
-                    TimeInput(state = pickerState, colors = pickerColors)
-                } else {
-                    TimePicker(state = pickerState, colors = pickerColors)
-                }
+            if (keyboardInput) {
+                KeyboardTimeInput(time = state.time, is24Hour = is24Hour, onTimeChange = viewModel::setTime)
+            } else {
+                TimeWheels(
+                    hour = state.time.hour,
+                    minute = state.time.minute,
+                    is24Hour = is24Hour,
+                    onChange = { hour, minute -> viewModel.setTime(TimeOfDay(hour, minute)) },
+                    labels = rememberTimeWheelLabels(locale),
+                )
             }
             Spacer(Modifier.height(16.dp))
             RecurrenceSection(state = state, viewModel = viewModel, locale = locale)
@@ -298,5 +275,51 @@ private fun Hint(text: String) {
         style = ClockTheme.typography.caption,
         color = ClockTheme.colors.contentMuted,
         modifier = Modifier.padding(top = 8.dp),
+    )
+}
+
+/** The keyboard alternative to the wheels (Material time input, styled for the app). */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun KeyboardTimeInput(time: TimeOfDay, is24Hour: Boolean, onTimeChange: (TimeOfDay) -> Unit) {
+    val colors = ClockTheme.colors
+    // Recreated each time keyboard mode opens, starting from the current wheel value.
+    val pickerState = rememberTimePickerState(initialHour = time.hour, initialMinute = time.minute, is24Hour = is24Hour)
+    LaunchedEffect(pickerState) {
+        snapshotFlow { TimeOfDay(pickerState.hour, pickerState.minute) }.collect(onTimeChange)
+    }
+    val pickerColors = TimePickerDefaults.colors(
+        containerColor = colors.background,
+        periodSelectorBorderColor = colors.outline,
+        periodSelectorSelectedContainerColor = colors.content,
+        periodSelectorUnselectedContainerColor = colors.background,
+        periodSelectorSelectedContentColor = colors.background,
+        periodSelectorUnselectedContentColor = colors.content,
+        timeSelectorSelectedContainerColor = colors.surfaceRaised,
+        timeSelectorUnselectedContainerColor = colors.surface,
+        timeSelectorSelectedContentColor = colors.content,
+        timeSelectorUnselectedContentColor = colors.contentMuted,
+    )
+    // The input draws its own ":" with displayLarge; use the mono face, not Doto's colon glyph.
+    MaterialTheme(
+        typography = MaterialTheme.typography.copy(
+            displayLarge = ClockTheme.typography.headline.copy(fontSize = 52.sp, lineHeight = 60.sp),
+        ),
+    ) {
+        TimeInput(state = pickerState, colors = pickerColors)
+    }
+}
+
+@Composable
+private fun rememberTimeWheelLabels(locale: java.util.Locale): TimeWheelLabels {
+    val amPm = remember(locale) { java.text.DateFormatSymbols.getInstance(locale).amPmStrings }
+    return TimeWheelLabels(
+        hours = stringResource(R.string.wheel_hours),
+        minutes = stringResource(R.string.wheel_minutes),
+        period = stringResource(R.string.wheel_period),
+        am = amPm[0],
+        pm = amPm[1],
+        increase = stringResource(R.string.wheel_increase),
+        decrease = stringResource(R.string.wheel_decrease),
     )
 }

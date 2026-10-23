@@ -131,8 +131,9 @@ private const val POINT_WIDTH = 0.26f
 private const val DOT_RADIUS = 0.055f
 private const val COLON_WIDTH = 0.34f
 
+/** The drawn ':' used between dot-matrix digits; also separates time wheels. */
 @Composable
-private fun DotColon(style: TextStyle, color: Color) {
+fun DotColon(style: TextStyle, color: Color) {
     val density = LocalDensity.current
     val fontPx = with(density) { style.fontSize.toPx() }
     Canvas(

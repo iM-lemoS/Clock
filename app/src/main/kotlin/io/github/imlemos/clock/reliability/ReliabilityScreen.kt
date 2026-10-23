@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,7 +68,7 @@ fun ReliabilityScreen(onBack: () -> Unit, viewModel: ReliabilityViewModel = hilt
     val context = LocalContext.current
     val colors = ClockTheme.colors
     var status by remember { mutableStateOf(viewModel.checker.status()) }
-    var resumeTick by remember { mutableStateOf(0) }
+    var resumeTick by remember { mutableIntStateOf(0) }
     // Re-check whenever the user comes back from a system settings screen.
     LifecycleResumeEffect(Unit) {
         status = viewModel.checker.status()

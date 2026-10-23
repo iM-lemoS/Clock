@@ -220,4 +220,9 @@
     <string name="volume_zero_body">Alarms will ring silently. Tap to raise it.</string>
     <string name="oem_coloros_dnd_title">Allow alarms during Do Not Disturb</string>
     <string name="oem_coloros_dnd_body">In the app\'s notification settings, turn on Allow in Do Not Disturb. Otherwise ColorOS plays the alarm but hides its screen while Do Not Disturb is on.</string>
+    <string name="wheel_hours">Hours</string>
+    <string name="wheel_minutes">Minutes</string>
+    <string name="wheel_period">AM or PM</string>
+    <string name="wheel_increase">Increase</string>
+    <string name="wheel_decrease">Decrease</string>
 </resources>
