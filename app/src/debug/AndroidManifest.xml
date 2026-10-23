@@ -11,6 +11,7 @@
                 <action android:name="io.github.imlemos.clock.debug.TEST_ALARM" />
                 <action android:name="io.github.imlemos.clock.debug.DELETE_ALL_ALARMS" />
                 <action android:name="io.github.imlemos.clock.debug.SET_NOTICES" />
+                <action android:name="io.github.imlemos.clock.debug.SET_AUDIO_OUTPUT" />
             </intent-filter>
         </receiver>
     </application>

@@ -32,19 +32,24 @@ class AudioMathTest {
     }
 
     @Test
-    fun `phone and Bluetooth keeps the system routing`() {
-        assertNull(AudioMath.preferredOutput(AudioOutput.PHONE_AND_BLUETOOTH, listOf(SPEAKER, BLUETOOTH)))
+    fun `phone and Bluetooth plays on both when Bluetooth is connected`() {
+        assertEquals(listOf(SPEAKER, BLUETOOTH), AudioMath.outputTargets(AudioOutput.PHONE_AND_BLUETOOTH, listOf(SPEAKER, BLUETOOTH, OTHER)))
+    }
+
+    @Test
+    fun `phone and Bluetooth keeps the system routing without Bluetooth`() {
+        assertEquals(listOf(null), AudioMath.outputTargets(AudioOutput.PHONE_AND_BLUETOOTH, listOf(SPEAKER, OTHER)))
     }
 
     @Test
     fun `phone only forces the speaker`() {
-        assertEquals(SPEAKER, AudioMath.preferredOutput(AudioOutput.PHONE_ONLY, listOf(SPEAKER, BLUETOOTH)))
+        assertEquals(listOf(SPEAKER), AudioMath.outputTargets(AudioOutput.PHONE_ONLY, listOf(SPEAKER, BLUETOOTH)))
     }
 
     @Test
     fun `Bluetooth only uses Bluetooth when connected and the speaker otherwise`() {
-        assertEquals(BLUETOOTH, AudioMath.preferredOutput(AudioOutput.BLUETOOTH_ONLY, listOf(SPEAKER, BLUETOOTH, OTHER)))
-        assertEquals(SPEAKER, AudioMath.preferredOutput(AudioOutput.BLUETOOTH_ONLY, listOf(SPEAKER, OTHER)))
+        assertEquals(listOf(BLUETOOTH), AudioMath.outputTargets(AudioOutput.BLUETOOTH_ONLY, listOf(SPEAKER, BLUETOOTH, OTHER)))
+        assertEquals(listOf(SPEAKER), AudioMath.outputTargets(AudioOutput.BLUETOOTH_ONLY, listOf(SPEAKER, OTHER)))
     }
 
     @Test

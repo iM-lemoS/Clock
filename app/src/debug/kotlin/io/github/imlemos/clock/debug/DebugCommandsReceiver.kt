@@ -11,6 +11,7 @@ import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.model.AlarmSound
 import io.github.imlemos.clock.alarm.model.GradualVolume
 import io.github.imlemos.clock.alarm.model.Vibration
+import io.github.imlemos.clock.core.data.prefs.AudioOutput
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
@@ -39,6 +40,7 @@ import javax.inject.Inject
  * adb shell am broadcast -a io.github.imlemos.clock.debug.DELETE_ALL_ALARMS -n <same component>
  * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_NOTICES -n <same component> --es minutes 30,5
  *     (empty string disables notices)
+ * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_AUDIO_OUTPUT -n <same component> --es output PHONE_ONLY
  * ```
  */
 @AndroidEntryPoint
@@ -63,6 +65,8 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                         sound = soundFrom(intent, settings.defaultSound.first()),
                     )
                     ACTION_DELETE_ALL -> repository.getAll().forEach { controller.delete(it.id) }
+                    ACTION_SET_AUDIO_OUTPUT ->
+                        settings.setAudioOutput(AudioOutput.valueOf(intent.getStringExtra("output").orEmpty()))
                     ACTION_SET_NOTICES -> {
                         val minutes = intent.getStringExtra("minutes").orEmpty().split(',').mapNotNull { it.trim().toIntOrNull() }
                         settings.setNoticeMinutes(minutes.toSet())
@@ -123,6 +127,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
         const val ACTION_TEST_ALARM = "io.github.imlemos.clock.debug.TEST_ALARM"
         const val ACTION_DELETE_ALL = "io.github.imlemos.clock.debug.DELETE_ALL_ALARMS"
         const val ACTION_SET_NOTICES = "io.github.imlemos.clock.debug.SET_NOTICES"
+        const val ACTION_SET_AUDIO_OUTPUT = "io.github.imlemos.clock.debug.SET_AUDIO_OUTPUT"
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 }

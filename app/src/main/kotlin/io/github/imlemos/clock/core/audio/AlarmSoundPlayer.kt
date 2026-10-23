@@ -40,6 +40,8 @@ import javax.inject.Singleton
  *
  * - If no ringtone can be opened (e.g. a missing file) it falls back to the system default alarm,
  *   then to a generated tone, so an alarm is never silent because of a file.
+ * - "Phone and Bluetooth" plays two synchronised players, one per output, because the system
+ *   routing alone often sends alarms to the speaker only.
  * - Gradual volume ramps the player volume; the alarm stream volume itself is never changed.
  * - "Synced" vibration uses HapticGenerator (haptics derived from the audio) where the phone
  *   supports it, and a regular pattern elsewhere.
@@ -50,8 +52,10 @@ class AlarmSoundPlayer @Inject constructor(@ApplicationContext private val conte
     private val audioManager = context.getSystemService(AudioManager::class.java)
     private val vibrator = context.getSystemService(VibratorManager::class.java).defaultVibrator
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val mainHandler = Handler(Looper.getMainLooper())
 
-    private var player: MediaPlayer? = null
+    /** One player per output. */
+    private val players = mutableListOf<MediaPlayer>()
     private var tone: ToneGenerator? = null
     private var haptics: HapticGenerator? = null
     private var rampJob: Job? = null
@@ -70,18 +74,22 @@ class AlarmSoundPlayer @Inject constructor(@ApplicationContext private val conte
             RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE),
         ).distinct()
         val initialVolume = if (sound.gradual.enabled) 0f else 1f
-        player = candidates.firstNotNullOfOrNull { openPlayer(it, attributes, output, initialVolume) }
+        val targets = outputTargets(output)
+        val group = candidates.firstNotNullOfOrNull { uri -> openGroup(uri, attributes, targets, initialVolume) }
 
-        val player = player
-        if (player == null) {
+        if (group == null) {
             Log.w(TAG, "No ringtone could be opened; using a generated tone")
             tone = runCatching { ToneGenerator(AudioManager.STREAM_ALARM, ToneGenerator.MAX_VOLUME) }.getOrNull()
                 ?.also { it.startTone(ToneGenerator.TONE_CDMA_HIGH_PBX_L, -1) }
-        } else if (sound.gradual.enabled) {
-            startRamp(player, sound.gradual.seconds * 1_000L, sound.gradual.targetPercent / 100f)
+        } else {
+            players += group
+            // Started together so the outputs stay as close in time as Bluetooth latency allows.
+            players.forEach { it.start() }
+            Log.i(TAG, "Playing on ${players.size} output(s) (output=$output, haptics=$useHaptics)")
+            if (sound.gradual.enabled) startRamp(sound.gradual.seconds * 1_000L, sound.gradual.targetPercent / 100f)
         }
 
-        haptics = if (useHaptics && player != null) attachHaptics(player.audioSessionId) else null
+        haptics = if (useHaptics) players.firstOrNull()?.let { attachHaptics(it.audioSessionId) } else null
         if (haptics == null) startVibration(sound.vibration)
     }
 
@@ -91,7 +99,7 @@ class AlarmSoundPlayer @Inject constructor(@ApplicationContext private val conte
      */
     fun silence(alsoVibration: Boolean) {
         rampJob?.cancel()
-        player?.runCatching { setVolume(0f, 0f) }
+        players.forEach { it.runCatching { setVolume(0f, 0f) } }
         tone?.runCatching { stopTone() }
         val hadAudioHaptics = haptics != null
         releaseHaptics()
@@ -107,8 +115,8 @@ class AlarmSoundPlayer @Inject constructor(@ApplicationContext private val conte
         rampJob?.cancel()
         rampJob = null
         releaseHaptics()
-        player?.runCatching { stop(); release() }
-        player = null
+        players.forEach { it.runCatching { stop(); release() } }
+        players.clear()
         tone?.runCatching { stopTone(); release() }
         tone = null
         vibrator.cancel()
@@ -128,26 +136,57 @@ class AlarmSoundPlayer @Inject constructor(@ApplicationContext private val conte
         .setHapticChannelsMuted(hapticsMuted)
         .build()
 
-    private fun openPlayer(uri: Uri, attributes: AudioAttributes, output: AudioOutput, volume: Float): MediaPlayer? =
-        runCatching {
-            MediaPlayer().apply {
+    private fun mediaCopyAttributes(): AudioAttributes = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_MEDIA)
+        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+        .build()
+
+    /** Prepares one player per target, or none if any of them fails for this [uri]. */
+    private fun openGroup(
+        uri: Uri,
+        attributes: AudioAttributes,
+        targets: List<AudioDeviceInfo?>,
+        volume: Float,
+    ): List<MediaPlayer>? {
+        val group = targets.mapIndexed { index, device ->
+            // Android mixes simultaneous alarm-usage players into a single output, so the extra
+            // Bluetooth copy uses media usage; the first player stays the alarm-stream one.
+            val playerAttributes = if (index == 0) attributes else mediaCopyAttributes()
+            openPlayer(uri, playerAttributes, device, volume)
+        }
+        if (group.any { it == null }) {
+            group.filterNotNull().forEach { it.release() }
+            return null
+        }
+        return group.filterNotNull()
+    }
+
+    /** Prepares (without starting) a looping player on [device], or the system routing if `null`. */
+    private fun openPlayer(uri: Uri, attributes: AudioAttributes, device: AudioDeviceInfo?, volume: Float): MediaPlayer? {
+        val player = MediaPlayer()
+        return runCatching {
+            player.apply {
                 setAudioAttributes(attributes)
                 setDataSource(context, uri)
                 isLooping = true
                 prepare()
-                outputDevice(output)?.let(::setPreferredDevice)
+                device?.let(::setPreferredDevice)
                 setVolume(volume, volume)
-                start()
-                Log.i(TAG, "Playing $uri (output=$output, haptics=${!attributes.areHapticChannelsMuted()})")
             }
-        }.onFailure { Log.w(TAG, "Cannot play $uri", it) }.getOrNull()
+        }.onSuccess {
+            Log.i(TAG, "Prepared $uri on ${device?.productName ?: "system routing"}")
+        }.onFailure {
+            Log.w(TAG, "Cannot play $uri", it)
+            player.release()
+        }.getOrNull()
+    }
 
-    /** Maps the output setting to a concrete device, or `null` to keep the system routing. */
-    private fun outputDevice(output: AudioOutput): AudioDeviceInfo? {
+    /** Concrete devices for the output setting; `null` entries keep the system routing. */
+    private fun outputTargets(output: AudioOutput): List<AudioDeviceInfo?> {
         val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).toList()
-        val kinds = devices.map { it.kind }
-        val wanted = AudioMath.preferredOutput(output, kinds) ?: return null
-        return devices.firstOrNull { it.kind == wanted }
+        return AudioMath.outputTargets(output, devices.map { it.kind }).map { kind ->
+            kind?.let { wanted -> devices.firstOrNull { it.kind == wanted } }
+        }
     }
 
     private val AudioDeviceInfo.kind: OutputKind
@@ -161,13 +200,13 @@ class AlarmSoundPlayer @Inject constructor(@ApplicationContext private val conte
             else -> OutputKind.OTHER
         }
 
-    private fun startRamp(player: MediaPlayer, rampMs: Long, target: Float) {
+    private fun startRamp(rampMs: Long, target: Float) {
         val startedAt = SystemClock.elapsedRealtime()
         rampJob = scope.launch {
             while (isActive) {
                 val elapsed = SystemClock.elapsedRealtime() - startedAt
                 val volume = AudioMath.rampVolume(elapsed, rampMs, target)
-                runCatching { player.setVolume(volume, volume) }
+                players.forEach { runCatching { it.setVolume(volume, volume) } }
                 if (elapsed >= rampMs) break
                 delay(RAMP_STEP_MS)
             }
@@ -196,8 +235,6 @@ class AlarmSoundPlayer @Inject constructor(@ApplicationContext private val conte
             .build()
             .also(audioManager::requestAudioFocus)
     }
-
-    private val mainHandler = Handler(Looper.getMainLooper())
 
     private fun startVibration(vibration: Vibration) {
         val pattern = AudioMath.pattern(vibration) ?: return

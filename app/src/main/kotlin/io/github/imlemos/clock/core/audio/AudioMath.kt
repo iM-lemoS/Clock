@@ -19,14 +19,19 @@ object AudioMath {
     enum class OutputKind { SPEAKER, BLUETOOTH, OTHER }
 
     /**
-     * The device to force for [preference], or `null` for the system's normal routing. Bluetooth
-     * only falls back to the speaker when nothing is connected, so an alarm is never silent.
+     * Where to play for [preference]: one entry per player, each the device to force, or `null` for
+     * the system's normal routing. "Phone and Bluetooth" plays on both at once when Bluetooth is
+     * connected (the system routing alone often picks just the speaker). Bluetooth only falls back
+     * to the speaker when nothing is connected, so an alarm is never silent.
      */
-    fun preferredOutput(preference: AudioOutput, available: List<OutputKind>): OutputKind? = when (preference) {
-        AudioOutput.PHONE_AND_BLUETOOTH -> null
-        AudioOutput.PHONE_ONLY -> OutputKind.SPEAKER.takeIf { it in available }
-        AudioOutput.BLUETOOTH_ONLY ->
-            if (OutputKind.BLUETOOTH in available) OutputKind.BLUETOOTH else OutputKind.SPEAKER.takeIf { it in available }
+    fun outputTargets(preference: AudioOutput, available: List<OutputKind>): List<OutputKind?> {
+        val speaker = OutputKind.SPEAKER.takeIf { it in available }
+        val bluetooth = OutputKind.BLUETOOTH.takeIf { it in available }
+        return when (preference) {
+            AudioOutput.PHONE_AND_BLUETOOTH -> if (bluetooth != null && speaker != null) listOf(speaker, bluetooth) else listOf(null)
+            AudioOutput.PHONE_ONLY -> listOf(speaker)
+            AudioOutput.BLUETOOTH_ONLY -> listOf(bluetooth ?: speaker)
+        }
     }
 
     /**
