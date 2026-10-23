@@ -43,7 +43,7 @@ fun clockColors(isDark: Boolean, accent: Color = AccentPalette.Default.color): C
             content = Color(0xFFFFFFFF),
             contentMuted = Color(0xFFA0A0A0),
             contentFaint = Color(0xFF333333),
-            outline = Color(0xFF2E2E2E),
+            outline = Color(0xFF474747),
             accent = accent,
             onAccent = onAccent,
         )
@@ -56,7 +56,7 @@ fun clockColors(isDark: Boolean, accent: Color = AccentPalette.Default.color): C
             content = Color(0xFF000000),
             contentMuted = Color(0xFF5F5F5F),
             contentFaint = Color(0xFFCCCCCC),
-            outline = Color(0xFFD1D1D1),
+            outline = Color(0xFFB5B5B5),
             accent = accent,
             onAccent = onAccent,
         )
