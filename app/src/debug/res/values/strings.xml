@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Lets debug and release builds sit side by side on a device. -->
-    <string name="app_name" translatable="false">Clock Debug</string>
-</resources>
