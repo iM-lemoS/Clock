@@ -64,7 +64,10 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                         singleUse = intent.getBooleanExtra("single_use", false),
                         sound = soundFrom(intent, settings.defaultSound.first()),
                     )
-                    ACTION_DELETE_ALL -> repository.getAll().forEach { controller.delete(it.id) }
+                    ACTION_DELETE_ALL -> {
+                        repository.getGroups().forEach { controller.deleteGroup(it.id, withAlarms = true) }
+                        repository.getAll().forEach { controller.delete(it.id) }
+                    }
                     ACTION_SET_AUDIO_OUTPUT ->
                         settings.setAudioOutput(AudioOutput.valueOf(intent.getStringExtra("output").orEmpty()))
                     ACTION_SET_NOTICES -> {

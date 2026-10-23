@@ -2,6 +2,7 @@ package io.github.imlemos.clock.core.data.db
 
 import androidx.room3.ColumnInfo
 import androidx.room3.Entity
+import androidx.room3.Index
 import androidx.room3.PrimaryKey
 import kotlinx.serialization.Serializable
 
@@ -10,7 +11,7 @@ import kotlinx.serialization.Serializable
  * [recurrenceType] plus [weekDays] (bit 0 = Monday) or [dates] (comma-separated ISO dates).
  */
 @Serializable
-@Entity(tableName = "alarm")
+@Entity(tableName = "alarm", indices = [Index("groupId")])
 data class AlarmEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val hour: Int,
@@ -41,4 +42,6 @@ data class AlarmEntity(
     @ColumnInfo(defaultValue = "60") val gradualSeconds: Int = 60,
     /** Display name of [ringtoneUri]; `null` means the system default alarm sound. */
     val ringtoneTitle: String? = null,
+    /** At most one group per alarm. Added in schema 4. */
+    val groupId: Long? = null,
 )

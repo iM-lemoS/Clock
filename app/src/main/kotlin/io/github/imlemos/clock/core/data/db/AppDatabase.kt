@@ -11,7 +11,7 @@ import androidx.room3.RoomDatabase
  * a test in AppDatabaseMigrationTest.
  */
 @Database(
-    entities = [AlarmEntity::class, TrashEntity::class],
+    entities = [AlarmEntity::class, TrashEntity::class, AlarmGroupEntity::class],
     version = AppDatabase.VERSION,
     exportSchema = true,
     autoMigrations = [
@@ -19,6 +19,8 @@ import androidx.room3.RoomDatabase
         AutoMigration(from = 1, to = 2),
         // 3: vibration pattern, gradual volume, ringtone title.
         AutoMigration(from = 2, to = 3),
+        // 4: alarm groups.
+        AutoMigration(from = 3, to = 4),
     ],
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -26,8 +28,10 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun trashDao(): TrashDao
 
+    abstract fun groupDao(): AlarmGroupDao
+
     companion object {
-        const val VERSION = 3
+        const val VERSION = 4
         const val NAME = "clock.db"
     }
 }

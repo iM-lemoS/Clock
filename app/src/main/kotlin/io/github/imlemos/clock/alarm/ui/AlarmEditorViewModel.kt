@@ -10,6 +10,7 @@ import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.alarm.data.AlarmRepository
 import android.net.Uri
 import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.alarm.model.AlarmGroup
 import io.github.imlemos.clock.alarm.model.AlarmSound
 import io.github.imlemos.clock.alarm.model.Vibration
 import io.github.imlemos.clock.core.audio.AlarmSoundPlayer
@@ -41,6 +42,10 @@ data class AlarmEditorState(
     val dates: Set<LocalDate> = emptySet(),
     val singleUse: Boolean = false,
     val sound: AlarmSound = AlarmSound(),
+    val groupId: Long? = null,
+    val groups: List<AlarmGroup> = emptyList(),
+    /** Set when saving would ring together with another alarm (docs/PLANO.md 3.11). */
+    val collision: Collision? = null,
 ) {
     val recurrence: Recurrence?
         get() = when (kind) {
@@ -52,6 +57,9 @@ data class AlarmEditorState(
     /** A weekly alarm needs a day and a dates alarm needs a date before it can be saved. */
     val canSave: Boolean get() = loaded && recurrence != null
 }
+
+/** Another alarm that would ring at the same moment as the one being saved. */
+data class Collision(val other: Alarm, val at: ZonedDateTime)
 
 /** Result of saving, used for the "rings in ..." confirmation. */
 data class SavedAlarm(val nextRing: ZonedDateTime?, val now: ZonedDateTime)
@@ -79,6 +87,9 @@ class AlarmEditorViewModel @AssistedInject constructor(
 
     init {
         viewModelScope.launch {
+            repository.observeGroups().collect { groups -> _state.update { it.copy(groups = groups) } }
+        }
+        viewModelScope.launch {
             val alarm = if (alarmId == NEW_ALARM) null else repository.get(alarmId)
             original = alarm
             _state.update {
@@ -99,6 +110,7 @@ class AlarmEditorViewModel @AssistedInject constructor(
                         dates = (recurrence as? Recurrence.Dates)?.dates.orEmpty(),
                         singleUse = alarm.singleUse,
                         sound = alarm.sound,
+                        groupId = alarm.groupId,
                     )
                 }
             }
@@ -137,25 +149,48 @@ class AlarmEditorViewModel @AssistedInject constructor(
 
     fun previewVibration(vibration: Vibration) = player.previewVibration(vibration)
 
+    fun setGroup(groupId: Long?) = _state.update { it.copy(groupId = groupId) }
+
+    fun createGroup(name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch {
+            val group = controller.createGroup(name)
+            _state.update { it.copy(groupId = group.id) }
+        }
+    }
+
+    fun dismissCollision() = _state.update { it.copy(collision = null) }
+
     /** First selectable date in the calendar: today, in the app's zone. */
     fun today(): LocalDate = clock.instant().atZone(scheduler.appZone()).toLocalDate()
 
-    fun save(onSaved: (SavedAlarm) -> Unit) {
+    /**
+     * Saves the alarm. Unless [force], first checks whether it would ring together with another
+     * alarm and, if so, stops and exposes [AlarmEditorState.collision] so the user can decide.
+     */
+    fun save(force: Boolean = false, onSaved: (SavedAlarm) -> Unit) {
         val current = _state.value
         val recurrence = current.recurrence ?: return
         viewModelScope.launch {
             val base = original ?: Alarm(time = current.time, createdAt = clock.instant())
-            val saved = controller.save(
-                base.copy(
-                    time = current.time,
-                    label = current.label.trim(),
-                    recurrence = recurrence,
-                    singleUse = current.singleUse,
-                    sound = current.sound,
-                    enabled = true,
-                ),
+            val edited = base.copy(
+                time = current.time,
+                label = current.label.trim(),
+                recurrence = recurrence,
+                singleUse = current.singleUse,
+                sound = current.sound,
+                groupId = current.groupId,
+                enabled = true,
             )
             val zone = scheduler.appZone()
+            if (!force) {
+                controller.findCollision(edited)?.let { (other, at) ->
+                    _state.update { it.copy(collision = Collision(other, at.atZone(zone))) }
+                    return@launch
+                }
+            }
+            _state.update { it.copy(collision = null) }
+            val saved = controller.save(edited)
             onSaved(SavedAlarm(scheduler.nextTrigger(saved)?.at?.atZone(zone), clock.instant().atZone(zone)))
         }
     }

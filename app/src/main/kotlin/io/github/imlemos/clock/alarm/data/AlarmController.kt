@@ -2,6 +2,8 @@ package io.github.imlemos.clock.alarm.data
 
 import android.util.Log
 import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.alarm.model.AlarmGroup
+import io.github.imlemos.clock.alarm.model.AlarmPatch
 import io.github.imlemos.clock.alarm.scheduling.AlarmScheduler
 import io.github.imlemos.clock.core.audio.RingtoneStore
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
@@ -11,6 +13,8 @@ import io.github.imlemos.clock.core.scheduling.AlarmCalculator
 import io.github.imlemos.clock.core.scheduling.AlarmLifecycle
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.trash.TrashRepository
+import io.github.imlemos.clock.trash.TrashedAlarm
+import io.github.imlemos.clock.trash.TrashedGroup
 import kotlinx.coroutines.flow.first
 import java.time.Clock
 import java.time.Duration
@@ -54,24 +58,117 @@ class AlarmController @Inject constructor(
     }
 
     /**
-     * Brings an alarm back from the trash. One that the app removed after its last ring comes back
-     * switched off: it already rang.
+     * Brings an item back from the trash: an alarm, or a group with all its alarms. An alarm the app
+     * removed after its last ring comes back switched off: it already rang.
      */
-    suspend fun restore(trashId: Long): Alarm? {
-        val automatic = trash.get(trashId)?.automatic ?: return null
-        val restored = trash.restore(trashId) { alarm ->
-            alarm.copy(
-                enabled = alarm.enabled && !automatic,
-                snoozedUntil = null,
-                skippedOccurrence = null,
-                armedAt = clock.instant(),
-            )
-        } ?: return null
-        settings.removePendingUndo(trashId)
-        notifications.cancelDeleted(trashId)
+    suspend fun restore(trashId: Long): List<Alarm> = when (val item = trash.get(trashId)) {
+        is TrashedAlarm -> listOfNotNull(restoreAlarm(trashId, item.automatic))
+        is TrashedGroup -> restoreGroup(trashId, alarmIds = null)
+        null -> emptyList()
+    }
+
+    /** Restores a deleted group with the chosen alarms (`null` = all of them). */
+    suspend fun restoreGroup(trashId: Long, alarmIds: Set<Long>?): List<Alarm> {
+        val restored = trash.restoreGroup(trashId, alarmIds) { it.readyToRestore(automatic = false) } ?: return emptyList()
+        afterRestore(trashId)
+        restored.forEach { schedule(it) }
+        return restored
+    }
+
+    private suspend fun restoreAlarm(trashId: Long, automatic: Boolean): Alarm? {
+        val restored = trash.restoreAlarm(trashId) { it.readyToRestore(automatic) } ?: return null
+        afterRestore(trashId)
         schedule(restored)
         return restored
     }
+
+    private fun Alarm.readyToRestore(automatic: Boolean) = copy(
+        enabled = enabled && !automatic,
+        snoozedUntil = null,
+        skippedOccurrence = null,
+        armedAt = clock.instant(),
+    )
+
+    private suspend fun afterRestore(trashId: Long) {
+        settings.removePendingUndo(trashId)
+        notifications.cancelDeleted(trashId)
+    }
+
+    // --- Groups and batch actions (docs/PLANO.md 3.8, 3.9) ---
+
+    suspend fun createGroup(name: String): AlarmGroup =
+        repository.saveGroup(AlarmGroup(name = name.trim(), createdAt = clock.instant()))
+
+    suspend fun renameGroup(id: Long, name: String) {
+        val group = repository.getGroup(id) ?: return
+        repository.saveGroup(group.copy(name = name.trim()))
+    }
+
+    /** Master switch: silences or restores the group's alarms without touching their own switches. */
+    suspend fun setGroupEnabled(id: Long, enabled: Boolean) {
+        val group = repository.getGroup(id) ?: return
+        repository.saveGroup(group.copy(enabled = enabled))
+        repository.inGroup(id).forEach { alarm ->
+            // Re-arm so occurrences while the group was off are not reported as missed.
+            schedule(if (enabled) repository.save(alarm.copy(armedAt = clock.instant())) else alarm)
+        }
+    }
+
+    suspend fun setGroupExpanded(id: Long, expanded: Boolean) {
+        val group = repository.getGroup(id) ?: return
+        repository.saveGroup(group.copy(expanded = expanded))
+    }
+
+    /** Moves alarms into [groupId], or out of any group when `null`. */
+    suspend fun moveToGroup(ids: Collection<Long>, groupId: Long?) {
+        ids.forEach { id ->
+            val alarm = repository.get(id) ?: return@forEach
+            schedule(repository.save(alarm.copy(groupId = groupId, armedAt = clock.instant())))
+        }
+    }
+
+    /**
+     * Deletes a group: only the group (its alarms stay, ungrouped) or the group with its alarms.
+     * Either way it goes to the trash and is offered for undo. Returns the trash id.
+     */
+    suspend fun deleteGroup(id: Long, withAlarms: Boolean): Long? {
+        val group = repository.getGroup(id) ?: return null
+        val members = repository.inGroup(id)
+        if (withAlarms) members.forEach { unschedule(it.id) }
+        val trashId = trash.moveGroupToTrash(group, withAlarms)
+        // Alarms left without their (possibly disabled) group may be active again.
+        if (!withAlarms) members.forEach { member -> repository.get(member.id)?.let { schedule(it) } }
+        settings.addPendingUndo(trashId)
+        return trashId
+    }
+
+    suspend fun setEnabled(ids: Collection<Long>, enabled: Boolean) = ids.forEach { setEnabled(it, enabled) }
+
+    suspend fun delete(ids: Collection<Long>) = ids.forEach { delete(it) }
+
+    /** Applies a batch edit to each alarm. */
+    suspend fun applyPatch(ids: Collection<Long>, patch: AlarmPatch) {
+        if (patch.isEmpty) return
+        ids.forEach { id -> repository.get(id)?.let { save(patch.applyTo(it)) } }
+    }
+
+    /**
+     * The first other alarm that would ring at the same moment as [alarm] (docs/PLANO.md 3.11),
+     * with that moment. Used to warn when saving.
+     */
+    suspend fun findCollision(alarm: Alarm): Pair<Alarm, Instant>? {
+        val now = clock.instant()
+        val candidate = alarm.schedule.copy(enabled = true, snoozedUntil = null)
+        return repository.getAll()
+            .filter { it.id != alarm.id && isActive(it) }
+            .firstNotNullOfOrNull { other ->
+                AlarmCalculator.firstCollision(candidate, other.schedule, now, scheduler.appZone())?.let { other to it }
+            }
+    }
+
+    /** An alarm rings only if both its own switch and its group's switch are on. */
+    private suspend fun isActive(alarm: Alarm): Boolean =
+        alarm.enabled && (alarm.groupId?.let { repository.getGroup(it)?.enabled } ?: true)
 
     /** Re-registers every alarm with AlarmManager (boot, time or zone change, app update). */
     suspend fun rescheduleAll() {
@@ -90,7 +187,7 @@ class AlarmController @Inject constructor(
      */
     suspend fun checkMissed() {
         val now = clock.instant()
-        repository.getAll().forEach { alarm ->
+        repository.getAll().filter { isActive(it) }.forEach { alarm ->
             val missed = AlarmCalculator.missedOccurrence(alarm.schedule, alarm.armedAt, now, scheduler.appZone())
                 ?: return@forEach
             Log.i(TAG, "Alarm ${alarm.id} missed its occurrence at $missed")
@@ -108,7 +205,7 @@ class AlarmController @Inject constructor(
     suspend fun onFired(id: Long, occurrence: Instant, snooze: Boolean): Alarm? {
         notifications.cancelUpcoming(id)
         val alarm = repository.get(id) ?: return null
-        if (!alarm.enabled) return null
+        if (!isActive(alarm)) return null
         if (snooze && alarm.snoozedUntil == null) return null
         val last = listOfNotNull(alarm.lastTriggeredOccurrence, occurrence).max()
         val updated = repository.save(alarm.copy(lastTriggeredOccurrence = last, snoozedUntil = null))
@@ -177,9 +274,9 @@ class AlarmController @Inject constructor(
         }
     }
 
-    /** Schedules the alarm and its upcoming notice, or cancels both. */
+    /** Schedules the alarm and its upcoming notice, or cancels both (also when its group is off). */
     private suspend fun schedule(alarm: Alarm) {
-        val trigger = scheduler.schedule(alarm)
+        val trigger = scheduler.schedule(if (isActive(alarm)) alarm else alarm.copy(enabled = false))
         if (trigger == null || trigger.isSnooze) {
             scheduler.cancelNotice(alarm.id)
             notifications.cancelUpcoming(alarm.id)

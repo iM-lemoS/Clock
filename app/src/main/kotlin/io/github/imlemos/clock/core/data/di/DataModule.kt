@@ -14,6 +14,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.imlemos.clock.core.data.db.AlarmDao
+import io.github.imlemos.clock.core.data.db.AlarmGroupDao
 import io.github.imlemos.clock.core.data.db.AppDatabase
 import io.github.imlemos.clock.core.data.db.TrashDao
 import io.github.imlemos.clock.core.data.prefs.DataStoreSettingsRepository
@@ -52,6 +53,9 @@ object DataModule {
 
     @Provides
     fun provideTrashDao(database: AppDatabase): TrashDao = database.trashDao()
+
+    @Provides
+    fun provideGroupDao(database: AppDatabase): AlarmGroupDao = database.groupDao()
 
     /**
      * Built on an explicit device-protected path: `preferencesDataStoreFile()` resolves against the

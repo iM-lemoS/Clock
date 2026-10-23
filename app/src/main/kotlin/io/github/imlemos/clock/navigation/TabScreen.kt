@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,12 +16,17 @@ import io.github.imlemos.clock.core.designsystem.component.ClockTopBar
 import io.github.imlemos.clock.core.designsystem.component.DotGrid
 import io.github.imlemos.clock.core.designsystem.component.TopBarIconButton
 
-/** Common frame of the three tabs: title, settings action and a dot-matrix backdrop. */
+/**
+ * Common frame of the three tabs: title, settings action and a dot-matrix backdrop.
+ *
+ * @param actions Replaces the settings action, e.g. with "close" while selecting.
+ */
 @Composable
 fun TabScreen(
     title: String,
     contentPadding: PaddingValues,
     onOpenSettings: () -> Unit,
+    actions: (@Composable RowScope.() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit,
 ) {
     Box(Modifier.fillMaxSize()) {
@@ -28,7 +34,7 @@ fun TabScreen(
         Column(Modifier.fillMaxSize()) {
             ClockTopBar(
                 title = title,
-                actions = {
+                actions = actions ?: {
                     TopBarIconButton(
                         icon = R.drawable.ic_settings,
                         contentDescription = stringResource(R.string.action_settings),

@@ -7,7 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.trash.TrashRepository
-import io.github.imlemos.clock.trash.TrashedAlarm
+import io.github.imlemos.clock.trash.TrashedItem
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -23,7 +23,7 @@ class ShellViewModel @Inject constructor(
     private val controller: AlarmController,
 ) : ViewModel() {
 
-    val pendingUndo: StateFlow<List<TrashedAlarm>> = settings.pendingUndo
+    val pendingUndo: StateFlow<List<TrashedItem>> = settings.pendingUndo
         .map { ids -> ids.mapNotNull { trash.get(it) } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 

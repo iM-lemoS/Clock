@@ -47,6 +47,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +67,7 @@ import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.ui.AlarmEditorScreen
 import io.github.imlemos.clock.alarm.ui.AlarmEditorViewModel
 import io.github.imlemos.clock.alarm.ui.AlarmsScreen
+import io.github.imlemos.clock.alarm.ui.BatchEditScreen
 import io.github.imlemos.clock.reliability.ReliabilityScreen
 import io.github.imlemos.clock.core.designsystem.component.FloatingNavBar
 import io.github.imlemos.clock.core.designsystem.component.GlassIconButton
@@ -92,6 +95,7 @@ fun ClockShell(
     shellViewModel: ShellViewModel = hiltViewModel(),
 ) {
     val backStack = rememberNavBackStack(AlarmsDestination)
+    val chrome = remember { ShellChrome() }
     val pendingUndo by shellViewModel.pendingUndo.collectAsStateWithLifecycle()
     // The pop-up disappears if the app is closed and reopened without touching it (docs/PLANO.md 3.1).
     // "Seen" means on screen for a moment with the phone unlocked: when an alarm screen closes over
@@ -124,46 +128,70 @@ fun ClockShell(
             .fillMaxSize()
             .background(ClockTheme.colors.background),
     ) {
-        NavDisplay(
-            backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
-            modifier = Modifier
-                .fillMaxSize()
-                .glassBackdropSource(backdrop),
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator(),
-            ),
-            transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
-            popTransitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
-            entryProvider = entryProvider {
-                entry<AlarmsDestination> {
-                    AlarmsScreen(
-                        contentPadding = tabPadding,
-                        onOpenSettings = openSettings,
-                        onEditAlarm = { backStack.add(AlarmEditorDestination(it)) },
-                        onOpenReliability = openReliability,
-                    )
-                }
-                entry<TimersDestination> { TimersScreen(tabPadding, onOpenSettings = openSettings) }
-                entry<StopwatchDestination> { StopwatchScreen(tabPadding, onOpenSettings = openSettings) }
-                entry<SettingsDestination> {
-                    SettingsScreen(
-                        onBack = pop,
-                        onOpenReliability = openReliability,
-                        onOpenTrash = { backStack.add(TrashDestination) },
-                        onOpenGlassLab = if (BuildConfig.DEBUG) ({ backStack.add(GlassLabDestination) }) else null,
-                    )
-                }
-                entry<GlassLabDestination> { GlassLabScreen(onBack = pop) }
-                entry<AlarmEditorDestination> { key -> AlarmEditorScreen(alarmId = key.alarmId, onClose = pop) }
-                entry<ReliabilityDestination> { ReliabilityScreen(onBack = pop) }
-                entry<TrashDestination> { TrashScreen(onBack = pop) }
-            },
-        )
+        CompositionLocalProvider(LocalShellChrome provides chrome) {
+            NavDisplay(
+                backStack = backStack,
+                onBack = { backStack.removeLastOrNull() },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .glassBackdropSource(backdrop),
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(),
+                ),
+                transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
+                popTransitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
+                entryProvider = entryProvider {
+                    entry<AlarmsDestination> {
+                        AlarmsScreen(
+                            contentPadding = tabPadding,
+                            onOpenSettings = openSettings,
+                            onEditAlarm = { backStack.add(AlarmEditorDestination(it)) },
+                            onOpenReliability = openReliability,
+                            onBatchEdit = { ids -> if (ids.isNotEmpty()) backStack.add(BatchEditDestination(ids)) },
+                        )
+                    }
+                    entry<TimersDestination> { TimersScreen(tabPadding, onOpenSettings = openSettings) }
+                    entry<StopwatchDestination> { StopwatchScreen(tabPadding, onOpenSettings = openSettings) }
+                    entry<SettingsDestination> {
+                        SettingsScreen(
+                            onBack = pop,
+                            onOpenReliability = openReliability,
+                            onOpenTrash = { backStack.add(TrashDestination) },
+                            onOpenGlassLab = if (BuildConfig.DEBUG) ({ backStack.add(GlassLabDestination) }) else null,
+                        )
+                    }
+                    entry<GlassLabDestination> { GlassLabScreen(onBack = pop) }
+                    entry<AlarmEditorDestination> { key -> AlarmEditorScreen(alarmId = key.alarmId, onClose = pop) }
+                    entry<ReliabilityDestination> { ReliabilityScreen(onBack = pop) }
+                    entry<TrashDestination> { TrashScreen(onBack = pop) }
+                    entry<BatchEditDestination> { key -> BatchEditScreen(alarmIds = key.alarmIds, onClose = pop) }
+                },
+            )
+        }
+
+        val actionBar = chrome.actionBar
+        AnimatedVisibility(
+            visible = currentTab != null && actionBar != null,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            enter = fadeIn() + slideInVertically { it / 2 },
+            exit = fadeOut() + slideOutVertically { it / 2 },
+        ) {
+            GlassSurface(
+                backdrop = backdrop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(16.dp)
+                    .widthIn(max = 480.dp)
+                    .heightIn(min = 64.dp),
+            ) {
+                actionBar?.invoke()
+            }
+        }
 
         AnimatedVisibility(
-            visible = currentTab != null,
+            visible = currentTab != null && actionBar == null,
             modifier = Modifier.align(Alignment.BottomCenter),
             enter = fadeIn() + slideInVertically { it / 2 },
             exit = fadeOut() + slideOutVertically { it / 2 },

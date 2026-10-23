@@ -31,6 +31,6 @@ class MainViewModel @Inject constructor(
     }
 
     fun restore(trashId: Long, onRestored: () -> Unit) {
-        viewModelScope.launch { if (alarms.restore(trashId) != null) onRestored() }
+        viewModelScope.launch { if (alarms.restore(trashId).isNotEmpty()) onRestored() }
     }
 }

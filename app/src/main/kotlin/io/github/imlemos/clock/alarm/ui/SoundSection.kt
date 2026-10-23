@@ -59,7 +59,6 @@ private val RingDurationsMinutes = listOf(1, 2, 3, 5, 10, 15, 20, 30)
  * @param onSystemTonePicked A sound from the system list, or `null` for the system default.
  * @param onFilePicked A file to import (copied into the app by the caller).
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SoundSection(
     sound: AlarmSound,
@@ -69,6 +68,27 @@ fun SoundSection(
     onPreviewVibration: (Vibration) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    Column(modifier.fillMaxWidth()) {
+        ToneField(sound.ringtoneTitle, onSystemTonePicked, onFilePicked)
+        Spacer(Modifier.height(20.dp))
+        VibrationField(sound.vibration) { vibration ->
+            onChange(sound.copy(vibration = vibration))
+            onPreviewVibration(vibration)
+        }
+        Spacer(Modifier.height(20.dp))
+        GradualField(sound.gradual) { onChange(sound.copy(gradual = it)) }
+        Spacer(Modifier.height(20.dp))
+        RingDurationField(sound.ringDurationSeconds) { onChange(sound.copy(ringDurationSeconds = it)) }
+    }
+}
+
+/**
+ * The sound row: system sounds, a file (copied into the app by the caller) or the system default.
+ *
+ * @param onSystemTonePicked A sound from the system list, or `null` for the system default.
+ */
+@Composable
+fun ToneField(title: String?, onSystemTonePicked: (Uri?) -> Unit, onFilePicked: (Uri) -> Unit) {
     val colors = ClockTheme.colors
     var choosingTone by rememberSaveable { mutableStateOf(false) }
     val systemPicker = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -80,8 +100,7 @@ fun SoundSection(
     val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) onFilePicked(uri)
     }
-
-    Column(modifier.fillMaxWidth()) {
+    Column(Modifier.fillMaxWidth()) {
         Label(stringResource(R.string.sound_tone))
         Row(
             Modifier
@@ -94,7 +113,7 @@ fun SoundSection(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = sound.ringtoneTitle ?: stringResource(R.string.sound_default_tone),
+                text = title ?: stringResource(R.string.sound_default_tone),
                 style = ClockTheme.typography.body,
                 color = colors.content,
                 maxLines = 1,
@@ -102,55 +121,7 @@ fun SoundSection(
             )
             Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null, tint = colors.contentMuted)
         }
-
-        Spacer(Modifier.height(20.dp))
-        Label(stringResource(R.string.vibration))
-        ChipRow(
-            options = Vibration.entries.map { it to stringResource(it.label) },
-            selected = sound.vibration,
-            onSelect = { vibration ->
-                onChange(sound.copy(vibration = vibration))
-                onPreviewVibration(vibration)
-            },
-        )
-
-        Spacer(Modifier.height(20.dp))
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .toggleable(
-                    value = sound.gradual.enabled,
-                    role = Role.Switch,
-                    onValueChange = { onChange(sound.copy(gradual = sound.gradual.copy(enabled = it))) },
-                )
-                .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(Modifier.weight(1f)) {
-                Text(stringResource(R.string.gradual), style = ClockTheme.typography.body, color = colors.content)
-                Text(stringResource(R.string.gradual_summary), style = ClockTheme.typography.caption, color = colors.contentMuted)
-            }
-            ClockSwitch(checked = sound.gradual.enabled, onCheckedChange = null)
-        }
-        if (sound.gradual.enabled) {
-            GradualSliders(sound.gradual) { onChange(sound.copy(gradual = it)) }
-        }
-
-        Spacer(Modifier.height(20.dp))
-        Label(stringResource(R.string.ring_duration))
-        ChipRow(
-            options = RingDurationsMinutes.map { it * 60 to stringResource(R.string.duration_minutes, it) },
-            selected = sound.ringDurationSeconds,
-            onSelect = { onChange(sound.copy(ringDurationSeconds = it)) },
-        )
-        Text(
-            stringResource(R.string.ring_duration_summary),
-            style = ClockTheme.typography.caption,
-            color = colors.contentMuted,
-            modifier = Modifier.padding(top = 8.dp),
-        )
     }
-
     if (choosingTone) {
         ToneSourceDialog(
             onSystem = {
@@ -171,6 +142,57 @@ fun SoundSection(
                 onSystemTonePicked(null)
             },
             onDismiss = { choosingTone = false },
+        )
+    }
+}
+
+@Composable
+fun VibrationField(vibration: Vibration, onSelect: (Vibration) -> Unit) {
+    Column(Modifier.fillMaxWidth()) {
+        Label(stringResource(R.string.vibration))
+        ChipRow(
+            options = Vibration.entries.map { it to stringResource(it.label) },
+            selected = vibration,
+            onSelect = onSelect,
+        )
+    }
+}
+
+@Composable
+fun GradualField(gradual: GradualVolume, onChange: (GradualVolume) -> Unit) {
+    val colors = ClockTheme.colors
+    Column(Modifier.fillMaxWidth()) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .toggleable(value = gradual.enabled, role = Role.Switch, onValueChange = { onChange(gradual.copy(enabled = it)) })
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.gradual), style = ClockTheme.typography.body, color = colors.content)
+                Text(stringResource(R.string.gradual_summary), style = ClockTheme.typography.caption, color = colors.contentMuted)
+            }
+            ClockSwitch(checked = gradual.enabled, onCheckedChange = null)
+        }
+        if (gradual.enabled) GradualSliders(gradual, onChange)
+    }
+}
+
+@Composable
+fun RingDurationField(seconds: Int, onSelect: (Int) -> Unit) {
+    Column(Modifier.fillMaxWidth()) {
+        Label(stringResource(R.string.ring_duration))
+        ChipRow(
+            options = RingDurationsMinutes.map { it * 60 to stringResource(R.string.duration_minutes, it) },
+            selected = seconds,
+            onSelect = onSelect,
+        )
+        Text(
+            stringResource(R.string.ring_duration_summary),
+            style = ClockTheme.typography.caption,
+            color = ClockTheme.colors.contentMuted,
+            modifier = Modifier.padding(top = 8.dp),
         )
     }
 }
@@ -246,7 +268,7 @@ private fun ToneSourceDialog(onSystem: () -> Unit, onFile: () -> Unit, onDefault
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun <T> ChipRow(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit) {
+internal fun <T> ChipRow(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit) {
     val colors = ClockTheme.colors
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { (value, label) ->
@@ -268,7 +290,7 @@ private fun <T> ChipRow(options: List<Pair<T, String>>, selected: T, onSelect: (
 }
 
 @Composable
-private fun Label(text: String) {
+internal fun Label(text: String) {
     Text(
         text.uppercase(),
         style = ClockTheme.typography.label,

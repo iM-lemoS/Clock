@@ -20,6 +20,7 @@ data class Alarm(
     val snoozeMinutes: Int = DEFAULT_SNOOZE_MINUTES,
     val sound: AlarmSound = AlarmSound(),
     val singleUse: Boolean = false,
+    val groupId: Long? = null,
     val createdAt: Instant,
     /** When the alarm was last saved or switched on (see AlarmCalculator.missedOccurrence). */
     val armedAt: Instant = createdAt,
@@ -41,3 +42,12 @@ data class Alarm(
         const val DEFAULT_RING_DURATION_SECONDS = 60
     }
 }
+
+/** A named group of alarms; its switch is a master switch (docs/PLANO.md 3.8). */
+data class AlarmGroup(
+    val id: Long = 0,
+    val name: String,
+    val enabled: Boolean = true,
+    val expanded: Boolean = true,
+    val createdAt: Instant,
+)

@@ -28,4 +28,10 @@ interface AlarmDao {
 
     @Query("DELETE FROM alarm WHERE id = :id")
     suspend fun delete(id: Long)
+
+    @Query("SELECT * FROM alarm WHERE groupId = :groupId")
+    suspend fun inGroup(groupId: Long): List<AlarmEntity>
+
+    @Query("UPDATE alarm SET groupId = NULL WHERE groupId = :groupId")
+    suspend fun ungroup(groupId: Long)
 }

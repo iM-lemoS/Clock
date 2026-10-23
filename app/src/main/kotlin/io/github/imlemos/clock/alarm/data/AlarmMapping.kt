@@ -1,10 +1,12 @@
 package io.github.imlemos.clock.alarm.data
 
 import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.alarm.model.AlarmGroup
 import io.github.imlemos.clock.alarm.model.AlarmSound
 import io.github.imlemos.clock.alarm.model.GradualVolume
 import io.github.imlemos.clock.alarm.model.Vibration
 import io.github.imlemos.clock.core.data.db.AlarmEntity
+import io.github.imlemos.clock.core.data.db.AlarmGroupEntity
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
 import java.time.DayOfWeek
@@ -48,6 +50,7 @@ internal fun AlarmEntity.toAlarm(): Alarm = Alarm(
         ringDurationSeconds = ringDurationSeconds,
     ),
     singleUse = singleUse,
+    groupId = groupId,
     createdAt = Instant.ofEpochMilli(createdAt),
     armedAt = Instant.ofEpochMilli(if (armedAt == 0L) createdAt else armedAt),
 )
@@ -81,6 +84,13 @@ internal fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
     gradualTargetPercent = sound.gradual.targetPercent,
     gradualSeconds = sound.gradual.seconds,
     ringtoneTitle = sound.ringtoneTitle,
+    groupId = groupId,
 )
+
+internal fun AlarmGroupEntity.toGroup(): AlarmGroup =
+    AlarmGroup(id, name, enabled, expanded, Instant.ofEpochMilli(createdAt))
+
+internal fun AlarmGroup.toEntity(): AlarmGroupEntity =
+    AlarmGroupEntity(id, name, enabled, expanded, createdAt.toEpochMilli())
 
 private val DayOfWeek.bit: Int get() = 1 shl ordinal

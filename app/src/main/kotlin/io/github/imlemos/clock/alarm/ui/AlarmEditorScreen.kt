@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -47,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
@@ -59,6 +62,8 @@ import io.github.imlemos.clock.R
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
 import io.github.imlemos.clock.core.designsystem.component.ClockTopBar
 import io.github.imlemos.clock.core.designsystem.component.MultiDateCalendar
+import io.github.imlemos.clock.core.designsystem.component.OptionsDialog
+import io.github.imlemos.clock.core.designsystem.component.TextInputDialog
 import io.github.imlemos.clock.core.designsystem.component.SegmentedControl
 import io.github.imlemos.clock.core.designsystem.component.TimeWheelLabels
 import io.github.imlemos.clock.core.designsystem.component.TimeWheels
@@ -85,6 +90,13 @@ fun AlarmEditorScreen(
     var keyboardInput by rememberSaveable { mutableStateOf(false) }
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
     val locale = LocalConfiguration.current.locales[0]
+    val onSaved: (SavedAlarm) -> Unit = { saved ->
+        saved.nextRing?.let { next ->
+            val text = resources.getString(R.string.alarm_set_toast, describeNextRing(resources, saved.now, next, locale))
+            Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+        }
+        onClose()
+    }
 
     Column(
         Modifier
@@ -172,6 +184,8 @@ fun AlarmEditorScreen(
                 }
                 ClockSwitch(checked = state.singleUse, onCheckedChange = null)
             }
+            Spacer(Modifier.height(8.dp))
+            GroupField(state = state, viewModel = viewModel)
             Spacer(Modifier.height(16.dp))
             SoundSection(
                 sound = state.sound,
@@ -204,16 +218,7 @@ fun AlarmEditorScreen(
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                         }
-                        viewModel.save { saved ->
-                            saved.nextRing?.let { next ->
-                                val text = resources.getString(
-                                    R.string.alarm_set_toast,
-                                    describeNextRing(resources, saved.now, next, locale),
-                                )
-                                Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
-                            }
-                            onClose()
-                        }
+                        viewModel.save(onSaved = onSaved)
                     },
                 contentAlignment = Alignment.Center,
             ) {
@@ -224,6 +229,13 @@ fun AlarmEditorScreen(
                 )
             }
         }
+    }
+    state.collision?.let { collision ->
+        CollisionDialog(
+            collision = collision,
+            onSaveAnyway = { viewModel.save(force = true, onSaved = onSaved) },
+            onDismiss = viewModel::dismissCollision,
+        )
     }
 }
 
@@ -321,5 +333,88 @@ private fun rememberTimeWheelLabels(locale: java.util.Locale): TimeWheelLabels {
         pm = amPm[1],
         increase = stringResource(R.string.wheel_increase),
         decrease = stringResource(R.string.wheel_decrease),
+    )
+}
+
+@Composable
+private fun GroupField(state: AlarmEditorState, viewModel: AlarmEditorViewModel) {
+    val colors = ClockTheme.colors
+    var choosing by rememberSaveable { mutableStateOf(false) }
+    var creating by rememberSaveable { mutableStateOf(false) }
+    val groupName = state.groups.firstOrNull { it.id == state.groupId }?.name ?: stringResource(R.string.group_none)
+    Column(Modifier.fillMaxWidth()) {
+        Text(
+            stringResource(R.string.group_field).uppercase(),
+            style = ClockTheme.typography.label,
+            color = colors.contentMuted,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(CapsuleShape)
+                .border(1.dp, colors.outline, CapsuleShape)
+                .clickable(role = Role.Button) { choosing = true }
+                .heightIn(min = 52.dp)
+                .padding(horizontal = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(groupName, style = ClockTheme.typography.body, color = colors.content, maxLines = 1, modifier = Modifier.weight(1f))
+            Icon(painterResource(R.drawable.ic_chevron_right), contentDescription = null, tint = colors.contentMuted)
+        }
+    }
+    if (choosing) {
+        OptionsDialog(
+            title = stringResource(R.string.group_field),
+            options = listOf(stringResource(R.string.group_none) to { viewModel.setGroup(null); choosing = false }) +
+                state.groups.map { group -> group.name to { viewModel.setGroup(group.id); choosing = false } } +
+                listOf(stringResource(R.string.group_new) to { choosing = false; creating = true }),
+            onDismiss = { choosing = false },
+        )
+    }
+    if (creating) {
+        TextInputDialog(
+            title = stringResource(R.string.group_new),
+            label = stringResource(R.string.group_name),
+            initial = "",
+            maxLength = MAX_GROUP_NAME,
+            onConfirm = { name -> viewModel.createGroup(name); creating = false },
+            onDismiss = { creating = false },
+        )
+    }
+}
+
+/** "This alarm rings at the same time as ..." with the choice to save anyway (docs/PLANO.md 3.11). */
+@Composable
+private fun CollisionDialog(collision: Collision, onSaveAnyway: () -> Unit, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val colors = ClockTheme.colors
+    val locale = LocalConfiguration.current.locales[0]
+    val day = java.time.format.DateTimeFormatter
+        .ofPattern(android.text.format.DateFormat.getBestDateTimePattern(locale, "EEEdMMM"), locale)
+        .format(collision.at)
+    val other = collision.other.label.ifBlank { formatTimeOfDay(context, collision.other.time) }
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.collision_title)) },
+        text = {
+            Text(
+                stringResource(R.string.collision_body, other, "$day, ${formatTimeOfDay(context, collision.other.time)}"),
+                style = ClockTheme.typography.body,
+            )
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(onClick = onSaveAnyway) {
+                Text(stringResource(R.string.collision_save_anyway), color = colors.accent)
+            }
+        },
+        dismissButton = {
+            androidx.compose.material3.TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.collision_change), color = colors.content)
+            }
+        },
+        containerColor = colors.surfaceRaised,
+        titleContentColor = colors.content,
+        textContentColor = colors.contentMuted,
     )
 }

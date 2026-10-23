@@ -228,4 +228,55 @@
     <string name="time_format_24">24 h</string>
     <string name="time_format_12">12 h</string>
     <string name="action_close">Fechar</string>
+    <!-- Phase 4: groups, selection, batch edit, collisions -->
+    <plurals name="group_alarm_count">
+        <item quantity="one">%d alarme</item>
+        <item quantity="many">%d alarmes</item>
+        <item quantity="other">%d alarmes</item>
+    </plurals>
+    <string name="trash_restore_group_title">Repor %1$s</string>
+    <plurals name="selected_count">
+        <item quantity="one">%d selecionado</item>
+        <item quantity="many">%d selecionados</item>
+        <item quantity="other">%d selecionados</item>
+    </plurals>
+    <string name="action_select">Selecionar</string>
+    <string name="selection_enable">Ligar</string>
+    <string name="selection_disable">Desligar</string>
+    <string name="selection_group">Grupo</string>
+    <string name="selection_edit">Editar</string>
+    <string name="selection_delete">Apagar</string>
+    <string name="group_off">Grupo desligado</string>
+    <string name="group_next">Próximo: %1$s</string>
+    <string name="group_none_active">Nenhum alarme ligado</string>
+    <string name="group_expand">Mostrar alarmes</string>
+    <string name="group_collapse">Esconder alarmes</string>
+    <string name="group_options">Opções do grupo</string>
+    <string name="group_field">Grupo</string>
+    <string name="group_none">Sem grupo</string>
+    <string name="group_new">Novo grupo</string>
+    <string name="group_name">Nome</string>
+    <string name="group_rename">Mudar o nome do grupo</string>
+    <string name="group_delete">Apagar grupo</string>
+    <string name="group_move_title">Mover para grupo</string>
+    <string name="group_delete_title">Apagar %1$s</string>
+    <string name="group_delete_only">Só o grupo (os alarmes ficam, sem grupo)</string>
+    <string name="group_delete_with_alarms">O grupo e os seus alarmes</string>
+    <plurals name="batch_edit_title">
+        <item quantity="one">Editar %d alarme</item>
+        <item quantity="many">Editar %d alarmes</item>
+        <item quantity="other">Editar %d alarmes</item>
+    </plurals>
+    <plurals name="batch_apply">
+        <item quantity="one">Aplicar a %d alarme</item>
+        <item quantity="many">Aplicar a %d alarmes</item>
+        <item quantity="other">Aplicar a %d alarmes</item>
+    </plurals>
+    <string name="batch_edit_intro">Só mudam os campos que ligares; tudo o resto fica como está em cada alarme.</string>
+    <string name="batch_keep">Não alterar</string>
+    <string name="batch_change">Alterar</string>
+    <string name="collision_title">Toca à mesma hora</string>
+    <string name="collision_body">Este alarme tocaria ao mesmo tempo que %1$s, %2$s.</string>
+    <string name="collision_save_anyway">Guardar mesmo assim</string>
+    <string name="collision_change">Alterar</string>
 </resources>

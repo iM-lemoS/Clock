@@ -50,6 +50,10 @@ data object ReliabilityDestination : NavKey
 @Serializable
 data object TrashDestination : NavKey
 
+/** Batch edit of the selected alarms (docs/PLANO.md 3.9). */
+@Serializable
+data class BatchEditDestination(val alarmIds: List<Long>) : NavKey
+
 /** Debug builds only: compares the glass levels over busy content. */
 @Serializable
 data object GlassLabDestination : NavKey
