@@ -103,10 +103,12 @@ import java.time.format.FormatStyle
 @Composable
 fun LayoutEditorScreen(
     layoutId: Long,
+    newName: String?,
+    requestId: Long,
     onClose: () -> Unit,
     viewModel: LayoutEditorViewModel = hiltViewModel<LayoutEditorViewModel, LayoutEditorViewModel.Factory>(
-        key = "layout-editor-$layoutId",
-        creationCallback = { it.create(layoutId) },
+        key = "layout-editor-$layoutId-$newName-$requestId",
+        creationCallback = { it.create(layoutId, newName, requestId) },
     ),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -115,7 +117,7 @@ fun LayoutEditorScreen(
     var confirmingDiscard by rememberSaveable { mutableStateOf(false) }
     var panelVisible by rememberSaveable { mutableStateOf(true) }
     val sampleLabel = stringResource(R.string.layout_sample_label)
-    BackHandler { if (state.dirty) confirmingDiscard = true else onClose() }
+    BackHandler { if (state.unsaved) confirmingDiscard = true else onClose() }
 
     // The alarm screen is always dark, so the editor is too.
     ClockTheme(darkTheme = true, accent = ClockTheme.colors.accent, glassLevel = LocalGlassLevel.current) {
@@ -171,7 +173,7 @@ fun LayoutEditorScreen(
                     backdrop = backdrop,
                     icon = R.drawable.ic_arrow_back,
                     contentDescription = stringResource(R.string.action_back),
-                    onClick = { if (state.dirty) confirmingDiscard = true else onClose() },
+                    onClick = { if (state.unsaved) confirmingDiscard = true else onClose() },
                     size = 48.dp,
                     tint = colors.content,
                 )
@@ -186,7 +188,8 @@ fun LayoutEditorScreen(
                     Text(state.name, style = ClockTheme.typography.body, color = colors.content, maxLines = 1, modifier = Modifier.padding(horizontal = 16.dp))
                 }
                 PillButton(backdrop, stringResource(R.string.layout_test), accent = false) {
-                    viewModel.save { context.startActivity(AlarmActivity.previewIntent(context, layoutId, sampleLabel)) }
+                    // Previews what is on screen; nothing is saved.
+                    context.startActivity(AlarmActivity.previewIntent(context, state.spec, sampleLabel))
                 }
                 PillButton(backdrop, stringResource(R.string.action_save), accent = true) { viewModel.save(onClose) }
             }

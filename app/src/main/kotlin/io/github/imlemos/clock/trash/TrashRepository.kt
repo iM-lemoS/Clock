@@ -9,6 +9,7 @@ import io.github.imlemos.clock.core.data.db.AlarmDao
 import io.github.imlemos.clock.core.data.db.AlarmEntity
 import io.github.imlemos.clock.core.data.db.AlarmGroupDao
 import io.github.imlemos.clock.core.data.db.AlarmGroupEntity
+import io.github.imlemos.clock.core.data.db.LayoutEntity
 import io.github.imlemos.clock.core.data.db.TrashDao
 import io.github.imlemos.clock.core.data.db.TrashEntity
 import kotlinx.coroutines.flow.Flow
@@ -49,6 +50,31 @@ data class TrashedGroup(
     override val automatic: Boolean get() = false
 }
 
+/**
+ * A deleted alarm screen layout (docs/PLANO.md 3.7). [alarmIds] used it and [wasDefault] tells
+ * whether it was the default; both are put back on restore when nothing replaced them meanwhile.
+ */
+data class TrashedLayout(
+    override val trashId: Long,
+    val layout: LayoutEntity,
+    val alarmIds: List<Long>,
+    val wasDefault: Boolean,
+    override val deletedAt: Instant,
+) : TrashedItem {
+    override val automatic: Boolean get() = false
+}
+
+/** Stored as JSON in the trash table; field names are persisted, never rename them. */
+@Serializable
+private data class LayoutSnapshot(
+    val id: Long,
+    val name: String,
+    val spec: String,
+    val createdAt: Long,
+    val alarmIds: List<Long>,
+    val wasDefault: Boolean,
+)
+
 /** Stored as JSON in the trash table; field names are persisted, never rename them. */
 @Serializable
 private data class GroupSnapshot(
@@ -77,7 +103,33 @@ class TrashRepository @Inject constructor(
         when (item) {
             is TrashedAlarm -> listOf(item.alarm)
             is TrashedGroup -> item.alarms
+            is TrashedLayout -> emptyList()
         }
+    }
+
+    /** Layouts held in the trash (their photos and videos must be kept). */
+    suspend fun allLayouts(): List<LayoutEntity> = trashDao.getAll().mapNotNull { it.toItem() as? TrashedLayout }.map { it.layout }
+
+    /** Keeps a deleted layout; the caller removes it from the library. Returns the trash id. */
+    suspend fun moveLayoutToTrash(layout: LayoutEntity, alarmIds: List<Long>, wasDefault: Boolean): Long {
+        val snapshot = LayoutSnapshot(layout.id, layout.name, layout.spec, layout.createdAt, alarmIds, wasDefault)
+        val id = trashDao.insert(
+            TrashEntity(
+                type = TYPE_LAYOUT,
+                payload = json.encodeToString(LayoutSnapshot.serializer(), snapshot),
+                deletedAt = clock.millis(),
+                automatic = false,
+            ),
+        )
+        prune()
+        return id
+    }
+
+    /** Takes a layout out of the trash (the caller puts it back in the library). */
+    suspend fun takeLayout(trashId: Long): TrashedLayout? {
+        val item = get(trashId) as? TrashedLayout ?: return null
+        trashDao.delete(trashId)
+        return item
     }
 
     /** Removes [alarm] from the alarm list and keeps a snapshot. Returns the trash id. */
@@ -192,6 +244,15 @@ class TrashRepository @Inject constructor(
                     Instant.ofEpochMilli(deletedAt),
                 )
             }
+            TYPE_LAYOUT -> json.decodeFromString(LayoutSnapshot.serializer(), payload).let { snapshot ->
+                TrashedLayout(
+                    id,
+                    LayoutEntity(snapshot.id, snapshot.name, snapshot.spec, snapshot.createdAt),
+                    snapshot.alarmIds,
+                    snapshot.wasDefault,
+                    Instant.ofEpochMilli(deletedAt),
+                )
+            }
             else -> null
         }
     }.getOrNull()
@@ -201,6 +262,7 @@ class TrashRepository @Inject constructor(
         val RETENTION: Duration = Duration.ofDays(30)
         private const val TYPE_ALARM = "ALARM"
         private const val TYPE_GROUP = "GROUP"
+        private const val TYPE_LAYOUT = "LAYOUT"
         private val json = Json { ignoreUnknownKeys = true }
     }
 }

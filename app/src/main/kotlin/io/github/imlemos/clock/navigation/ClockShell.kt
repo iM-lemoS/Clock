@@ -169,13 +169,19 @@ fun ClockShell(
                         AlarmEditorScreen(
                             alarmId = key.alarmId,
                             onClose = pop,
-                            onEditLayout = { backStack.add(LayoutEditorDestination(it)) },
+                            onNewLayout = { from, name, request -> backStack.add(LayoutEditorDestination(from, name, request)) },
                         )
                     }
                     entry<LayoutsDestination> {
-                        LayoutLibraryScreen(onBack = pop, onEdit = { backStack.add(LayoutEditorDestination(it)) })
+                        LayoutLibraryScreen(
+                            onBack = pop,
+                            onEdit = { backStack.add(LayoutEditorDestination(it)) },
+                            onNew = { from, name -> backStack.add(LayoutEditorDestination(from, name)) },
+                        )
                     }
-                    entry<LayoutEditorDestination> { key -> LayoutEditorScreen(layoutId = key.layoutId, onClose = pop) }
+                    entry<LayoutEditorDestination> { key ->
+                        LayoutEditorScreen(layoutId = key.layoutId, newName = key.newName, requestId = key.requestId, onClose = pop)
+                    }
                     entry<ReliabilityDestination> { ReliabilityScreen(onBack = pop) }
                     entry<TrashDestination> { TrashScreen(onBack = pop) }
                     entry<BatchEditDestination> { key -> BatchEditScreen(alarmIds = key.alarmIds, onClose = pop) }

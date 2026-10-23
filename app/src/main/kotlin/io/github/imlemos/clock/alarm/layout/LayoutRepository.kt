@@ -4,6 +4,7 @@ import io.github.imlemos.clock.core.data.db.AlarmDao
 import io.github.imlemos.clock.core.data.db.LayoutDao
 import io.github.imlemos.clock.core.data.db.LayoutEntity
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
+import io.github.imlemos.clock.trash.TrashRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -21,6 +22,7 @@ class LayoutRepository @Inject constructor(
     private val alarmDao: AlarmDao,
     private val settings: SettingsRepository,
     private val backgrounds: BackgroundStore,
+    private val trash: TrashRepository,
     private val clock: Clock,
 ) {
     fun observeAll(): Flow<List<AlarmLayout>> = layoutDao.observeAll().map { rows -> presets() + rows.map { it.toLayout() } }
@@ -35,10 +37,11 @@ class LayoutRepository @Inject constructor(
     suspend fun resolve(layoutId: Long?): LayoutSpec =
         layoutId?.let { get(it)?.spec } ?: get(defaultId())?.spec ?: PresetLayouts.specs.getValue(PresetLayouts.DEFAULT)
 
-    /** A new layout copied from [fromId] (a preset or the user's). Returns its id. */
-    suspend fun duplicate(fromId: Long, name: String): Long {
-        val spec = get(fromId)?.spec ?: LayoutSpec()
-        return layoutDao.insert(LayoutEntity(name = name, spec = LayoutJson.encode(spec), createdAt = clock.millis()))
+    /** Adds a new layout (a draft saved for the first time). Returns its id. */
+    suspend fun create(name: String, spec: LayoutSpec): Long {
+        val id = layoutDao.insert(LayoutEntity(name = name, spec = LayoutJson.encode(spec), createdAt = clock.millis()))
+        cleanBackgrounds()
+        return id
     }
 
     /** Saves a user layout; presets are read-only. */
@@ -53,18 +56,40 @@ class LayoutRepository @Inject constructor(
         layoutDao.update(current.copy(name = name))
     }
 
-    /** Deletes a user layout; alarms using it, and the default if it was this one, fall back. */
+    /**
+     * Moves a user layout to the trash; alarms using it, and the default if it was this one, fall
+     * back until it is restored.
+     */
     suspend fun delete(id: Long) {
-        if (PresetLayouts.isPreset(id)) return
+        val layout = layoutDao.get(id) ?: return
+        val wasDefault = settings.defaultLayoutId.first() == id
+        trash.moveLayoutToTrash(layout, alarmDao.idsWithLayout(id), wasDefault)
         layoutDao.delete(id)
         alarmDao.clearLayout(id)
-        if (settings.defaultLayoutId.first() == id) settings.setDefaultLayoutId(null)
-        cleanBackgrounds()
+        if (wasDefault) settings.setDefaultLayoutId(null)
     }
 
-    /** Removes copied photos and videos no layout refers to anymore. */
+    /**
+     * Brings a layout back from the trash, with the same id when it is free. Alarms that used it
+     * and still have no layout of their own, and the default if still unchanged, use it again.
+     */
+    suspend fun restore(trashId: Long) {
+        val item = trash.takeLayout(trashId) ?: return
+        val original = item.layout
+        val id = if (layoutDao.get(original.id) == null) {
+            layoutDao.insert(original)
+        } else {
+            layoutDao.insert(original.copy(id = 0))
+        }
+        item.alarmIds.forEach { alarmId ->
+            alarmDao.get(alarmId)?.takeIf { it.layoutId == null }?.let { alarmDao.update(it.copy(layoutId = id)) }
+        }
+        if (item.wasDefault && settings.defaultLayoutId.first() == null) settings.setDefaultLayoutId(id)
+    }
+
+    /** Removes copied photos and videos no layout, in the library or the trash, refers to anymore. */
     suspend fun cleanBackgrounds() {
-        val inUse = layoutDao.getAll().mapNotNullTo(mutableSetOf()) { row ->
+        val inUse = (layoutDao.getAll() + trash.allLayouts()).mapNotNullTo(mutableSetOf()) { row ->
             when (val background = LayoutJson.decode(row.spec).background) {
                 is Background.Image -> background.path
                 is Background.Video -> background.path

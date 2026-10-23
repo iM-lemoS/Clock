@@ -15,6 +15,7 @@ import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.trash.TrashRepository
 import io.github.imlemos.clock.trash.TrashedAlarm
 import io.github.imlemos.clock.trash.TrashedGroup
+import io.github.imlemos.clock.trash.TrashedLayout
 import kotlinx.coroutines.flow.first
 import java.time.Clock
 import java.time.Duration
@@ -64,7 +65,8 @@ class AlarmController @Inject constructor(
     suspend fun restore(trashId: Long): List<Alarm> = when (val item = trash.get(trashId)) {
         is TrashedAlarm -> listOfNotNull(restoreAlarm(trashId, item.automatic))
         is TrashedGroup -> restoreGroup(trashId, alarmIds = null)
-        null -> emptyList()
+        // Layouts come back through LayoutRepository.restore.
+        is TrashedLayout, null -> emptyList()
     }
 
     /** Restores a deleted group with the chosen alarms (`null` = all of them). */

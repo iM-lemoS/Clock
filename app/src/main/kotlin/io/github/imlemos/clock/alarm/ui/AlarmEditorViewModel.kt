@@ -10,6 +10,7 @@ import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.alarm.data.AlarmRepository
 import android.net.Uri
 import io.github.imlemos.clock.alarm.layout.AlarmLayout
+import io.github.imlemos.clock.alarm.layout.LayoutDrafts
 import io.github.imlemos.clock.alarm.layout.LayoutRepository
 import io.github.imlemos.clock.alarm.layout.PresetLayouts
 import io.github.imlemos.clock.alarm.model.Alarm
@@ -87,6 +88,7 @@ class AlarmEditorViewModel @AssistedInject constructor(
     private val player: AlarmSoundPlayer,
     private val clock: Clock,
     private val layoutRepository: LayoutRepository,
+    private val drafts: LayoutDrafts,
 ) : ViewModel() {
 
     @AssistedFactory
@@ -104,6 +106,9 @@ class AlarmEditorViewModel @AssistedInject constructor(
         }
         viewModelScope.launch {
             settings.manualZone.collect { zone -> _state.update { it.copy(manualZone = zone) } }
+        }
+        viewModelScope.launch {
+            drafts.created.collect { created -> if (created.requestId == layoutRequest) setLayout(created.layoutId) }
         }
         viewModelScope.launch {
             layoutRepository.observeAll().collect { all ->
@@ -187,13 +192,14 @@ class AlarmEditorViewModel @AssistedInject constructor(
 
     fun setLayout(layoutId: Long?) = _state.update { it.copy(layoutId = layoutId) }
 
-    /** A new layout copied from the default, chosen for this alarm; [onCreated] opens its editor. */
-    fun createLayout(name: String, onCreated: (Long) -> Unit) {
-        viewModelScope.launch {
-            val id = layoutRepository.duplicate(layoutRepository.defaultId(), name)
-            _state.update { it.copy(layoutId = id) }
-            onCreated(id)
-        }
+    private val layoutRequest = System.nanoTime()
+
+    /**
+     * Opens a new layout draft copied from the default ([open] gets the source, name and request);
+     * once the user saves it, this alarm uses it.
+     */
+    fun createLayout(name: String, open: (fromId: Long, name: String, requestId: Long) -> Unit) {
+        viewModelScope.launch { open(layoutRepository.defaultId(), name, layoutRequest) }
     }
 
     /**

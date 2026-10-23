@@ -47,6 +47,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.alarm.layout.LayoutJson
+import io.github.imlemos.clock.alarm.layout.LayoutRepository
+import io.github.imlemos.clock.alarm.layout.LayoutThumbnail
 import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.alarm.ui.describeRecurrence
 import io.github.imlemos.clock.alarm.ui.formatTimeOfDay
@@ -70,12 +73,17 @@ import javax.inject.Inject
 class TrashViewModel @Inject constructor(
     private val trash: TrashRepository,
     private val controller: AlarmController,
+    private val layouts: LayoutRepository,
 ) : ViewModel() {
     val items: StateFlow<List<TrashedItem>> = trash.observe()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun restore(trashId: Long) {
         viewModelScope.launch { controller.restore(trashId) }
+    }
+
+    fun restoreLayout(trashId: Long) {
+        viewModelScope.launch { layouts.restore(trashId) }
     }
 
     fun restoreGroup(trashId: Long, alarmIds: Set<Long>) {
@@ -130,6 +138,7 @@ fun TrashScreen(onBack: () -> Unit, viewModel: TrashViewModel = hiltViewModel())
                 items(items, key = { it.trashId }) { item ->
                     when (item) {
                         is TrashedAlarm -> TrashRow(item, onRestore = { viewModel.restore(item.trashId) })
+                        is TrashedLayout -> TrashLayoutRow(item, onRestore = { viewModel.restoreLayout(item.trashId) })
                         is TrashedGroup -> TrashGroupRow(
                             item,
                             onRestore = {
@@ -253,6 +262,42 @@ private fun TrashGroupRow(item: TrashedGroup, onRestore: () -> Unit) {
                 style = ClockTheme.typography.caption,
                 color = colors.contentMuted,
             )
+            Text(stringResource(R.string.trash_deleted_on, deletedOn), style = ClockTheme.typography.caption, color = colors.contentMuted)
+        }
+        Spacer(Modifier.width(12.dp))
+        Text(
+            stringResource(R.string.trash_restore),
+            style = ClockTheme.typography.label,
+            color = colors.accent,
+            modifier = Modifier
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(role = Role.Button, onClick = onRestore)
+                .padding(8.dp),
+        )
+    }
+}
+
+/** A deleted alarm screen layout, with its preview. */
+@Composable
+private fun TrashLayoutRow(item: TrashedLayout, onRestore: () -> Unit) {
+    val colors = ClockTheme.colors
+    val locale = LocalConfiguration.current.locales[0]
+    val deletedOn = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
+        .format(item.deletedAt.atZone(ZoneId.systemDefault()))
+    val shape = RoundedCornerShape(24.dp)
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(colors.surface, shape)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        LayoutThumbnail(LayoutJson.decode(item.layout.spec))
+        Spacer(Modifier.width(16.dp))
+        Column(Modifier.weight(1f)) {
+            Text(item.layout.name, style = ClockTheme.typography.title, color = colors.content, maxLines = 1)
+            Text(stringResource(R.string.layout_field), style = ClockTheme.typography.caption, color = colors.contentMuted)
             Text(stringResource(R.string.trash_deleted_on, deletedOn), style = ClockTheme.typography.caption, color = colors.contentMuted)
         }
         Spacer(Modifier.width(12.dp))

@@ -370,7 +370,7 @@
         <item quantity="many">Apagar %d layouts?</item>
         <item quantity="other">Apagar %d layouts?</item>
     </plurals>
-    <string name="layouts_delete_body">Os alarmes que os usam voltam ao ecrã predefinido. Não dá para anular.</string>
+    <string name="layouts_delete_body">Vão para o caixote do lixo. Os alarmes que os usam mostram o ecrã predefinido até os restaurares.</string>
     <string name="layout_select">Selecionar</string>
     <string name="action_clear_selection">Limpar seleção</string>
     <string name="layout_style_digital">Digital</string>

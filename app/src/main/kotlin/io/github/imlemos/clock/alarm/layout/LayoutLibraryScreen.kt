@@ -79,11 +79,6 @@ class LayoutLibraryViewModel @Inject constructor(
             LayoutLibraryState(layouts, defaultId?.takeIf { id -> layouts.any { it.id == id } } ?: PresetLayouts.DEFAULT)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LayoutLibraryState())
 
-    /** A copy of [fromId] named [name]; [onCreated] receives its id (to open the editor). */
-    fun duplicate(fromId: Long, name: String, onCreated: (Long) -> Unit) {
-        viewModelScope.launch { onCreated(repository.duplicate(fromId, name)) }
-    }
-
     fun rename(id: Long, name: String) {
         if (name.isNotBlank()) viewModelScope.launch { repository.rename(id, name.trim()) }
     }
@@ -125,6 +120,7 @@ fun newLayoutName(layouts: List<AlarmLayout>): String =
 fun LayoutLibraryScreen(
     onBack: () -> Unit,
     onEdit: (Long) -> Unit,
+    onNew: (fromId: Long, name: String) -> Unit,
     viewModel: LayoutLibraryViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -156,7 +152,7 @@ fun LayoutLibraryScreen(
                 navigationIcon = { TopBarIconButton(R.drawable.ic_arrow_back, stringResource(R.string.action_back), onBack) },
                 actions = {
                     TopBarIconButton(R.drawable.ic_add, stringResource(R.string.layout_new)) {
-                        viewModel.duplicate(state.defaultId, newName, onEdit)
+                        onNew(state.defaultId, newName)
                     }
                 },
             )
@@ -241,13 +237,13 @@ fun LayoutLibraryScreen(
                 add(
                     SheetOption(stringResource(R.string.layout_test), R.drawable.ic_play) {
                         options = null
-                        context.startActivity(AlarmActivity.previewIntent(context, layout.id, sampleLabel))
+                        context.startActivity(AlarmActivity.previewIntent(context, layout.spec, sampleLabel))
                     },
                 )
                 add(
                     SheetOption(stringResource(R.string.layout_duplicate), R.drawable.ic_copy) {
                         options = null
-                        viewModel.duplicate(layout.id, newName, onEdit)
+                        onNew(layout.id, newName)
                     },
                 )
                 if (layout.id != state.defaultId) {

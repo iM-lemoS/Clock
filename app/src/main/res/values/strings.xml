@@ -373,7 +373,7 @@
         <item quantity="one">Delete %d layout?</item>
         <item quantity="other">Delete %d layouts?</item>
     </plurals>
-    <string name="layouts_delete_body">Alarms that use them go back to the default screen. This can\'t be undone.</string>
+    <string name="layouts_delete_body">They go to the trash. Alarms that use them show the default screen until you restore them.</string>
     <string name="layout_select">Select</string>
     <string name="action_clear_selection">Clear selection</string>
     <string name="layout_style_digital">Digital</string>

@@ -12,6 +12,8 @@ import io.github.imlemos.clock.alarm.layout.BackgroundStore
 import io.github.imlemos.clock.alarm.layout.ClockFont
 import io.github.imlemos.clock.alarm.layout.ClockStyle
 import io.github.imlemos.clock.alarm.layout.Frame
+import io.github.imlemos.clock.alarm.layout.CreatedLayout
+import io.github.imlemos.clock.alarm.layout.LayoutDrafts
 import io.github.imlemos.clock.alarm.layout.LayoutGeometry
 import io.github.imlemos.clock.alarm.layout.LayoutRepository
 import io.github.imlemos.clock.alarm.layout.Size2
@@ -33,20 +35,32 @@ data class LayoutEditorState(
     /** Which options the panel shows; `null` is the background. */
     val tab: LayoutElementId? = LayoutElementId.CLOCK,
     val dirty: Boolean = false,
-)
+    /** A draft copied from another layout: nothing is created until it is saved. */
+    val isNew: Boolean = false,
+) {
+    /** Leaving would lose something: changes, or a new layout never saved. */
+    val unsaved: Boolean get() = dirty || isNew
+}
 
 /** Edits one of the user's layouts (presets are duplicated before editing). */
 @HiltViewModel(assistedFactory = LayoutEditorViewModel.Factory::class)
 class LayoutEditorViewModel @AssistedInject constructor(
-    @Assisted val layoutId: Long,
+    @Assisted("layout") val layoutId: Long,
+    @Assisted private val newName: String?,
+    @Assisted("request") private val requestId: Long,
     private val repository: LayoutRepository,
     private val backgrounds: BackgroundStore,
+    private val drafts: LayoutDrafts,
 ) : ViewModel() {
 
     @AssistedFactory
     interface Factory {
-        fun create(layoutId: Long): LayoutEditorViewModel
+        /** [newName] set: a new draft copied from [layoutId]; otherwise edits [layoutId]. */
+        fun create(@Assisted("layout") layoutId: Long, newName: String?, @Assisted("request") requestId: Long): LayoutEditorViewModel
     }
+
+    /** The saved layout's id; for a draft, set once it is first saved. */
+    private var savedId: Long? = if (newName == null) layoutId else null
 
     private val _state = MutableStateFlow(LayoutEditorState())
     val state: StateFlow<LayoutEditorState> = _state.asStateFlow()
@@ -54,7 +68,14 @@ class LayoutEditorViewModel @AssistedInject constructor(
     init {
         viewModelScope.launch {
             val layout = repository.get(layoutId)
-            _state.update { it.copy(loaded = true, name = layout?.name.orEmpty(), spec = layout?.spec ?: LayoutSpec()) }
+            _state.update {
+                it.copy(
+                    loaded = true,
+                    name = newName ?: layout?.name.orEmpty(),
+                    spec = layout?.spec ?: LayoutSpec(),
+                    isNew = newName != null,
+                )
+            }
         }
     }
 
@@ -128,11 +149,19 @@ class LayoutEditorViewModel @AssistedInject constructor(
         }
     }
 
+    /** Saves; a draft becomes a real layout the first time (and is handed to whoever asked). */
     fun save(onSaved: () -> Unit) {
         viewModelScope.launch {
             val current = _state.value
-            repository.save(layoutId, current.name, current.spec)
-            _state.update { it.copy(dirty = false) }
+            val id = savedId
+            if (id == null) {
+                val created = repository.create(current.name, current.spec)
+                savedId = created
+                if (requestId != 0L) drafts.publish(CreatedLayout(requestId, created))
+            } else {
+                repository.save(id, current.name, current.spec)
+            }
+            _state.update { it.copy(dirty = false, isNew = false) }
             onSaved()
         }
     }

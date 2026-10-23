@@ -58,9 +58,12 @@ data class BatchEditDestination(val alarmIds: List<Long>) : NavKey
 @Serializable
 data object LayoutsDestination : NavKey
 
-/** Edits one of the user's layouts. */
+/**
+ * Edits one of the user's layouts or, with [newName], a new draft copied from [layoutId] that is
+ * only created when saved. [requestId] lets the opener receive the new layout (LayoutDrafts).
+ */
 @Serializable
-data class LayoutEditorDestination(val layoutId: Long) : NavKey
+data class LayoutEditorDestination(val layoutId: Long, val newName: String? = null, val requestId: Long = 0) : NavKey
 
 /** Debug builds only: compares the glass levels over busy content. */
 @Serializable

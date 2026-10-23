@@ -79,7 +79,7 @@ import io.github.imlemos.clock.core.scheduling.TimeOfDay
 fun AlarmEditorScreen(
     alarmId: Long,
     onClose: () -> Unit,
-    onEditLayout: (Long) -> Unit,
+    onNewLayout: (fromId: Long, name: String, requestId: Long) -> Unit,
     viewModel: AlarmEditorViewModel = hiltViewModel<AlarmEditorViewModel, AlarmEditorViewModel.Factory>(
         key = "alarm-editor-$alarmId",
         creationCallback = { factory -> factory.create(alarmId) },
@@ -209,7 +209,7 @@ fun AlarmEditorScreen(
                 layouts = state.layouts,
                 defaultLayoutId = state.defaultLayoutId,
                 onSelect = viewModel::setLayout,
-                onNew = { viewModel.createLayout(newLayoutName, onEditLayout) },
+                onNew = { viewModel.createLayout(newLayoutName, onNewLayout) },
             )
             Spacer(Modifier.height(16.dp))
             SoundSection(

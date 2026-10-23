@@ -149,7 +149,9 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - A app fica sempre na vertical (o Android 16 pode ignorar isto em ecrãs grandes, ≥ 600 dp).
 - Cores: seletor completo (tom, saturação/brilho e opacidade) com cores rápidas e "cor automática".
 - Foto e vídeo: no separador Fundo, arrastar e afastar os dedos posiciona e amplia (sem nunca deixar margens vazias). Elementos escondidos desaparecem também no editor.
-- "Testar" abre o ecrã do alarme verdadeiro, sem som; adiar ou desligar só fecham a pré-visualização.
+- "Testar" abre o ecrã do alarme verdadeiro com o que está no editor (sem guardar), sem som; adiar ou desligar só fecham a pré-visualização.
+- Um layout novo ou duplicado é um rascunho até se carregar em Guardar; sair com alterações por guardar pede confirmação.
+- Layouts apagados vão para o caixote do lixo; ao restaurar, os alarmes que os usavam (e o predefinido) voltam a usá-los.
 - Se o alarme começa a tocar com o telemóvel em uso e o ecrã é bloqueado, o ecrã do alarme aparece (a notificação é publicada de novo, porque o Android só abre o ecrã inteiro para notificações novas).
 
 ### 3.8 Organização e lista principal
