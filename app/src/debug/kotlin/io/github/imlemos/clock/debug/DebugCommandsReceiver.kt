@@ -8,6 +8,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.alarm.data.AlarmRepository
 import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
 import java.time.DayOfWeek
@@ -31,6 +32,8 @@ import javax.inject.Inject
  * Optional extras: --es days 1,3,5 (ISO days, weekly) | --es dates today,2026-11-03 (dates)
  *     | --ez single_use true
  * adb shell am broadcast -a io.github.imlemos.clock.debug.DELETE_ALL_ALARMS -n <same component>
+ * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_NOTICES -n <same component> --es minutes 30,5
+ *     (empty string disables notices)
  * ```
  */
 @AndroidEntryPoint
@@ -39,6 +42,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
     @Inject lateinit var controller: AlarmController
     @Inject lateinit var repository: AlarmRepository
     @Inject lateinit var clock: Clock
+    @Inject lateinit var settings: SettingsRepository
 
     override fun onReceive(context: Context, intent: Intent) {
         val pending = goAsync()
@@ -53,6 +57,11 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                         singleUse = intent.getBooleanExtra("single_use", false),
                     )
                     ACTION_DELETE_ALL -> repository.getAll().forEach { controller.delete(it.id) }
+                    ACTION_SET_NOTICES -> {
+                        val minutes = intent.getStringExtra("minutes").orEmpty().split(',').mapNotNull { it.trim().toIntOrNull() }
+                        settings.setNoticeMinutes(minutes.toSet())
+                        controller.rescheduleAll()
+                    }
                 }
             } finally {
                 pending.finish()
@@ -86,6 +95,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
         const val TAG = "DebugCommands"
         const val ACTION_TEST_ALARM = "io.github.imlemos.clock.debug.TEST_ALARM"
         const val ACTION_DELETE_ALL = "io.github.imlemos.clock.debug.DELETE_ALL_ALARMS"
+        const val ACTION_SET_NOTICES = "io.github.imlemos.clock.debug.SET_NOTICES"
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 }

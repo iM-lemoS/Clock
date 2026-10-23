@@ -10,6 +10,7 @@
             <intent-filter>
                 <action android:name="io.github.imlemos.clock.debug.TEST_ALARM" />
                 <action android:name="io.github.imlemos.clock.debug.DELETE_ALL_ALARMS" />
+                <action android:name="io.github.imlemos.clock.debug.SET_NOTICES" />
             </intent-filter>
         </receiver>
     </application>
