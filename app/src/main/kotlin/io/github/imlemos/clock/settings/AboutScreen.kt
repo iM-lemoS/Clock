@@ -74,6 +74,14 @@ fun AboutScreen(onBack: () -> Unit) {
                 Spacer(Modifier.height(4.dp))
                 Text(stringResource(R.string.about_privacy_body), style = ClockTheme.typography.body, color = colors.contentMuted)
             }
+            Text(
+                stringResource(R.string.about_credits).uppercase(),
+                style = ClockTheme.typography.label,
+                color = colors.contentMuted,
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 8.dp),
+            )
+            CreditRow(stringResource(R.string.credit_maintainer_name), stringResource(R.string.credit_maintainer_role))
+            CreditRow(stringResource(R.string.credit_claude_name), stringResource(R.string.credit_claude_role))
             Spacer(Modifier.height(8.dp))
             AboutRow(stringResource(R.string.about_source), stringResource(R.string.about_source_summary)) {
                 context.startActivity(Intent(Intent.ACTION_VIEW, SOURCE_URL.toUri()))
@@ -108,6 +116,14 @@ fun AboutScreen(onBack: () -> Unit) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun CreditRow(name: String, role: String) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 10.dp)) {
+        Text(name, style = ClockTheme.typography.body, color = ClockTheme.colors.content)
+        Text(role, style = ClockTheme.typography.caption, color = ClockTheme.colors.contentMuted)
     }
 }
 

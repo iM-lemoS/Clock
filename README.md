@@ -65,6 +65,11 @@ a password manager.
 - `core/scheduling/`: pure Kotlin scheduling logic with unit tests.
 - `licenses/`: licences of bundled fonts and icons.
 
+## Credits
+
+- **Rafael Lemos**: idea, design and testing.
+- **Claude** (Anthropic): code, as an AI pair programmer.
+
 ## Third-party assets
 
 - Fonts, all under the SIL Open Font License 1.1 (`licenses/fonts`), bundled unmodified:

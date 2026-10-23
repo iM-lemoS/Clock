@@ -493,6 +493,9 @@
     <string name="about_version">Versão %1$s</string>
     <string name="about_privacy_title">Privacidade</string>
     <string name="about_privacy_body">Sem acesso à internet e sem análise de utilização: tudo fica no teu telemóvel.</string>
+    <string name="about_credits">Créditos</string>
+    <string name="credit_maintainer_role">Ideia, design e testes</string>
+    <string name="credit_claude_role">Código, como programador de IA da Anthropic</string>
     <string name="about_source">Código-fonte</string>
     <string name="about_source_summary">Abre o projeto no GitHub.</string>
     <string name="about_licences">Licenças de terceiros</string>
