@@ -362,4 +362,17 @@
     <string name="color_brighter">Mais clara</string>
     <string name="color_darker">Mais escura</string>
     <string name="layout_bg_hint">Arrasta e afasta os dedos no ecrã para posicionar e ampliar a foto ou o vídeo.</string>
+    <plurals name="layouts_selected">
+        <item quantity="one">%d selecionado</item>
+        <item quantity="many">%d selecionados</item>
+        <item quantity="other">%d selecionados</item>
+    </plurals>
+    <plurals name="layouts_delete_title">
+        <item quantity="one">Apagar %d layout?</item>
+        <item quantity="many">Apagar %d layouts?</item>
+        <item quantity="other">Apagar %d layouts?</item>
+    </plurals>
+    <string name="layouts_delete_body">Os alarmes que os usam voltam ao ecrã predefinido. Não dá para anular.</string>
+    <string name="layout_select">Selecionar</string>
+    <string name="action_clear_selection">Limpar seleção</string>
 </resources>

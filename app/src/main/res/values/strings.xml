@@ -367,4 +367,15 @@
     <string name="color_brighter">Brighter</string>
     <string name="color_darker">Darker</string>
     <string name="layout_bg_hint">Drag and pinch the screen to position and zoom the photo or video.</string>
+    <plurals name="layouts_selected">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <plurals name="layouts_delete_title">
+        <item quantity="one">Delete %d layout?</item>
+        <item quantity="other">Delete %d layouts?</item>
+    </plurals>
+    <string name="layouts_delete_body">Alarms that use them go back to the default screen. This can\'t be undone.</string>
+    <string name="layout_select">Select</string>
+    <string name="action_clear_selection">Clear selection</string>
 </resources>

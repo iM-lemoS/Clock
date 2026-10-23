@@ -61,6 +61,8 @@ import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
 import io.github.imlemos.clock.core.designsystem.component.DotTime
 import io.github.imlemos.clock.core.designsystem.component.EmptyState
 import io.github.imlemos.clock.core.designsystem.component.OptionsDialog
+import io.github.imlemos.clock.core.designsystem.component.OptionsSheet
+import io.github.imlemos.clock.core.designsystem.component.SheetOption
 import io.github.imlemos.clock.core.designsystem.component.TextInputDialog
 import io.github.imlemos.clock.core.designsystem.component.TopBarIconButton
 import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
@@ -467,11 +469,11 @@ private fun MoveToGroupDialog(
 
 @Composable
 private fun GroupMenuDialog(group: AlarmGroup, onRename: () -> Unit, onDelete: () -> Unit, onDismiss: () -> Unit) {
-    OptionsDialog(
+    OptionsSheet(
         title = group.name,
         options = listOf(
-            stringResource(R.string.group_rename) to onRename,
-            stringResource(R.string.group_delete) to onDelete,
+            SheetOption(stringResource(R.string.group_rename), R.drawable.ic_rename, onClick = onRename),
+            SheetOption(stringResource(R.string.group_delete), R.drawable.ic_delete, destructive = true, onClick = onDelete),
         ),
         onDismiss = onDismiss,
     )
