@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.imlemos.clock.core.data.prefs.ThemeMode
+import io.github.imlemos.clock.core.designsystem.component.OverlayRoot
 import io.github.imlemos.clock.core.designsystem.glass.rememberSystemReducesEffects
 import io.github.imlemos.clock.core.designsystem.glass.resolveGlassLevel
 import io.github.imlemos.clock.core.designsystem.theme.AccentPalette
@@ -55,12 +56,14 @@ class MainActivity : ComponentActivity() {
                 ),
             ) {
                 val showIntro by viewModel.showReliabilityIntro.collectAsStateWithLifecycle()
-                ClockShell(
-                    showReliabilityIntro = showIntro,
-                    onReliabilityIntroShown = viewModel::onReliabilityIntroShown,
-                    requestedTab = requestedTab,
-                    onTabShown = { requestedTab = null },
-                )
+                OverlayRoot {
+                    ClockShell(
+                        showReliabilityIntro = showIntro,
+                        onReliabilityIntroShown = viewModel::onReliabilityIntroShown,
+                        requestedTab = requestedTab,
+                        onTabShown = { requestedTab = null },
+                    )
+                }
             }
         }
     }

@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInput
@@ -53,34 +54,36 @@ fun GlassSurface(
     shape: RoundedCornerShape = CapsuleShape,
     level: GlassLevel = LocalGlassLevel.current,
     contentAlignment: Alignment = Alignment.Center,
+    raised: Boolean = false,
     content: @Composable BoxScope.() -> Unit,
 ) {
     val colors = ClockTheme.colors
+    val tint = glassTint(colors, raised)
     val surfaceModifier = when (level) {
-        GlassLevel.Full -> Modifier.fullGlass(backdrop, shape, colors)
-        GlassLevel.BlurOnly -> Modifier.blurGlass(backdrop, shape, colors)
+        GlassLevel.Full -> Modifier.fullGlass(backdrop, shape, colors, tint)
+        GlassLevel.BlurOnly -> Modifier.blurGlass(backdrop, shape, colors, tint)
         GlassLevel.Solid -> Modifier
             .clip(shape)
-            .background(colors.surfaceRaised, shape)
-            .border(1.dp, colors.outline, shape)
+            .background(if (raised) colors.raisedSolid else colors.surfaceRaised, shape)
+            .border(1.dp, if (raised) colors.content.copy(alpha = 0.22f) else colors.outline, shape)
     }
     Box(modifier = modifier.then(surfaceModifier), contentAlignment = contentAlignment, content = content)
 }
 
 @OptIn(ExperimentalHazeApi::class)
-private fun Modifier.fullGlass(backdrop: GlassBackdrop, shape: RoundedCornerShape, colors: ClockColors): Modifier =
+private fun Modifier.fullGlass(backdrop: GlassBackdrop, shape: RoundedCornerShape, colors: ClockColors, tint: Color): Modifier =
     this
         .hazeGlass(
             input = HazeInput.Sources(backdrop.haze),
             style = GlassStyle.regular.then {
                 shape(shape)
-                tint(colors.background.copy(alpha = if (colors.isDark) 0.35f else 0.45f))
+                tint(tint)
                 backgroundColor(colors.background)
             },
         )
         .border(1.dp, rimBrush(colors), shape)
 
-private fun Modifier.blurGlass(backdrop: GlassBackdrop, shape: RoundedCornerShape, colors: ClockColors): Modifier =
+private fun Modifier.blurGlass(backdrop: GlassBackdrop, shape: RoundedCornerShape, colors: ClockColors, tint: Color): Modifier =
     this
         .clip(shape)
         .hazeBlur(
@@ -88,11 +91,24 @@ private fun Modifier.blurGlass(backdrop: GlassBackdrop, shape: RoundedCornerShap
             style = HazeBlurStyle {
                 blurRadius(24.dp)
                 backgroundColor(colors.background)
-                colorEffects(listOf(HazeColorEffect.tint(colors.background.copy(alpha = 0.55f))))
+                colorEffects(listOf(HazeColorEffect.tint(tint.copy(alpha = (tint.alpha + 0.2f).coerceAtMost(1f)))))
                 noiseFactor(0.04f)
             },
         )
         .border(1.dp, rimBrush(colors), shape)
+
+/**
+ * The glass colour. [raised] layers (dialogs, sheets) sit above a dimmed screen, so they are
+ * lighter than the background in dark mode and brighter in light mode, and read as one panel.
+ */
+private fun glassTint(colors: ClockColors, raised: Boolean): Color = when {
+    !raised -> colors.background.copy(alpha = if (colors.isDark) 0.35f else 0.45f)
+    colors.isDark -> Color(0xFF2C2C2E).copy(alpha = 0.72f)
+    else -> Color.White.copy(alpha = 0.78f)
+}
+
+/** Opaque raised panel when transparency is reduced. */
+private val ClockColors.raisedSolid: Color get() = if (isDark) Color(0xFF242426) else Color.White
 
 /** Subtle reflection on the outline: brighter at the top edge, fading towards the bottom. */
 private fun rimBrush(colors: ClockColors): Brush = Brush.verticalGradient(

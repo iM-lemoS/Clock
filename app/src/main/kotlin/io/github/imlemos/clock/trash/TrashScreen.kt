@@ -1,5 +1,9 @@
 package io.github.imlemos.clock.trash
 
+import io.github.imlemos.clock.core.designsystem.component.DialogButtonStyle
+import io.github.imlemos.clock.core.designsystem.component.DialogAction
+import io.github.imlemos.clock.core.designsystem.component.GlassDialog
+import io.github.imlemos.clock.core.designsystem.component.GlassAlertDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -163,21 +167,17 @@ fun TrashScreen(onBack: () -> Unit, viewModel: TrashViewModel = hiltViewModel())
     }
 
     if (confirmEmpty) {
-        AlertDialog(
-            onDismissRequest = { confirmEmpty = false },
-            title = { Text(stringResource(R.string.trash_empty_confirm_title)) },
-            text = { Text(stringResource(R.string.trash_empty_confirm_body)) },
-            confirmButton = {
-                TextButton(onClick = { viewModel.empty(); confirmEmpty = false }) {
-                    Text(stringResource(R.string.trash_empty_action), color = colors.accent)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirmEmpty = false }) { Text(stringResource(R.string.action_cancel), color = colors.content) }
-            },
-            containerColor = colors.surfaceRaised,
-            titleContentColor = colors.content,
-            textContentColor = colors.contentMuted,
+        GlassAlertDialog(
+            title = stringResource(R.string.trash_empty_confirm_title),
+            text = stringResource(R.string.trash_empty_confirm_body),
+            onDismiss = { confirmEmpty = false },
+            actions = listOf(
+                DialogAction(stringResource(R.string.action_cancel)) { confirmEmpty = false },
+                DialogAction(stringResource(R.string.trash_empty_action), DialogButtonStyle.Destructive) {
+                    viewModel.empty()
+                    confirmEmpty = false
+                },
+            ),
         )
     }
 }
@@ -319,46 +319,41 @@ private fun RestoreGroupDialog(group: TrashedGroup, onRestore: (Set<Long>) -> Un
     val context = LocalContext.current
     val colors = ClockTheme.colors
     var chosen by remember(group) { mutableStateOf(group.alarms.map { it.id }.toSet()) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.trash_restore_group_title, group.group.name)) },
-        text = {
-            Column {
-                group.alarms.forEach { alarm ->
-                    val checked = alarm.id in chosen
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .toggleable(
-                                value = checked,
-                                role = Role.Checkbox,
-                                onValueChange = { chosen = if (it) chosen + alarm.id else chosen - alarm.id },
-                            )
-                            .padding(vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Checkbox(
-                            checked = checked,
-                            onCheckedChange = null,
-                            colors = CheckboxDefaults.colors(checkedColor = colors.accent, checkmarkColor = colors.onAccent),
+    GlassDialog(
+        title = stringResource(R.string.trash_restore_group_title, group.group.name),
+        onDismiss = onDismiss,
+        actions = listOf(
+            DialogAction(stringResource(R.string.action_cancel), onClick = onDismiss),
+            DialogAction(stringResource(R.string.trash_restore), DialogButtonStyle.Primary, enabled = chosen.isNotEmpty()) { onRestore(chosen) },
+        ),
+    ) {
+        Column {
+            group.alarms.forEach { alarm ->
+                val checked = alarm.id in chosen
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .toggleable(
+                            value = checked,
+                            role = Role.Checkbox,
+                            onValueChange = { chosen = if (it) chosen + alarm.id else chosen - alarm.id },
                         )
-                        Spacer(Modifier.width(12.dp))
-                        Text(
-                            formatTimeOfDay(context, alarm.time) + if (alarm.label.isNotBlank()) " · ${alarm.label}" else "",
-                            style = ClockTheme.typography.body,
-                            color = colors.content,
-                        )
-                    }
+                        .padding(vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Checkbox(
+                        checked = checked,
+                        onCheckedChange = null,
+                        colors = CheckboxDefaults.colors(checkedColor = colors.accent, checkmarkColor = colors.onAccent),
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        formatTimeOfDay(context, alarm.time) + if (alarm.label.isNotBlank()) " · ${alarm.label}" else "",
+                        style = ClockTheme.typography.body,
+                        color = colors.content,
+                    )
                 }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = { onRestore(chosen) }) { Text(stringResource(R.string.trash_restore), color = colors.accent) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = colors.content) }
-        },
-        containerColor = colors.surfaceRaised,
-        titleContentColor = colors.content,
-    )
+        }
+    }
 }

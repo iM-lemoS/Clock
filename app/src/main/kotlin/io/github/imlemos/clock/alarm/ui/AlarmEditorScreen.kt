@@ -1,5 +1,8 @@
 package io.github.imlemos.clock.alarm.ui
 
+import io.github.imlemos.clock.core.designsystem.component.DialogButtonStyle
+import io.github.imlemos.clock.core.designsystem.component.DialogAction
+import io.github.imlemos.clock.core.designsystem.component.GlassAlertDialog
 import android.Manifest
 import android.os.Build
 import android.widget.Toast
@@ -420,27 +423,13 @@ private fun CollisionDialog(collision: Collision, onSaveAnyway: () -> Unit, onDi
         .ofPattern(android.text.format.DateFormat.getBestDateTimePattern(locale, "EEEdMMM"), locale)
         .format(collision.at)
     val other = collision.other.label.ifBlank { formatTimeOfDay(context, collision.other.time) }
-    androidx.compose.material3.AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.collision_title)) },
-        text = {
-            Text(
-                stringResource(R.string.collision_body, other, "$day, ${formatTimeOfDay(context, collision.other.time)}"),
-                style = ClockTheme.typography.body,
-            )
-        },
-        confirmButton = {
-            androidx.compose.material3.TextButton(onClick = onSaveAnyway) {
-                Text(stringResource(R.string.collision_save_anyway), color = colors.accent)
-            }
-        },
-        dismissButton = {
-            androidx.compose.material3.TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.collision_change), color = colors.content)
-            }
-        },
-        containerColor = colors.surfaceRaised,
-        titleContentColor = colors.content,
-        textContentColor = colors.contentMuted,
+    GlassAlertDialog(
+        title = stringResource(R.string.collision_title),
+        text = stringResource(R.string.collision_body, other, "$day, ${formatTimeOfDay(context, collision.other.time)}"),
+        onDismiss = onDismiss,
+        actions = listOf(
+            DialogAction(stringResource(R.string.collision_change), onClick = onDismiss),
+            DialogAction(stringResource(R.string.collision_save_anyway), DialogButtonStyle.Primary, onClick = onSaveAnyway),
+        ),
     )
 }

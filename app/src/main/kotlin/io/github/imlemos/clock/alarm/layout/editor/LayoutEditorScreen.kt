@@ -1,5 +1,8 @@
 package io.github.imlemos.clock.alarm.layout.editor
 
+import io.github.imlemos.clock.core.designsystem.component.DialogButtonStyle
+import io.github.imlemos.clock.core.designsystem.component.DialogAction
+import io.github.imlemos.clock.core.designsystem.component.GlassAlertDialog
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -235,21 +238,17 @@ fun LayoutEditorScreen(
         )
     }
     if (confirmingDiscard) {
-        AlertDialog(
-            onDismissRequest = { confirmingDiscard = false },
-            title = { Text(stringResource(R.string.layout_discard_title)) },
-            confirmButton = {
-                TextButton(onClick = { confirmingDiscard = false; onClose() }) {
-                    Text(stringResource(R.string.layout_discard), color = ClockTheme.colors.accent)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirmingDiscard = false }) {
-                    Text(stringResource(R.string.action_cancel), color = ClockTheme.colors.content)
-                }
-            },
-            containerColor = ClockTheme.colors.surfaceRaised,
-            titleContentColor = ClockTheme.colors.content,
+        GlassAlertDialog(
+            title = stringResource(R.string.layout_discard_title),
+            text = null,
+            onDismiss = { confirmingDiscard = false },
+            actions = listOf(
+                DialogAction(stringResource(R.string.action_cancel)) { confirmingDiscard = false },
+                DialogAction(stringResource(R.string.layout_discard), DialogButtonStyle.Destructive) {
+                    confirmingDiscard = false
+                    onClose()
+                },
+            ),
         )
     }
 }

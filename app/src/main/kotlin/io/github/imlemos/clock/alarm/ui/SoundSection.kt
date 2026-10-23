@@ -1,5 +1,7 @@
 package io.github.imlemos.clock.alarm.ui
 
+import io.github.imlemos.clock.core.designsystem.component.SheetOption
+import io.github.imlemos.clock.core.designsystem.component.OptionsSheet
 import android.app.Activity
 import android.content.Intent
 import android.media.RingtoneManager
@@ -259,34 +261,14 @@ private fun GradualSliders(gradual: GradualVolume, onChange: (GradualVolume) -> 
 
 @Composable
 private fun ToneSourceDialog(onSystem: () -> Unit, onFile: () -> Unit, onDefault: () -> Unit, onDismiss: () -> Unit) {
-    val colors = ClockTheme.colors
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.sound_tone)) },
-        text = {
-            Column {
-                listOf(
-                    R.string.sound_pick_system to onSystem,
-                    R.string.sound_pick_file to onFile,
-                    R.string.sound_use_default to onDefault,
-                ).forEach { (label, action) ->
-                    Text(
-                        stringResource(label),
-                        style = ClockTheme.typography.body,
-                        color = colors.content,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(role = Role.Button, onClick = action)
-                            .padding(vertical = 14.dp),
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = colors.content) }
-        },
-        containerColor = colors.surfaceRaised,
-        titleContentColor = colors.content,
+    OptionsSheet(
+        title = stringResource(R.string.sound_tone),
+        options = listOf(
+            SheetOption(stringResource(R.string.sound_pick_system), R.drawable.ic_volume_up, onClick = onSystem),
+            SheetOption(stringResource(R.string.sound_pick_file), R.drawable.ic_folder, onClick = onFile),
+            SheetOption(stringResource(R.string.sound_use_default), R.drawable.ic_replay, onClick = onDefault),
+        ),
+        onDismiss = onDismiss,
     )
 }
 

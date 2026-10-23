@@ -1,5 +1,8 @@
 package io.github.imlemos.clock.alarm.layout
 
+import io.github.imlemos.clock.core.designsystem.component.DialogButtonStyle
+import io.github.imlemos.clock.core.designsystem.component.DialogAction
+import io.github.imlemos.clock.core.designsystem.component.GlassAlertDialog
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -269,23 +272,18 @@ fun LayoutLibraryScreen(
         )
     }
     if (confirmingDelete) {
-        AlertDialog(
-            onDismissRequest = { confirmingDelete = false },
-            title = { Text(pluralStringResource(R.plurals.layouts_delete_title, visibleSelection.size, visibleSelection.size)) },
-            text = { Text(stringResource(R.string.layouts_delete_body)) },
-            confirmButton = {
-                TextButton(onClick = {
+        GlassAlertDialog(
+            title = pluralStringResource(R.plurals.layouts_delete_title, visibleSelection.size, visibleSelection.size),
+            text = stringResource(R.string.layouts_delete_body),
+            onDismiss = { confirmingDelete = false },
+            actions = listOf(
+                DialogAction(stringResource(R.string.action_cancel)) { confirmingDelete = false },
+                DialogAction(stringResource(R.string.layout_delete), DialogButtonStyle.Destructive) {
                     viewModel.delete(visibleSelection)
                     selection = emptySet()
                     confirmingDelete = false
-                }) { Text(stringResource(R.string.layout_delete), color = colors.accent) }
-            },
-            dismissButton = {
-                TextButton(onClick = { confirmingDelete = false }) { Text(stringResource(R.string.action_cancel), color = colors.content) }
-            },
-            containerColor = colors.surfaceRaised,
-            titleContentColor = colors.content,
-            textContentColor = colors.contentMuted,
+                },
+            ),
         )
     }
 }

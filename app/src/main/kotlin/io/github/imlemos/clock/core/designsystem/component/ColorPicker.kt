@@ -21,7 +21,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -48,7 +47,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
 import kotlin.math.roundToInt
@@ -82,15 +80,15 @@ fun ColorPickerDialog(
         alpha = if (showOpacity) (value ushr 24) / 255f else 1f
     }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Column(
-            Modifier
-                .clip(RoundedCornerShape(28.dp))
-                .background(colors.surfaceRaised)
-                .padding(20.dp),
-        ) {
-            Text(stringResource(R.string.color_picker_title), style = ClockTheme.typography.title, color = colors.content)
-            Spacer(Modifier.height(16.dp))
+    GlassDialog(
+        title = stringResource(R.string.color_picker_title),
+        onDismiss = onDismiss,
+        actions = listOf(
+            DialogAction(stringResource(R.string.action_cancel), onClick = onDismiss),
+            DialogAction(stringResource(R.string.color_pick), DialogButtonStyle.Primary) { onPick(argb) },
+        ),
+    ) {
+        Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(44.dp).clip(CircleShape).border(1.dp, colors.outline, CircleShape)) {
                     Canvas(Modifier.size(44.dp)) {
@@ -142,15 +140,9 @@ fun ColorPickerDialog(
                     )
                 }
             }
-            Spacer(Modifier.height(12.dp))
             if (allowAuto) {
-                TextButton(onClick = { onPick(null) }) {
-                    Text(stringResource(R.string.layout_color_auto), color = colors.content)
-                }
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel), color = colors.content) }
-                TextButton(onClick = { onPick(argb) }) { Text(stringResource(R.string.color_pick), color = colors.accent) }
+                Spacer(Modifier.height(16.dp))
+                DialogButton(DialogAction(stringResource(R.string.layout_color_auto)) { onPick(null) }, Modifier.fillMaxWidth())
             }
         }
     }
