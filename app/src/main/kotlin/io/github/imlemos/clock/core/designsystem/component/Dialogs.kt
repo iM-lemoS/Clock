@@ -53,6 +53,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -362,6 +364,7 @@ fun TextInputDialog(
 ) {
     val colors = ClockTheme.colors
     var text by rememberSaveable { mutableStateOf(initial) }
+    val focus = remember { FocusRequester() }
     GlassDialog(
         title = title,
         onDismiss = onDismiss,
@@ -370,6 +373,9 @@ fun TextInputDialog(
             DialogAction(stringResource(R.string.action_save), DialogButtonStyle.Primary, enabled = text.isNotBlank()) { onConfirm(text) },
         ),
     ) {
+        // The field takes focus and the keyboard opens, so the name can be typed straight away.
+        // This runs inside the overlay, once the field exists.
+        LaunchedEffect(Unit) { focus.requestFocus() }
         OutlinedTextField(
             value = text,
             onValueChange = { text = it.take(maxLength) },
@@ -382,7 +388,7 @@ fun TextInputDialog(
                 unfocusedLabelColor = colors.contentMuted,
                 cursorColor = colors.accent,
             ),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().focusRequester(focus),
         )
     }
 }
