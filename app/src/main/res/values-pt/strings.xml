@@ -346,4 +346,10 @@
     <string name="layout_panel_show">Mostrar opções</string>
     <string name="layout_field">Ecrã do alarme</string>
     <string name="layout_field_default">Predefinido (%1$s)</string>
+    <string name="layout_move_up">Mover para cima</string>
+    <string name="layout_move_down">Mover para baixo</string>
+    <string name="layout_move_left">Mover para a esquerda</string>
+    <string name="layout_move_right">Mover para a direita</string>
+    <string name="layout_bigger">Aumentar</string>
+    <string name="layout_smaller">Diminuir</string>
 </resources>

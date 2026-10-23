@@ -109,7 +109,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 ### 3.3 Ecrã do alarme (interação)
 
 - **Desligar**: arrastar para o lado.
-- **Snooze**: **toque simples** → duração padrão (**5 min**, configurável); **pressão longa** → **roda** com **5, 10, 15, 20, 30, 45 min, 1 h**. **Sem limite** de snoozes.
+- **Snooze**: **toque simples** → duração padrão (**5 min**, configurável por alarme, em lote e nas predefinições); **pressão longa** → **roda** com **5, 10, 15, 20, 30, 45 min, 1 h**. **Sem limite** de snoozes. Com TalkBack, "Escolher quanto tempo adiar" abre a roda.
 - **Acessibilidade**: com TalkBack, desligar e snooze ficam disponíveis como ações diretas, sem gestos.
 - Se o alarme tem fuso diferente do local, mostra **as duas horas**.
 - **Botão de baixar volume** (definição, desligado por defeito): enquanto o alarme toca, carregar em "baixar volume" **cala só aquele toque** — só o som, ou som e vibração, conforme a definição — sem desligar o alarme nem o adiar. O toque seguinte (snooze ou outro alarme) é normal.
@@ -141,6 +141,12 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - **"Testar alarme"** para pré-visualizar a sério.
 - **Biblioteca de layouts** com nome; cada alarme escolhe um ou cria um novo; **layout padrão** nas definições.
 - **Presets incluídos**: fundos abstratos e animações em código (pontos, ondas, matriz de pontos). Só recursos feitos para o projeto ou com licença livre compatível.
+- Implementado: elementos relógio, data, etiqueta e botões (adiar + deslizar); estilos de relógio pontos, mono e analógico; fundos pontos, ondas, matriz, cor, gradiente, foto e vídeo (copiados para a app; a foto respeita a orientação EXIF; o vídeo toca sem som com `MediaPlayer`, sem bibliotecas extra).
+- Layouts incluídos (Pontos, Ondas, Matriz de pontos, Analógico) não se editam: duplicam-se. Apagar um layout devolve os alarmes que o usavam ao predefinido.
+- Se num ecrã pequeno ou com letra grande dois elementos se tocam, o de baixo desce até deixar de tocar.
+- No editor, com TalkBack, cada elemento tem ações para mover e mudar de tamanho, sem gestos.
+- "Testar" abre o ecrã do alarme verdadeiro, sem som; adiar ou desligar só fecham a pré-visualização.
+- Se o alarme começa a tocar com o telemóvel em uso e o ecrã é bloqueado, o ecrã do alarme aparece (a notificação é publicada de novo, porque o Android só abre o ecrã inteiro para notificações novas).
 
 ### 3.8 Organização e lista principal
 

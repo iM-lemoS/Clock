@@ -43,7 +43,10 @@ the maintainer's phone.
 
 ```
 :app                         Android app, organised by feature
-  alarm/ timer/ stopwatch/   feature screens (empty in phase 0)
+  alarm/ timer/ stopwatch/   feature screens
+  alarm/layout/              alarm screen layouts: LayoutSpec (JSON), LayoutGeometry (pure, tested),
+                             presets, repository, render/ (AlarmLayoutView, backgrounds, clock faces),
+                             editor/ and the library
   settings/                  settings screen + view model
   trash/                     (phase 2)
   navigation/                Navigation 3 keys, ClockShell (tabs + floating glass chrome)
@@ -138,6 +141,8 @@ Launch the debug app: `adb shell am start -n io.github.imlemos.clock.debug/io.gi
    adb shell am broadcast -a io.github.imlemos.clock.debug.TEST_ALARM -n $C --ei in_minutes 1 --es label "'Test'"
    adb shell am broadcast -a io.github.imlemos.clock.debug.DELETE_ALL_ALARMS -n $C
    ```
+   TEST_ALARM also takes `--es zone <id>` and `--el layout <id>` (presets are negative: -1 dots,
+   -2 waves, -3 matrix, -4 analog); SET_MANUAL_ZONE sets the app's manual zone.
    Add `--include-stopped-packages` if the app was force-stopped.
 5. Emulators: `clock_api31` (Android 12) exists; start it headless with
    `emulator -avd clock_api31 -no-window -no-audio -gpu swiftshader_indirect` and target it with

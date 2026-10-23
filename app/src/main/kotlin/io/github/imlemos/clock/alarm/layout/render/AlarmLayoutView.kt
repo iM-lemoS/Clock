@@ -24,10 +24,18 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import io.github.imlemos.clock.R
+import io.github.imlemos.clock.alarm.layout.Box2
 import io.github.imlemos.clock.alarm.layout.LayoutGeometry
 import io.github.imlemos.clock.alarm.layout.LayoutSpec
 import io.github.imlemos.clock.alarm.layout.Placement
@@ -71,6 +79,21 @@ fun AlarmLayoutView(
     val currentSpec by rememberUpdatedState(spec)
     // Scaled element sizes and the area, written while measuring, read by the editor's gestures.
     val measured = remember { mutableMapOf<LayoutElementId, Pair<Size2, Size2>>() }
+    val elementNames = mapOf(
+        LayoutElementId.CLOCK to stringResource(R.string.layout_tab_clock),
+        LayoutElementId.DATE to stringResource(R.string.layout_tab_date),
+        LayoutElementId.LABEL to stringResource(R.string.layout_tab_label),
+        LayoutElementId.CONTROLS to stringResource(R.string.layout_tab_buttons),
+    )
+    val editActions = listOf(
+        stringResource(R.string.layout_move_up) to EditStep(dy = -NUDGE),
+        stringResource(R.string.layout_move_down) to EditStep(dy = NUDGE),
+        stringResource(R.string.layout_move_left) to EditStep(dx = -NUDGE),
+        stringResource(R.string.layout_move_right) to EditStep(dx = NUDGE),
+        stringResource(R.string.layout_bigger) to EditStep(scale = 1.1f),
+        stringResource(R.string.layout_smaller) to EditStep(scale = 1f / 1.1f),
+    )
+
 
     fun placementOf(id: LayoutElementId): Placement = when (id) {
         LayoutElementId.CLOCK -> currentSpec.clock.placement
@@ -104,6 +127,22 @@ fun AlarmLayoutView(
                                     cornerRadius = CornerRadius(12.dp.toPx()),
                                     style = Stroke(2.dp.toPx()),
                                 )
+                            }
+                        }
+                        // TalkBack: every move and resize is also an action, no gestures needed.
+                        .semantics {
+                            contentDescription = elementNames.getValue(id)
+                            this.selected = selected
+                            customActions = editActions.map { (label, step) ->
+                                CustomAccessibilityAction(label) {
+                                    val (size, area) = measured[id] ?: return@CustomAccessibilityAction false
+                                    val current = placementOf(id)
+                                    val moved = LayoutGeometry.moved(current, step.dx * area.width, step.dy * area.height, size, area)
+                                    val (min, max) = scaleRange(id)
+                                    editing.onSelect(id)
+                                    editing.onPlacementChange(id, moved.copy(scale = (current.scale * step.scale).coerceIn(min, max)))
+                                    true
+                                }
                             }
                         }
                         .pointerInput(id) { detectTapGestures { editing.onSelect(id) } }
@@ -182,19 +221,27 @@ fun AlarmLayoutView(
                 )
                 id to placeable
             }
+            val visible = placed.filter { (_, placeable) -> placeable != null && placeable.width > 0 && placeable.height > 0 }
+            val scales = visible.map { (id, placeable) ->
+                val base = Size2(placeable!!.width.toFloat(), placeable.height.toFloat())
+                val (min, max) = scaleRange(id)
+                LayoutGeometry.effectiveScale(placementOf(id).scale, base, area, min, max)
+            }
+            val boxes = visible.mapIndexed { index, (id, placeable) ->
+                val scaled = Size2(placeable!!.width * scales[index], placeable.height * scales[index])
+                measured[id] = scaled to area
+                val topLeft = LayoutGeometry.topLeft(placementOf(id), scaled, area)
+                Box2(topLeft.x, topLeft.y, scaled.width, scaled.height)
+            }
+            // Relative positions can collide on short screens or with large fonts: push apart.
+            val separated = LayoutGeometry.separate(boxes, area, ELEMENT_GAP.toPx())
             layout(constraints.maxWidth, constraints.maxHeight) {
-                placed.forEach { (id, placeable) ->
-                    placeable ?: return@forEach
-                    val placement = placementOf(id)
-                    val base = Size2(placeable.width.toFloat(), placeable.height.toFloat())
-                    val (min, max) = scaleRange(id)
-                    val scale = LayoutGeometry.effectiveScale(placement.scale, base, area, min, max)
-                    val scaled = Size2(base.width * scale, base.height * scale)
-                    measured[id] = scaled to area
-                    val topLeft = LayoutGeometry.topLeft(placement, scaled, area)
-                    // The layer scales around the centre; shift so the scaled box lands on topLeft.
-                    val x = topLeft.x - (base.width - scaled.width) / 2f
-                    val y = topLeft.y - (base.height - scaled.height) / 2f
+                visible.forEachIndexed { index, (_, placeable) ->
+                    val box = separated[index]
+                    val scale = scales[index]
+                    // The layer scales around the centre; shift so the scaled box lands on the box.
+                    val x = box.x - (placeable!!.width - box.width) / 2f
+                    val y = box.y - (placeable.height - box.height) / 2f
                     placeable.placeWithLayer(x.roundToInt(), y.roundToInt()) {
                         scaleX = scale
                         scaleY = scale
@@ -216,3 +263,9 @@ private fun scaleRange(id: LayoutElementId): Pair<Float, Float> =
 private fun Modifier.alphaIf(faded: Boolean): Modifier = if (faded) alpha(0.3f) else this
 
 private val CONTROLS_WIDTH = 340.dp
+private val ELEMENT_GAP = 8.dp
+
+/** One accessibility edit: a move as a fraction of the area and a scale factor. */
+private data class EditStep(val dx: Float = 0f, val dy: Float = 0f, val scale: Float = 1f)
+
+private const val NUDGE = 0.04f

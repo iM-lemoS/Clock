@@ -6,6 +6,13 @@ data class Size2(val width: Float, val height: Float)
 /** Top-left corner of an element, in pixels from the area's top-left. */
 data class Point2(val x: Float, val y: Float)
 
+/** An element's box: top-left and size, in pixels. */
+data class Box2(val x: Float, val y: Float, val width: Float, val height: Float) {
+    val bottom: Float get() = y + height
+
+    fun overlapsHorizontally(other: Box2): Boolean = x < other.x + other.width && other.x < x + width
+}
+
 /**
  * Placement maths for the alarm screen (docs/PLANO.md 3.7): elements are positioned by their
  * centre as a fraction of the area and are always kept entirely inside it, on any screen.
@@ -44,5 +51,34 @@ object LayoutGeometry {
             x = (placement.x + dx / area.width).coerceIn(halfW, 1f - halfW),
             y = (placement.y + dy / area.height).coerceIn(halfH, 1f - halfH),
         )
+    }
+
+    /**
+     * Moves boxes down so none overlaps another (with [gap] between them), top to bottom. Small or
+     * short screens and large fonts can make relative positions collide; text must stay readable.
+     * A box pushed past the bottom stays at the bottom edge.
+     */
+    fun separate(boxes: List<Box2>, area: Size2, gap: Float): List<Box2> {
+        val order = boxes.indices.sortedBy { boxes[it].y + boxes[it].height / 2f }
+        val placed = arrayOfNulls<Box2>(boxes.size)
+        for (index in order) {
+            var box = boxes[index]
+            var moved = true
+            while (moved) {
+                moved = false
+                for (other in placed.filterNotNull()) {
+                    if (box.overlapsHorizontally(other) && box.y < other.bottom + gap && other.y < box.bottom + gap) {
+                        box = box.copy(y = other.bottom + gap)
+                        moved = true
+                    }
+                }
+                if (box.bottom > area.height) {
+                    box = box.copy(y = (area.height - box.height).coerceAtLeast(0f))
+                    break
+                }
+            }
+            placed[index] = box
+        }
+        return placed.map { it!! }
     }
 }

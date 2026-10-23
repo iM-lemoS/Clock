@@ -59,4 +59,31 @@ class LayoutGeometryTest {
         assertEquals(spec, LayoutJson.decode(LayoutJson.encode(spec)))
         assertEquals(LayoutSpec(), LayoutJson.decode("not json"))
     }
+
+    @Test
+    fun `overlapping elements are pushed apart, top to bottom`() {
+        val clock = Box2(100f, 100f, 400f, 200f)
+        val date = Box2(150f, 250f, 300f, 50f)
+        val label = Box2(100f, 900f, 400f, 80f)
+        val (c, d, l) = LayoutGeometry.separate(listOf(clock, date, label), phone, gap = 10f)
+        assertEquals(clock, c)
+        assertEquals(310f, d.y)
+        assertEquals(label, l)
+    }
+
+    @Test
+    fun `side by side elements are left alone`() {
+        val left = Box2(0f, 100f, 300f, 200f)
+        val right = Box2(500f, 150f, 300f, 200f)
+        assertEquals(listOf(left, right), LayoutGeometry.separate(listOf(left, right), phone, gap = 10f))
+    }
+
+    @Test
+    fun `a chain of pushes stops at the bottom edge`() {
+        val short = Size2(1080f, 500f)
+        val boxes = listOf(Box2(0f, 0f, 500f, 200f), Box2(0f, 100f, 500f, 200f), Box2(0f, 200f, 500f, 200f))
+        val result = LayoutGeometry.separate(boxes, short, gap = 0f)
+        assertEquals(200f, result[1].y)
+        assertEquals(300f, result[2].y)
+    }
 }
