@@ -37,6 +37,35 @@ public object AlarmCalculator {
             .firstOrNull()
     }
 
+    /** The next [limit] scheduled occurrences strictly after [after] (snooze ignored). */
+    public fun occurrences(schedule: AlarmSchedule, after: Instant, appZone: ZoneId, limit: Int): List<Instant> {
+        val result = mutableListOf<Instant>()
+        var cursor = after
+        while (result.size < limit) {
+            val next = nextOccurrence(schedule.copy(lastTriggeredOccurrence = null), cursor, appZone)?.toInstant() ?: break
+            result += next
+            cursor = next
+        }
+        return result
+    }
+
+    /**
+     * The first moment two alarms would ring together within their next [lookAhead] occurrences
+     * (docs/PLANO.md 3.11), or `null`. Compares real instants, so alarms in different time zones
+     * that land on the same moment collide.
+     */
+    public fun firstCollision(
+        a: AlarmSchedule,
+        b: AlarmSchedule,
+        after: Instant,
+        appZone: ZoneId,
+        lookAhead: Int = DEFAULT_COLLISION_LOOKAHEAD,
+    ): Instant? {
+        if (!a.enabled || !b.enabled) return null
+        val other = occurrences(b, after, appZone, lookAhead).toSet()
+        return occurrences(a, after, appZone, lookAhead).firstOrNull { it in other }
+    }
+
     /**
      * The occurrence "Skip next" would skip: the next one ignoring any current skip. Used to show
      * and toggle the skip on recurring alarms.
@@ -109,6 +138,9 @@ public object AlarmCalculator {
             is Recurrence.Dates -> recurrence.dates.sorted().asSequence().filter { it >= start }
         }
     }
+
+    /** About two months of daily occurrences; enough for weekly and date alarms to meet. */
+    public const val DEFAULT_COLLISION_LOOKAHEAD: Int = 60
 
     // Enough to step over a skipped occurrence of a single-day weekly alarm (about two weeks).
     private const val MAX_CANDIDATES = 32

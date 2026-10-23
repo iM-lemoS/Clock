@@ -334,4 +334,54 @@ class AlarmCalculatorTest {
             )
         }
     }
+
+    @Nested
+    inner class Collisions {
+        private val now = at("2026-11-02T06:00") // a Monday
+
+        @Test
+        fun `two one-off alarms at the same time collide at their next ring`() {
+            assertEquals(at("2026-11-02T07:30"), AlarmCalculator.firstCollision(once(7, 30), once(7, 30), now, LISBON))
+        }
+
+        @Test
+        fun `different times never collide`() {
+            assertNull(AlarmCalculator.firstCollision(once(7, 30), once(7, 31), now, LISBON))
+        }
+
+        @Test
+        fun `a weekly alarm meets a dates alarm on the matching weekday`() {
+            val weekly = AlarmSchedule(TimeOfDay(7, 0), Recurrence.Weekly(setOf(FRIDAY)))
+            val dates = AlarmSchedule(TimeOfDay(7, 0), Recurrence.Dates(setOf(LocalDate.parse("2026-11-04"), LocalDate.parse("2026-11-13"))))
+            assertEquals(at("2026-11-13T07:00"), AlarmCalculator.firstCollision(weekly, dates, now, LISBON))
+        }
+
+        @Test
+        fun `weekly alarms on different days never collide`() {
+            val monday = AlarmSchedule(TimeOfDay(7, 0), Recurrence.Weekly(setOf(MONDAY)))
+            val friday = AlarmSchedule(TimeOfDay(7, 0), Recurrence.Weekly(setOf(FRIDAY)))
+            assertNull(AlarmCalculator.firstCollision(monday, friday, now, LISBON))
+        }
+
+        @Test
+        fun `alarms in different zones collide when they ring at the same instant`() {
+            // 08:00 in New York is 13:00 in Lisbon in November.
+            val newYork = once(8, 0).copy(zone = NEW_YORK)
+            assertEquals(at("2026-11-02T13:00"), AlarmCalculator.firstCollision(newYork, once(13, 0), now, LISBON))
+        }
+
+        @Test
+        fun `a disabled alarm never collides`() {
+            assertNull(AlarmCalculator.firstCollision(once(7, 30), once(7, 30).copy(enabled = false), now, LISBON))
+        }
+
+        @Test
+        fun `occurrences lists upcoming rings in order`() {
+            val weekend = AlarmSchedule(TimeOfDay(9, 0), Recurrence.Weekly(setOf(SATURDAY, SUNDAY)))
+            assertEquals(
+                listOf(at("2026-11-07T09:00"), at("2026-11-08T09:00"), at("2026-11-14T09:00")),
+                AlarmCalculator.occurrences(weekend, now, LISBON, 3),
+            )
+        }
+    }
 }
