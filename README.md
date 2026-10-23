@@ -1,16 +1,30 @@
 # Clock
 
-An open-source Android clock app (alarms, timers, stopwatch) built around one promise: **alarms
-that always ring**, with fine-grained control over each one.
+An open-source Android clock app (alarms, world clock, timers, stopwatch) built around one
+promise: **alarms that always ring**, with fine-grained control over each one.
 
-- Works on any Android 12+ device, with optional per-manufacturer reliability guidance.
+- Works on any Android 12+ device, with per-manufacturer reliability guidance (ColorOS, One UI,
+  HyperOS and more) and a warning when a system setting may stop alarms.
 - Private by design: no internet permission, no analytics, no accounts. Everything stays on the
   device.
-- English and European Portuguese.
-- Black-and-white design with a single accent color, dot-matrix time digits and "liquid glass"
+- English and European Portuguese; follows the phone's language.
+- Black-and-white design with a single accent colour, dot-matrix digits and "liquid glass"
   floating controls.
 
-> Status: early development (phase 0, project foundation). Not ready for daily use yet.
+## Features
+
+- **Alarms**: once, weekly or on chosen dates; single use; skip next; groups with a master
+  switch; multi-select and batch edit; collision warnings; trash with undo.
+- **Sound**: any system tone or file, gradual volume, vibration patterns (or synced to the sound),
+  ring duration, phone + Bluetooth output, volume-down to silence.
+- **Alarm screen**: snooze with a tap, or hold and slide over a dial to pick 5 min to 1 h; slide
+  to dismiss; editable layouts (clock styles and fonts, colours, photo, video or animated
+  backgrounds) in a library; works over the lock screen and before the first unlock.
+- **Time zones**: per-alarm zone, a manual app zone, both times shown.
+- **World clock**, **timers** (several at once, live notifications, full screen when they end) and
+  a **stopwatch** with laps.
+
+> Status: feature-complete, in validation before the first release.
 > The product plan lives in [`docs/PLANO.md`](docs/PLANO.md) (Portuguese).
 
 ## Building

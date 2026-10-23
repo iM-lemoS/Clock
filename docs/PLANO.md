@@ -301,19 +301,19 @@ Cada fase termina com um **APK instalado e testado** no dispositivo de referênc
 
 **Manuais** — dispositivo de referência + emuladores API 31, 33, 34 e 36.
 
-- [ ] Ecrã bloqueado e apagado durante várias horas
-- [ ] App removida dos recentes
-- [ ] Doze forçado (`adb shell dumpsys deviceidle force-idle`)
-- [ ] Depois de reiniciar, **antes de desbloquear** (direct boot)
-- [ ] Modo silêncio e Não Incomodar
-- [ ] Volume de alarme a zero (aviso)
-- [ ] Bluetooth ligado, nos 3 modos de saída
-- [ ] Mudança manual de fuso e de hora
-- [ ] Dois alarmes à mesma hora
-- [ ] Alarme durante uma chamada
-- [ ] Poupança de energia / bateria fraca
-- [ ] Permissão de ecrã inteiro ou de alarmes exatos retirada
-- [ ] TalkBack e letra grande
+- [ ] Ecrã bloqueado e apagado durante várias horas (falta o teste da noite)
+- [x] App removida dos recentes (alarmes e temporizadores, OPPO e Samsung)
+- [x] Doze forçado (`adb shell dumpsys deviceidle force-idle`)
+- [x] Depois de reiniciar, **antes de desbloquear** (direct boot); temporizadores também sobrevivem a reinícios (Samsung)
+- [x] Modo silêncio e Não Incomodar
+- [x] Volume de alarme a zero (aviso)
+- [x] Bluetooth ligado, nos 3 modos de saída
+- [x] Mudança manual de fuso e de hora (emulador)
+- [x] Dois alarmes à mesma hora
+- [ ] Alarme durante uma chamada (precisa de uma pessoa)
+- [x] Poupança de energia (com Doze e Não incomodar ao mesmo tempo, Samsung)
+- [x] Permissão de ecrã inteiro retirada (aviso na lista e no ecrã de fiabilidade, Samsung)
+- [ ] TalkBack e letra grande (letra a 130% testada; TalkBack por testar à mão)
 
 > ⚠️ **Assinatura**: usar sempre a mesma chave. A keystore e as passwords **nunca** entram no repositório (`keystore.properties` local, ignorado pelo git; na CI via secrets). Mudar de chave obriga a desinstalar e perde os alarmes.
 
@@ -341,4 +341,4 @@ Cada fase termina com um **APK instalado e testado** no dispositivo de referênc
 - Nas colisões, manda o alarme criado primeiro.
 - Snooze reinicia a duração do toque completa.
 - minSdk 31; sem permissão de internet; inglês como idioma padrão.
-- Fora da v1: relógio mundial, widgets, backup/exportação.
+- Fora da v1: widgets, backup/exportação. (O relógio mundial entrou na v1, fase 8.)

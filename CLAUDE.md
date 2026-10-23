@@ -44,6 +44,7 @@ the maintainer's phone.
 ```
 :app                         Android app, organised by feature
   alarm/ timer/ stopwatch/   feature screens
+  worldclock/                world clock tab
   alarm/layout/              alarm screen layouts: LayoutSpec (JSON), LayoutGeometry (pure, tested),
                              presets, repository, render/ (AlarmLayoutView, backgrounds, clock faces),
                              editor/ and the library
@@ -181,7 +182,8 @@ Launch the debug app: `adb shell am start -n io.github.imlemos.clock.debug/io.gi
   `adb logcat -b events | grep am_proc_start` (LOCKED_BOOT_COMPLETED and ALARM_FIRE entries).
 ### Samsung notes (Galaxy S22 Ultra, One UI 8 / Android 16)
 
-- adb works without extra options; `appops`/`pm grant` not yet tried.
+- adb works without extra options; `appops set` works (tested with `USE_FULL_SCREEN_INTENT deny/allow`).
+- After a reboot, elapsedRealtime restarts at zero: timers and the stopwatch detect the reboot with `BootDetector` (system boot count), never from which broadcast arrives first.
 - Verified path for the vendor step: App info > Battery > Unrestricted.
 - After a reboot the boot broadcasts (`LOCKED_BOOT_COMPLETED`, `BOOT_COMPLETED`, `TIME_SET`) reached
   the app about 60 s after `sys.boot_completed` (queued as "PENDING OFFLOAD"). Alarms due in that
