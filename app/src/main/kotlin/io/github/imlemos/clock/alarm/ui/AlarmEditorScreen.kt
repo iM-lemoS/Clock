@@ -195,6 +195,18 @@ fun AlarmEditorScreen(
                 }
                 ClockSwitch(checked = state.singleUse, onCheckedChange = null)
             }
+            Spacer(Modifier.height(16.dp))
+            SoundSection(
+                sound = state.sound,
+                onChange = viewModel::setSound,
+                onSystemTonePicked = viewModel::setSystemTone,
+                onFilePicked = { uri ->
+                    viewModel.importTone(uri) {
+                        Toast.makeText(context, R.string.sound_import_failed, Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onPreviewVibration = viewModel::previewVibration,
+            )
             Spacer(Modifier.height(24.dp))
         }
 

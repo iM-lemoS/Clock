@@ -18,9 +18,7 @@ data class Alarm(
     val lastTriggeredOccurrence: Instant? = null,
     val snoozedUntil: Instant? = null,
     val snoozeMinutes: Int = DEFAULT_SNOOZE_MINUTES,
-    val ringDurationSeconds: Int = DEFAULT_RING_DURATION_SECONDS,
-    val vibrate: Boolean = true,
-    val ringtoneUri: String? = null,
+    val sound: AlarmSound = AlarmSound(),
     val singleUse: Boolean = false,
     val createdAt: Instant,
     /** When the alarm was last saved or switched on (see AlarmCalculator.missedOccurrence). */

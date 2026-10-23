@@ -26,3 +26,14 @@ enum class VolumeButtonAction {
     /** Mutes sound and stops vibration for this ringing only. */
     SILENCE_SOUND_AND_VIBRATION,
 }
+
+/** Where alarms play (docs/PLANO.md 3.2). */
+enum class AudioOutput {
+    /** The system's normal alarm routing: the phone speaker and any connected Bluetooth device. */
+    PHONE_AND_BLUETOOTH,
+
+    PHONE_ONLY,
+
+    /** Falls back to the phone when no Bluetooth device is connected, so an alarm is never silent. */
+    BLUETOOTH_ONLY,
+}

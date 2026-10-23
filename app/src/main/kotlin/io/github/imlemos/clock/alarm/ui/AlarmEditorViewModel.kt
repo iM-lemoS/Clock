@@ -8,7 +8,14 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.alarm.data.AlarmRepository
+import android.net.Uri
 import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.alarm.model.AlarmSound
+import io.github.imlemos.clock.alarm.model.Vibration
+import io.github.imlemos.clock.core.audio.AlarmSoundPlayer
+import io.github.imlemos.clock.core.audio.RingtoneStore
+import io.github.imlemos.clock.core.data.prefs.SettingsRepository
+import kotlinx.coroutines.flow.first
 import io.github.imlemos.clock.alarm.scheduling.AlarmScheduler
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
@@ -33,6 +40,7 @@ data class AlarmEditorState(
     val weekDays: Set<DayOfWeek> = emptySet(),
     val dates: Set<LocalDate> = emptySet(),
     val singleUse: Boolean = false,
+    val sound: AlarmSound = AlarmSound(),
 ) {
     val recurrence: Recurrence?
         get() = when (kind) {
@@ -54,6 +62,9 @@ class AlarmEditorViewModel @AssistedInject constructor(
     private val repository: AlarmRepository,
     private val controller: AlarmController,
     private val scheduler: AlarmScheduler,
+    private val settings: SettingsRepository,
+    private val ringtones: RingtoneStore,
+    private val player: AlarmSoundPlayer,
     private val clock: Clock,
 ) : ViewModel() {
 
@@ -72,7 +83,7 @@ class AlarmEditorViewModel @AssistedInject constructor(
             original = alarm
             _state.update {
                 if (alarm == null) {
-                    it.copy(loaded = true, time = defaultTimeForNewAlarm())
+                    it.copy(loaded = true, time = defaultTimeForNewAlarm(), sound = settings.defaultSound.first())
                 } else {
                     val recurrence = alarm.recurrence
                     it.copy(
@@ -87,6 +98,7 @@ class AlarmEditorViewModel @AssistedInject constructor(
                         weekDays = (recurrence as? Recurrence.Weekly)?.days.orEmpty(),
                         dates = (recurrence as? Recurrence.Dates)?.dates.orEmpty(),
                         singleUse = alarm.singleUse,
+                        sound = alarm.sound,
                     )
                 }
             }
@@ -109,6 +121,22 @@ class AlarmEditorViewModel @AssistedInject constructor(
 
     fun setSingleUse(singleUse: Boolean) = _state.update { it.copy(singleUse = singleUse) }
 
+    fun setSound(sound: AlarmSound) = _state.update { it.copy(sound = sound) }
+
+    fun setSystemTone(uri: Uri?) = _state.update {
+        it.copy(sound = it.sound.copy(ringtoneUri = uri?.toString(), ringtoneTitle = uri?.let(ringtones::systemTitle)))
+    }
+
+    /** Copies a picked file into the app; [onFailed] when the file cannot be used. */
+    fun importTone(uri: Uri, onFailed: () -> Unit) {
+        viewModelScope.launch {
+            val tone = ringtones.import(uri) ?: return@launch onFailed()
+            _state.update { it.copy(sound = it.sound.copy(ringtoneUri = tone.uri, ringtoneTitle = tone.title)) }
+        }
+    }
+
+    fun previewVibration(vibration: Vibration) = player.previewVibration(vibration)
+
     /** First selectable date in the calendar: today, in the app's zone. */
     fun today(): LocalDate = clock.instant().atZone(scheduler.appZone()).toLocalDate()
 
@@ -123,6 +151,7 @@ class AlarmEditorViewModel @AssistedInject constructor(
                     label = current.label.trim(),
                     recurrence = recurrence,
                     singleUse = current.singleUse,
+                    sound = current.sound,
                     enabled = true,
                 ),
             )

@@ -1,0 +1,222 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "b471cbf6da5111625e67d0492cc91be2",
+    "entities": [
+      {
+        "tableName": "alarm",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `hour` INTEGER NOT NULL, `minute` INTEGER NOT NULL, `recurrenceType` TEXT NOT NULL, `weekDays` INTEGER NOT NULL, `dates` TEXT NOT NULL, `label` TEXT NOT NULL, `enabled` INTEGER NOT NULL, `zoneId` TEXT, `skippedOccurrence` INTEGER, `lastTriggeredOccurrence` INTEGER, `snoozedUntil` INTEGER, `snoozeMinutes` INTEGER NOT NULL, `ringDurationSeconds` INTEGER NOT NULL, `vibrate` INTEGER NOT NULL, `ringtoneUri` TEXT, `createdAt` INTEGER NOT NULL, `singleUse` INTEGER NOT NULL DEFAULT 0, `armedAt` INTEGER NOT NULL DEFAULT 0, `vibrationPattern` TEXT NOT NULL DEFAULT 'SYNC', `gradualEnabled` INTEGER NOT NULL DEFAULT 0, `gradualTargetPercent` INTEGER NOT NULL DEFAULT 100, `gradualSeconds` INTEGER NOT NULL DEFAULT 60, `ringtoneTitle` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hour",
+            "columnName": "hour",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minute",
+            "columnName": "minute",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recurrenceType",
+            "columnName": "recurrenceType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weekDays",
+            "columnName": "weekDays",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dates",
+            "columnName": "dates",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "label",
+            "columnName": "label",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "enabled",
+            "columnName": "enabled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zoneId",
+            "columnName": "zoneId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "skippedOccurrence",
+            "columnName": "skippedOccurrence",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastTriggeredOccurrence",
+            "columnName": "lastTriggeredOccurrence",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "snoozedUntil",
+            "columnName": "snoozedUntil",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "snoozeMinutes",
+            "columnName": "snoozeMinutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ringDurationSeconds",
+            "columnName": "ringDurationSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vibrate",
+            "columnName": "vibrate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ringtoneUri",
+            "columnName": "ringtoneUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "singleUse",
+            "columnName": "singleUse",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "armedAt",
+            "columnName": "armedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "vibrationPattern",
+            "columnName": "vibrationPattern",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'SYNC'"
+          },
+          {
+            "fieldPath": "gradualEnabled",
+            "columnName": "gradualEnabled",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "gradualTargetPercent",
+            "columnName": "gradualTargetPercent",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "100"
+          },
+          {
+            "fieldPath": "gradualSeconds",
+            "columnName": "gradualSeconds",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "60"
+          },
+          {
+            "fieldPath": "ringtoneTitle",
+            "columnName": "ringtoneTitle",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "trash",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `type` TEXT NOT NULL, `payload` TEXT NOT NULL, `deletedAt` INTEGER NOT NULL, `automatic` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deletedAt",
+            "columnName": "deletedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "automatic",
+            "columnName": "automatic",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_trash_deletedAt",
+            "unique": false,
+            "columnNames": [
+              "deletedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_trash_deletedAt` ON `${TABLE_NAME}` (`deletedAt`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b471cbf6da5111625e67d0492cc91be2')"
+    ]
+  }
+}

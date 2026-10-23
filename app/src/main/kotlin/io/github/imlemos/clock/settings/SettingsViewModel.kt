@@ -4,7 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.imlemos.clock.alarm.data.AlarmController
+import android.net.Uri
 import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.alarm.model.AlarmSound
+import io.github.imlemos.clock.alarm.model.Vibration
+import io.github.imlemos.clock.core.audio.AlarmSoundPlayer
+import io.github.imlemos.clock.core.audio.RingtoneStore
+import io.github.imlemos.clock.core.data.prefs.AudioOutput
 import io.github.imlemos.clock.core.data.prefs.AppearanceSettings
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.data.prefs.ThemeMode
@@ -22,8 +28,36 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val settings: SettingsRepository,
     private val alarms: AlarmController,
+    private val ringtones: RingtoneStore,
+    private val player: AlarmSoundPlayer,
     private val clock: Clock,
 ) : ViewModel() {
+
+    val defaultSound: StateFlow<AlarmSound> = settings.defaultSound
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AlarmSound())
+
+    val audioOutput: StateFlow<AudioOutput> = settings.audioOutput
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AudioOutput.PHONE_AND_BLUETOOTH)
+
+    fun setDefaultSound(sound: AlarmSound) {
+        viewModelScope.launch { settings.setDefaultSound(sound) }
+    }
+
+    fun setDefaultSystemTone(uri: Uri?) =
+        setDefaultSound(defaultSound.value.copy(ringtoneUri = uri?.toString(), ringtoneTitle = uri?.let(ringtones::systemTitle)))
+
+    fun importDefaultTone(uri: Uri, onFailed: () -> Unit) {
+        viewModelScope.launch {
+            val tone = ringtones.import(uri) ?: return@launch onFailed()
+            settings.setDefaultSound(defaultSound.value.copy(ringtoneUri = tone.uri, ringtoneTitle = tone.title))
+        }
+    }
+
+    fun previewVibration(vibration: Vibration) = player.previewVibration(vibration)
+
+    fun setAudioOutput(output: AudioOutput) {
+        viewModelScope.launch { settings.setAudioOutput(output) }
+    }
 
     val appearance: StateFlow<AppearanceSettings> = settings.appearance
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppearanceSettings())

@@ -50,6 +50,9 @@ object GenericOemProfile : OemProfile {
 internal fun appDetailsIntent(context: Context): Intent =
     Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:${context.packageName}".toUri())
 
+internal fun appNotificationSettingsIntent(context: Context): Intent =
+    Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+
 internal fun componentIntent(pkg: String, cls: String): Intent = Intent().setComponent(ComponentName(pkg, cls))
 
 /** "Lock" the app in the recent apps screen so the vendor's cleaner does not kill it. */

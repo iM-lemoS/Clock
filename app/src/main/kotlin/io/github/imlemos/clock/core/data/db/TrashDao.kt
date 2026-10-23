@@ -10,6 +10,9 @@ interface TrashDao {
     @Query("SELECT * FROM trash ORDER BY deletedAt DESC")
     fun observeAll(): Flow<List<TrashEntity>>
 
+    @Query("SELECT * FROM trash")
+    suspend fun getAll(): List<TrashEntity>
+
     @Query("SELECT * FROM trash WHERE id = :id")
     suspend fun get(id: Long): TrashEntity?
 

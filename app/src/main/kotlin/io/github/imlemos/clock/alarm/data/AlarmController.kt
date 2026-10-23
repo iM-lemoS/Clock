@@ -3,6 +3,7 @@ package io.github.imlemos.clock.alarm.data
 import android.util.Log
 import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.scheduling.AlarmScheduler
+import io.github.imlemos.clock.core.audio.RingtoneStore
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.notifications.AlarmNotifications
 import io.github.imlemos.clock.core.scheduling.AfterOccurrence
@@ -28,6 +29,7 @@ class AlarmController @Inject constructor(
     private val scheduler: AlarmScheduler,
     private val notifications: AlarmNotifications,
     private val settings: SettingsRepository,
+    private val ringtones: RingtoneStore,
     private val clock: Clock,
 ) {
     /** Saves an edited or new alarm. Editing clears any snooze or skip and re-arms the alarm. */
@@ -73,8 +75,13 @@ class AlarmController @Inject constructor(
 
     /** Re-registers every alarm with AlarmManager (boot, time or zone change, app update). */
     suspend fun rescheduleAll() {
-        repository.getAll().forEach { schedule(it) }
+        val alarms = repository.getAll()
+        alarms.forEach { schedule(it) }
         trash.prune()
+        // Imported sound files still referenced by an alarm, the trash or the default sound.
+        val inUse = (alarms + trash.allAlarms()).mapNotNull { it.sound.ringtoneUri } +
+            listOfNotNull(settings.defaultSound.first().ringtoneUri)
+        ringtones.deleteUnused(inUse.toSet())
     }
 
     /**

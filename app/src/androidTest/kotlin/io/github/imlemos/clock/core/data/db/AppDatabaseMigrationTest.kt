@@ -71,6 +71,32 @@ class AppDatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun migrates2To3WithSoundDefaults() = runTest {
+        helper.createDatabase(2).use { connection ->
+            connection.execSQL(
+                "INSERT INTO alarm (id, hour, minute, recurrenceType, weekDays, dates, label, enabled, " +
+                    "snoozeMinutes, ringDurationSeconds, vibrate, createdAt, singleUse, armedAt) " +
+                    "VALUES (1, 7, 0, 'ONCE', 0, '', '', 1, 5, 120, 0, 1000, 0, 1000)",
+            )
+        }
+        helper.runMigrationsAndValidate(3, emptyList()).use { connection ->
+            connection.prepare(
+                "SELECT ringDurationSeconds, vibrate, vibrationPattern, gradualEnabled, gradualTargetPercent, " +
+                    "gradualSeconds, ringtoneTitle FROM alarm WHERE id = 1",
+            ).use { stmt ->
+                assertTrue(stmt.step())
+                assertEquals(120, stmt.getInt(0))
+                assertEquals(0, stmt.getInt(1))
+                assertEquals("SYNC", stmt.getText(2))
+                assertEquals(0, stmt.getInt(3))
+                assertEquals(100, stmt.getInt(4))
+                assertEquals(60, stmt.getInt(5))
+                assertTrue(stmt.isNull(6))
+            }
+        }
+    }
+
     private companion object {
         const val TEST_DB = "migration-test.db"
     }

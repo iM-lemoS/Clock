@@ -6,6 +6,10 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.alarm.model.AlarmSound
+import io.github.imlemos.clock.alarm.model.GradualVolume
+import io.github.imlemos.clock.alarm.model.Vibration
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -40,6 +44,47 @@ class DataStoreSettingsRepository @Inject constructor(
 
     override suspend fun setReduceTransparency(enabled: Boolean) {
         dataStore.edit { it[Keys.REDUCE_TRANSPARENCY] = enabled }
+    }
+
+    override val defaultSound: Flow<AlarmSound> = dataStore.data
+        .map { prefs ->
+            AlarmSound(
+                ringtoneUri = prefs[Keys.DEFAULT_RINGTONE_URI],
+                ringtoneTitle = prefs[Keys.DEFAULT_RINGTONE_TITLE],
+                vibration = prefs[Keys.DEFAULT_VIBRATION]
+                    ?.let { name -> Vibration.entries.firstOrNull { it.name == name } }
+                    ?: Vibration.SYNC,
+                gradual = GradualVolume(
+                    enabled = prefs[Keys.DEFAULT_GRADUAL_ENABLED] ?: false,
+                    targetPercent = (prefs[Keys.DEFAULT_GRADUAL_TARGET] ?: 100).coerceIn(1, 100),
+                    seconds = (prefs[Keys.DEFAULT_GRADUAL_SECONDS] ?: 60).coerceIn(1, 600),
+                ),
+                ringDurationSeconds = prefs[Keys.DEFAULT_RING_SECONDS] ?: Alarm.DEFAULT_RING_DURATION_SECONDS,
+            )
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setDefaultSound(sound: AlarmSound) {
+        dataStore.edit { prefs ->
+            if (sound.ringtoneUri == null) prefs.remove(Keys.DEFAULT_RINGTONE_URI) else prefs[Keys.DEFAULT_RINGTONE_URI] = sound.ringtoneUri
+            if (sound.ringtoneTitle == null) prefs.remove(Keys.DEFAULT_RINGTONE_TITLE) else prefs[Keys.DEFAULT_RINGTONE_TITLE] = sound.ringtoneTitle
+            prefs[Keys.DEFAULT_VIBRATION] = sound.vibration.name
+            prefs[Keys.DEFAULT_GRADUAL_ENABLED] = sound.gradual.enabled
+            prefs[Keys.DEFAULT_GRADUAL_TARGET] = sound.gradual.targetPercent
+            prefs[Keys.DEFAULT_GRADUAL_SECONDS] = sound.gradual.seconds
+            prefs[Keys.DEFAULT_RING_SECONDS] = sound.ringDurationSeconds
+        }
+    }
+
+    override val audioOutput: Flow<AudioOutput> = dataStore.data
+        .map { prefs ->
+            prefs[Keys.AUDIO_OUTPUT]?.let { name -> AudioOutput.entries.firstOrNull { it.name == name } }
+                ?: AudioOutput.PHONE_AND_BLUETOOTH
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setAudioOutput(output: AudioOutput) {
+        dataStore.edit { it[Keys.AUDIO_OUTPUT] = output.name }
     }
 
     override val volumeButtonAction: Flow<VolumeButtonAction> = dataStore.data
@@ -104,6 +149,14 @@ class DataStoreSettingsRepository @Inject constructor(
         val VOLUME_BUTTON_ACTION = stringPreferencesKey("volume_button_action")
         val NOTICE_MINUTES = stringPreferencesKey("notice_minutes")
         val PENDING_UNDO = stringPreferencesKey("pending_undo")
+        val DEFAULT_RINGTONE_URI = stringPreferencesKey("default_ringtone_uri")
+        val DEFAULT_RINGTONE_TITLE = stringPreferencesKey("default_ringtone_title")
+        val DEFAULT_VIBRATION = stringPreferencesKey("default_vibration")
+        val DEFAULT_GRADUAL_ENABLED = booleanPreferencesKey("default_gradual_enabled")
+        val DEFAULT_GRADUAL_TARGET = intPreferencesKey("default_gradual_target")
+        val DEFAULT_GRADUAL_SECONDS = intPreferencesKey("default_gradual_seconds")
+        val DEFAULT_RING_SECONDS = intPreferencesKey("default_ring_seconds")
+        val AUDIO_OUTPUT = stringPreferencesKey("audio_output")
     }
 
     private fun String.toIntSet(): Set<Int> = split(',').mapNotNull(String::toIntOrNull).toSet()

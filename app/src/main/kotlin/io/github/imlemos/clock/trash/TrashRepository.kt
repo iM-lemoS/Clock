@@ -32,6 +32,8 @@ class TrashRepository @Inject constructor(
 
     suspend fun get(trashId: Long): TrashedAlarm? = trashDao.get(trashId)?.toTrashedAlarm()
 
+    suspend fun allAlarms(): List<Alarm> = trashDao.getAll().mapNotNull { it.toTrashedAlarm()?.alarm }
+
     /** Removes [alarm] from the alarm list and keeps a snapshot. Returns the trash id. */
     suspend fun moveToTrash(alarm: Alarm, automatic: Boolean): Long {
         val id = trashDao.insert(

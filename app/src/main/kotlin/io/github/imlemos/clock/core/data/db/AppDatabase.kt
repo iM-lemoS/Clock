@@ -17,6 +17,8 @@ import androidx.room3.RoomDatabase
     autoMigrations = [
         // 2: single use, armed time, trash.
         AutoMigration(from = 1, to = 2),
+        // 3: vibration pattern, gradual volume, ringtone title.
+        AutoMigration(from = 2, to = 3),
     ],
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -25,7 +27,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun trashDao(): TrashDao
 
     companion object {
-        const val VERSION = 2
+        const val VERSION = 3
         const val NAME = "clock.db"
     }
 }

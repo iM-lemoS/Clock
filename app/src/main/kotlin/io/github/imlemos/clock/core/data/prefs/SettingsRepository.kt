@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.core.data.prefs
 
+import io.github.imlemos.clock.alarm.model.AlarmSound
 import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {
@@ -11,6 +12,15 @@ interface SettingsRepository {
     suspend fun setAccent(argb: Int?)
 
     suspend fun setReduceTransparency(enabled: Boolean)
+
+    /** Sound used for new alarms (docs/PLANO.md 6). Changing it does not alter existing alarms. */
+    val defaultSound: Flow<AlarmSound>
+
+    suspend fun setDefaultSound(sound: AlarmSound)
+
+    val audioOutput: Flow<AudioOutput>
+
+    suspend fun setAudioOutput(output: AudioOutput)
 
     val volumeButtonAction: Flow<VolumeButtonAction>
 

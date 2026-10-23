@@ -1,6 +1,9 @@
 package io.github.imlemos.clock.alarm.data
 
 import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.alarm.model.AlarmSound
+import io.github.imlemos.clock.alarm.model.GradualVolume
+import io.github.imlemos.clock.alarm.model.Vibration
 import io.github.imlemos.clock.core.data.db.AlarmEntity
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
@@ -29,9 +32,21 @@ internal fun AlarmEntity.toAlarm(): Alarm = Alarm(
     lastTriggeredOccurrence = lastTriggeredOccurrence?.let(Instant::ofEpochMilli),
     snoozedUntil = snoozedUntil?.let(Instant::ofEpochMilli),
     snoozeMinutes = snoozeMinutes,
-    ringDurationSeconds = ringDurationSeconds,
-    vibrate = vibrate,
-    ringtoneUri = ringtoneUri,
+    sound = AlarmSound(
+        ringtoneUri = ringtoneUri,
+        ringtoneTitle = ringtoneTitle,
+        vibration = if (!vibrate) {
+            Vibration.NONE
+        } else {
+            Vibration.entries.firstOrNull { it.name == vibrationPattern && it != Vibration.NONE } ?: Vibration.SYNC
+        },
+        gradual = GradualVolume(
+            enabled = gradualEnabled,
+            targetPercent = gradualTargetPercent.coerceIn(1, 100),
+            seconds = gradualSeconds.coerceIn(1, 600),
+        ),
+        ringDurationSeconds = ringDurationSeconds,
+    ),
     singleUse = singleUse,
     createdAt = Instant.ofEpochMilli(createdAt),
     armedAt = Instant.ofEpochMilli(if (armedAt == 0L) createdAt else armedAt),
@@ -55,12 +70,17 @@ internal fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
     lastTriggeredOccurrence = lastTriggeredOccurrence?.toEpochMilli(),
     snoozedUntil = snoozedUntil?.toEpochMilli(),
     snoozeMinutes = snoozeMinutes,
-    ringDurationSeconds = ringDurationSeconds,
-    vibrate = vibrate,
-    ringtoneUri = ringtoneUri,
+    ringDurationSeconds = sound.ringDurationSeconds,
+    vibrate = sound.vibration != Vibration.NONE,
+    ringtoneUri = sound.ringtoneUri,
     createdAt = createdAt.toEpochMilli(),
     singleUse = singleUse,
     armedAt = armedAt.toEpochMilli(),
+    vibrationPattern = (sound.vibration.takeIf { it != Vibration.NONE } ?: Vibration.SYNC).name,
+    gradualEnabled = sound.gradual.enabled,
+    gradualTargetPercent = sound.gradual.targetPercent,
+    gradualSeconds = sound.gradual.seconds,
+    ringtoneTitle = sound.ringtoneTitle,
 )
 
 private val DayOfWeek.bit: Int get() = 1 shl ordinal

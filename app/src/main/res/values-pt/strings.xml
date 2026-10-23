@@ -181,4 +181,37 @@
     </plurals>
     <string name="settings_trash">Caixote do lixo</string>
     <string name="settings_trash_summary">Alarmes apagados nos últimos 30 dias.</string>
+    <!-- Phase 3: sound -->
+    <string name="sound_tone">Toque</string>
+    <string name="sound_default_tone">Toque de alarme do sistema</string>
+    <string name="sound_pick_system">Toques do sistema</string>
+    <string name="sound_pick_file">Escolher um ficheiro</string>
+    <string name="sound_use_default">Usar o toque de alarme do sistema</string>
+    <string name="sound_import_failed">Não é possível usar este ficheiro.</string>
+    <string name="vibration">Vibração</string>
+    <string name="vibration_none">Nenhuma</string>
+    <string name="vibration_sync">Com o toque</string>
+    <string name="vibration_pulse">Pulso</string>
+    <string name="vibration_heartbeat">Batimento</string>
+    <string name="vibration_wave">Onda</string>
+    <string name="vibration_staccato">Rápida</string>
+    <string name="vibration_long">Longa</string>
+    <string name="gradual">Volume gradual</string>
+    <string name="gradual_summary">Começa baixo e sobe até ao volume escolhido.</string>
+    <string name="gradual_target">Volume final: %1$d%%</string>
+    <string name="gradual_duration">Subida: %1$s</string>
+    <string name="duration_seconds">%1$d s</string>
+    <string name="ring_duration">Duração do toque</string>
+    <string name="ring_duration_summary">Depois disto o alarme para e fica uma notificação de alarme perdido.</string>
+    <string name="settings_section_sound">Som dos alarmes</string>
+    <string name="settings_default_sound_summary">Usado nos alarmes novos. Os alarmes que já existem mantêm o seu som.</string>
+    <string name="audio_output">Saída de áudio</string>
+    <string name="output_both">Telemóvel e Bluetooth</string>
+    <string name="output_phone">Só o telemóvel</string>
+    <string name="output_bluetooth">Só Bluetooth</string>
+    <string name="output_bluetooth_summary">Com «Só Bluetooth», se não houver nada ligado, toca no telemóvel.</string>
+    <string name="volume_zero_title">O volume de alarme está a zero</string>
+    <string name="volume_zero_body">Os alarmes vão tocar sem som. Toca para o aumentar.</string>
+    <string name="oem_coloros_dnd_title">Permitir alarmes no Não incomodar</string>
+    <string name="oem_coloros_dnd_body">Nas definições de notificações da app, liga Permitir no modo Não incomodar. Sem isto, o ColorOS toca o alarme mas esconde o ecrã dele enquanto o Não incomodar está ligado.</string>
 </resources>

@@ -34,7 +34,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.delay
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
@@ -53,13 +57,39 @@ fun AlarmsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val reliabilityOk by viewModel.reliabilityOk.collectAsStateWithLifecycle()
+    val volumeZero by viewModel.volumeZero.collectAsStateWithLifecycle()
     LifecycleResumeEffect(Unit) {
         viewModel.refreshReliability()
         onPauseOrDispose { }
     }
+    // The volume can change with the hardware keys while the list is open.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(Unit) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (true) {
+                viewModel.refreshVolume()
+                delay(VOLUME_POLL_MS)
+            }
+        }
+    }
+    val showVolumeWarning = volumeZero && state.items.any { it.nextRing != null }
+    val bannerCount = listOf(!reliabilityOk, showVolumeWarning).count { it }
     TabScreen(stringResource(R.string.nav_alarms), PaddingValues(), onOpenSettings) {
-        if (!reliabilityOk) {
-            ReliabilityBanner(onOpenReliability, Modifier.align(Alignment.TopCenter).zIndex(1f))
+        Column(Modifier.align(Alignment.TopCenter).zIndex(1f)) {
+            if (!reliabilityOk) {
+                WarningBanner(
+                    title = stringResource(R.string.reliability_banner_title),
+                    body = stringResource(R.string.reliability_banner_body),
+                    onClick = onOpenReliability,
+                )
+            }
+            if (showVolumeWarning) {
+                WarningBanner(
+                    title = stringResource(R.string.volume_zero_title),
+                    body = stringResource(R.string.volume_zero_body),
+                    onClick = viewModel::raiseVolume,
+                )
+            }
         }
         if (state.items.isEmpty()) {
             EmptyState(
@@ -84,7 +114,7 @@ fun AlarmsScreen(
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
-                    top = if (reliabilityOk) 8.dp else 104.dp,
+                    top = 8.dp + 96.dp * bannerCount,
                     bottom = contentPadding.calculateBottomPadding() + 16.dp,
                 ),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -168,8 +198,10 @@ private fun AlarmCard(
     }
 }
 
+private const val VOLUME_POLL_MS = 1_500L
+
 @Composable
-private fun ReliabilityBanner(onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun WarningBanner(title: String, body: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = ClockTheme.colors
     val shape = RoundedCornerShape(20.dp)
     Row(
@@ -186,8 +218,8 @@ private fun ReliabilityBanner(onClick: () -> Unit, modifier: Modifier = Modifier
         Icon(painterResource(R.drawable.ic_error), contentDescription = null, tint = colors.accent)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(stringResource(R.string.reliability_banner_title), style = ClockTheme.typography.body, color = colors.content)
-            Text(stringResource(R.string.reliability_banner_body), style = ClockTheme.typography.caption, color = colors.contentMuted)
+            Text(title, style = ClockTheme.typography.body, color = colors.content)
+            Text(body, style = ClockTheme.typography.caption, color = colors.contentMuted)
         }
     }
 }

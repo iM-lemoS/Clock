@@ -5,7 +5,8 @@ import io.github.imlemos.clock.R
 /**
  * OPPO, realme and OnePlus (ColorOS / OxygenOS / realme UI). Verified on ColorOS 16: the autostart
  * and battery screens are protected by a vendor permission, so only the app details page can be
- * opened directly.
+ * opened directly. Unlike stock Android, ColorOS also blocks the full-screen alarm during Do Not
+ * Disturb (the sound still plays) unless the app is allowed in Do Not Disturb.
  */
 class ColorOsProfile(brand: String) : OemProfile {
     override val id = "coloros"
@@ -14,6 +15,9 @@ class ColorOsProfile(brand: String) : OemProfile {
     override val steps = listOf(
         OemStep(R.string.oem_coloros_background_title, R.string.oem_coloros_background_body) { context ->
             listOf(appDetailsIntent(context))
+        },
+        OemStep(R.string.oem_coloros_dnd_title, R.string.oem_coloros_dnd_body) { context ->
+            listOf(appNotificationSettingsIntent(context), appDetailsIntent(context))
         },
         LockInRecentsStep,
     )

@@ -11,7 +11,6 @@ import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
-import androidx.core.net.toUri
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.data.AlarmController
@@ -19,6 +18,8 @@ import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.scheduling.AlarmIntents
 import io.github.imlemos.clock.alarm.ui.formatTimeOfDay
 import io.github.imlemos.clock.core.audio.AlarmSoundPlayer
+import io.github.imlemos.clock.core.data.prefs.SettingsRepository
+import kotlinx.coroutines.flow.first
 import io.github.imlemos.clock.core.notifications.AlarmNotifications
 import io.github.imlemos.clock.core.notifications.NotificationChannels
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +46,7 @@ class RingingService : Service() {
     @Inject lateinit var player: AlarmSoundPlayer
     @Inject lateinit var ringingState: RingingState
     @Inject lateinit var notifications: AlarmNotifications
+    @Inject lateinit var settings: SettingsRepository
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var timeoutJob: Job? = null
@@ -94,11 +96,11 @@ class RingingService : Service() {
         // fired a few milliseconds earlier: switch to its sound unless the user silenced it.
         val session = ringingState.session.value
         if (session?.primary?.id == alarm.id && !session.silenced) {
-            player.start(alarm.ringtoneUri?.toUri(), alarm.vibrate)
+            player.start(alarm.sound, settings.audioOutput.first())
         }
         if (previousPrimary == null) {
             timeoutJob = scope.launch {
-                delay(alarm.ringDurationSeconds * 1_000L)
+                delay(alarm.sound.ringDurationSeconds * 1_000L)
                 // Clear first: finishSession cancels timeoutJob, which must not cancel this coroutine.
                 timeoutJob = null
                 onTimeout()

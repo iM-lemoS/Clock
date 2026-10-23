@@ -9,6 +9,7 @@ import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.scheduling.AlarmScheduler
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import kotlinx.coroutines.delay
+import io.github.imlemos.clock.core.audio.AlarmVolume
 import io.github.imlemos.clock.reliability.ReliabilityChecker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,7 +45,22 @@ class AlarmListViewModel @Inject constructor(
     private val scheduler: AlarmScheduler,
     private val clock: Clock,
     private val reliability: ReliabilityChecker,
+    private val alarmVolume: AlarmVolume,
 ) : ViewModel() {
+
+    private val _volumeZero = MutableStateFlow(false)
+
+    /** The alarm volume is at zero: enabled alarms would ring silently (docs/PLANO.md 3.2). */
+    val volumeZero: StateFlow<Boolean> = _volumeZero.asStateFlow()
+
+    fun refreshVolume() {
+        _volumeZero.value = alarmVolume.isZero()
+    }
+
+    fun raiseVolume() {
+        alarmVolume.raise()
+        refreshVolume()
+    }
 
     private val _reliabilityOk = MutableStateFlow(true)
 

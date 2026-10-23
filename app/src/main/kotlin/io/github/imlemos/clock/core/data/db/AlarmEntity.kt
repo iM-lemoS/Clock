@@ -33,4 +33,12 @@ data class AlarmEntity(
     @ColumnInfo(defaultValue = "0") val singleUse: Boolean = false,
     /** When the alarm was last saved or switched on; earlier occurrences never count as missed. */
     @ColumnInfo(defaultValue = "0") val armedAt: Long = 0,
+    /** Pattern used when [vibrate] is on. Added in schema 3. */
+    @ColumnInfo(defaultValue = "SYNC") val vibrationPattern: String = "SYNC",
+    @ColumnInfo(defaultValue = "0") val gradualEnabled: Boolean = false,
+    /** Final volume of a gradual alarm, as a percentage of the alarm stream volume. */
+    @ColumnInfo(defaultValue = "100") val gradualTargetPercent: Int = 100,
+    @ColumnInfo(defaultValue = "60") val gradualSeconds: Int = 60,
+    /** Display name of [ringtoneUri]; `null` means the system default alarm sound. */
+    val ringtoneTitle: String? = null,
 )

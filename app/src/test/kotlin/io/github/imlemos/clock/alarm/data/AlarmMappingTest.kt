@@ -1,6 +1,9 @@
 package io.github.imlemos.clock.alarm.data
 
 import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.alarm.model.AlarmSound
+import io.github.imlemos.clock.alarm.model.GradualVolume
+import io.github.imlemos.clock.alarm.model.Vibration
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
 import org.junit.Test
@@ -21,15 +24,27 @@ class AlarmMappingTest {
         lastTriggeredOccurrence = Instant.parse("2026-11-02T11:45:00Z"),
         snoozedUntil = Instant.parse("2026-11-02T11:50:00Z"),
         snoozeMinutes = 10,
-        ringDurationSeconds = 120,
-        vibrate = false,
-        ringtoneUri = "content://media/internal/audio/media/42",
+        sound = AlarmSound(
+            ringtoneUri = "content://media/internal/audio/media/42",
+            ringtoneTitle = "Oxygen",
+            vibration = Vibration.HEARTBEAT,
+            gradual = GradualVolume(enabled = true, targetPercent = 70, seconds = 90),
+            ringDurationSeconds = 120,
+        ),
         createdAt = Instant.parse("2026-10-01T00:00:00Z"),
     )
 
     @Test
     fun `once alarm round-trips`() {
         assertEquals(base, base.toEntity().toAlarm())
+    }
+
+    @Test
+    fun `no vibration is stored as vibrate off and read back as none`() {
+        val alarm = base.copy(sound = base.sound.copy(vibration = Vibration.NONE))
+        val entity = alarm.toEntity()
+        assertEquals(false, entity.vibrate)
+        assertEquals(alarm, entity.toAlarm())
     }
 
     @Test

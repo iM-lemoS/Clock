@@ -187,4 +187,37 @@
     </plurals>
     <string name="settings_trash">Trash</string>
     <string name="settings_trash_summary">Alarms deleted in the last 30 days.</string>
+    <!-- Phase 3: sound -->
+    <string name="sound_tone">Sound</string>
+    <string name="sound_default_tone">System alarm sound</string>
+    <string name="sound_pick_system">System sounds</string>
+    <string name="sound_pick_file">Choose a file</string>
+    <string name="sound_use_default">Use the system alarm sound</string>
+    <string name="sound_import_failed">This file cannot be used.</string>
+    <string name="vibration">Vibration</string>
+    <string name="vibration_none">None</string>
+    <string name="vibration_sync">With the sound</string>
+    <string name="vibration_pulse">Pulse</string>
+    <string name="vibration_heartbeat">Heartbeat</string>
+    <string name="vibration_wave">Wave</string>
+    <string name="vibration_staccato">Rapid</string>
+    <string name="vibration_long">Long</string>
+    <string name="gradual">Gradual volume</string>
+    <string name="gradual_summary">Starts quiet and rises to the chosen volume.</string>
+    <string name="gradual_target">Final volume: %1$d%%</string>
+    <string name="gradual_duration">Rise time: %1$s</string>
+    <string name="duration_seconds">%1$d s</string>
+    <string name="ring_duration">Ring duration</string>
+    <string name="ring_duration_summary">After this the alarm stops and leaves a missed-alarm notification.</string>
+    <string name="settings_section_sound">Alarm sound</string>
+    <string name="settings_default_sound_summary">Used for new alarms. Existing alarms keep their own sound.</string>
+    <string name="audio_output">Audio output</string>
+    <string name="output_both">Phone and Bluetooth</string>
+    <string name="output_phone">Phone only</string>
+    <string name="output_bluetooth">Bluetooth only</string>
+    <string name="output_bluetooth_summary">With Bluetooth only, the phone rings when nothing is connected.</string>
+    <string name="volume_zero_title">Alarm volume is at zero</string>
+    <string name="volume_zero_body">Alarms will ring silently. Tap to raise it.</string>
+    <string name="oem_coloros_dnd_title">Allow alarms during Do Not Disturb</string>
+    <string name="oem_coloros_dnd_body">In the app\'s notification settings, turn on Allow in Do Not Disturb. Otherwise ColorOS plays the alarm but hides its screen while Do Not Disturb is on.</string>
 </resources>

@@ -3,6 +3,7 @@ package io.github.imlemos.clock.settings
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -50,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.alarm.ui.SoundSection
+import io.github.imlemos.clock.core.data.prefs.AudioOutput
 import io.github.imlemos.clock.core.data.prefs.ThemeMode
 import io.github.imlemos.clock.core.data.prefs.VolumeButtonAction
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
@@ -154,6 +157,44 @@ fun SettingsScreen(
                 title = stringResource(R.string.settings_trash),
                 summary = stringResource(R.string.settings_trash_summary),
                 onClick = onOpenTrash,
+            )
+
+            SectionHeader(stringResource(R.string.settings_section_sound))
+            Text(
+                text = stringResource(R.string.settings_default_sound_summary),
+                style = ClockTheme.typography.caption,
+                color = ClockTheme.colors.contentMuted,
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 12.dp),
+            )
+            val defaultSound by viewModel.defaultSound.collectAsStateWithLifecycle()
+            SoundSection(
+                sound = defaultSound,
+                onChange = viewModel::setDefaultSound,
+                onSystemTonePicked = viewModel::setDefaultSystemTone,
+                onFilePicked = { uri ->
+                    viewModel.importDefaultTone(uri) {
+                        Toast.makeText(context, R.string.sound_import_failed, Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onPreviewVibration = viewModel::previewVibration,
+                modifier = Modifier.padding(horizontal = 24.dp),
+            )
+            SettingLabel(stringResource(R.string.audio_output))
+            val output by viewModel.audioOutput.collectAsStateWithLifecycle()
+            RadioList(
+                options = listOf(
+                    AudioOutput.PHONE_AND_BLUETOOTH to R.string.output_both,
+                    AudioOutput.PHONE_ONLY to R.string.output_phone,
+                    AudioOutput.BLUETOOTH_ONLY to R.string.output_bluetooth,
+                ),
+                selected = output,
+                onSelect = viewModel::setAudioOutput,
+            )
+            Text(
+                text = stringResource(R.string.output_bluetooth_summary),
+                style = ClockTheme.typography.caption,
+                color = ClockTheme.colors.contentMuted,
+                modifier = Modifier.padding(horizontal = 24.dp),
             )
 
             SectionHeader(stringResource(R.string.settings_section_general))

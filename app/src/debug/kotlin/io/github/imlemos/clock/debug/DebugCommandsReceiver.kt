@@ -8,6 +8,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.alarm.data.AlarmRepository
 import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.alarm.model.AlarmSound
+import io.github.imlemos.clock.alarm.model.GradualVolume
+import io.github.imlemos.clock.alarm.model.Vibration
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
@@ -16,6 +19,7 @@ import java.time.LocalDate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.ZoneId
@@ -30,7 +34,8 @@ import javax.inject.Inject
  *     -n io.github.imlemos.clock.debug/io.github.imlemos.clock.debug.DebugCommandsReceiver \
  *     --ei in_minutes 2 --es label "Doze test"
  * Optional extras: --es days 1,3,5 (ISO days, weekly) | --es dates today,2026-11-03 (dates)
- *     | --ez single_use true
+ *     | --ez single_use true | --es vibration HEARTBEAT | --ei gradual_seconds 30 --ei gradual_target 80
+ *     | --ei ring_seconds 120
  * adb shell am broadcast -a io.github.imlemos.clock.debug.DELETE_ALL_ALARMS -n <same component>
  * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_NOTICES -n <same component> --es minutes 30,5
  *     (empty string disables notices)
@@ -55,6 +60,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                         days = intent.getStringExtra("days"),
                         dates = intent.getStringExtra("dates"),
                         singleUse = intent.getBooleanExtra("single_use", false),
+                        sound = soundFrom(intent, settings.defaultSound.first()),
                     )
                     ACTION_DELETE_ALL -> repository.getAll().forEach { controller.delete(it.id) }
                     ACTION_SET_NOTICES -> {
@@ -70,7 +76,27 @@ class DebugCommandsReceiver : BroadcastReceiver() {
     }
 
     /** An alarm at the start of the minute [minutes] from now; one-off unless days or dates are given. */
-    private suspend fun createTestAlarm(minutes: Int, label: String, days: String?, dates: String?, singleUse: Boolean) {
+    private fun soundFrom(intent: Intent, defaults: AlarmSound): AlarmSound {
+        val gradualSeconds = intent.getIntExtra("gradual_seconds", 0)
+        return defaults.copy(
+            vibration = intent.getStringExtra("vibration")?.let(Vibration::valueOf) ?: defaults.vibration,
+            gradual = if (gradualSeconds > 0) {
+                GradualVolume(true, intent.getIntExtra("gradual_target", 100), gradualSeconds)
+            } else {
+                defaults.gradual
+            },
+            ringDurationSeconds = intent.getIntExtra("ring_seconds", defaults.ringDurationSeconds),
+        )
+    }
+
+    private suspend fun createTestAlarm(
+        minutes: Int,
+        label: String,
+        days: String?,
+        dates: String?,
+        singleUse: Boolean,
+        sound: AlarmSound,
+    ) {
         val at = clock.instant().atZone(ZoneId.systemDefault()).plusMinutes(minutes.toLong()).truncatedTo(ChronoUnit.MINUTES)
         val recurrence = when {
             days != null -> Recurrence.Weekly(days.split(',').map { DayOfWeek.of(it.trim().toInt()) }.toSet())
@@ -85,6 +111,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                 recurrence = recurrence,
                 label = label,
                 singleUse = singleUse,
+                sound = sound,
                 createdAt = clock.instant(),
             ),
         )
