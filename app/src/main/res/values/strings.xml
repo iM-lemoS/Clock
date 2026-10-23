@@ -316,6 +316,7 @@
     <string name="layout_default_badge">Default</string>
     <string name="layout_built_in">Built in</string>
     <string name="layout_new">New layout</string>
+    <string name="layout_view">View</string>
     <string name="layout_new_name">Layout %1$d</string>
     <string name="layout_edit">Edit</string>
     <string name="layout_test">Test</string>

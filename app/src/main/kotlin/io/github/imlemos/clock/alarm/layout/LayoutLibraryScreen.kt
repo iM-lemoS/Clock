@@ -42,6 +42,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -290,29 +291,29 @@ fun LayoutLibraryScreen(
 
 /** A small, still picture of a layout: the real renderer drawn at phone size and scaled down. */
 @Composable
-fun LayoutThumbnail(spec: LayoutSpec, modifier: Modifier = Modifier) {
+fun LayoutThumbnail(spec: LayoutSpec, modifier: Modifier = Modifier, width: Dp = THUMB_WIDTH.dp) {
     // Alarm screens are always dark, whatever the app theme.
     ClockTheme(darkTheme = true, accent = ClockTheme.colors.accent, glassLevel = LocalGlassLevel.current) {
-        ThumbnailContent(spec, modifier)
+        ThumbnailContent(spec, modifier, width.value)
     }
 }
 
 @Composable
-private fun ThumbnailContent(spec: LayoutSpec, modifier: Modifier) {
+private fun ThumbnailContent(spec: LayoutSpec, modifier: Modifier, width: Float) {
     val backdrop = rememberGlassBackdrop()
     val now = remember { java.time.LocalTime.now() }
     Box(
         modifier
-            .size(THUMB_WIDTH.dp, (THUMB_WIDTH * PHONE_RATIO).dp)
-            .clip(RoundedCornerShape(10.dp)),
+            .size(width.dp, (width * PHONE_RATIO).dp)
+            .clip(RoundedCornerShape(10.dp * (width / THUMB_WIDTH))),
         contentAlignment = Alignment.Center,
     ) {
         Box(
             Modifier
                 .requiredSize(PHONE_WIDTH.dp, (PHONE_WIDTH * PHONE_RATIO).dp)
                 .graphicsLayer {
-                    scaleX = THUMB_WIDTH / PHONE_WIDTH
-                    scaleY = THUMB_WIDTH / PHONE_WIDTH
+                    scaleX = width / PHONE_WIDTH
+                    scaleY = width / PHONE_WIDTH
                 },
         ) {
             AlarmLayoutView(
