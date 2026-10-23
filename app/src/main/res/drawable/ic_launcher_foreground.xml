@@ -1,11 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Launcher icon: a dot-matrix clock face at 10:10 (minute dots, hour dots, quarter dots), red centre. Generated; kept inside the 66dp safe zone. -->
+<!--
+  Launcher icon: a smoky Liquid Glass ring around a black dial, white hands at 10:10 and a red
+  second hand; transparent around the ring.
+  Glass is drawn with gradients only (launcher icons cannot blur). Inside the 66dp safe zone.
+  Concept from a Codex image exploration, vectorised by hand.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:fillColor="#FFFFFF" android:pathData="M51.60,29.00a2.4,2.4 0 1,0 4.8,0a2.4,2.4 0 1,0 -4.8,0zM76.60,54.00a2.4,2.4 0 1,0 4.8,0a2.4,2.4 0 1,0 -4.8,0zM51.60,79.00a2.4,2.4 0 1,0 4.8,0a2.4,2.4 0 1,0 -4.8,0zM26.60,54.00a2.4,2.4 0 1,0 4.8,0a2.4,2.4 0 1,0 -4.8,0zM64.80,32.35a1.7,1.7 0 1,0 3.4,0a1.7,1.7 0 1,0 -3.4,0zM73.95,41.50a1.7,1.7 0 1,0 3.4,0a1.7,1.7 0 1,0 -3.4,0zM73.95,66.50a1.7,1.7 0 1,0 3.4,0a1.7,1.7 0 1,0 -3.4,0zM64.80,75.65a1.7,1.7 0 1,0 3.4,0a1.7,1.7 0 1,0 -3.4,0zM39.80,75.65a1.7,1.7 0 1,0 3.4,0a1.7,1.7 0 1,0 -3.4,0zM30.65,66.50a1.7,1.7 0 1,0 3.4,0a1.7,1.7 0 1,0 -3.4,0zM30.65,41.50a1.7,1.7 0 1,0 3.4,0a1.7,1.7 0 1,0 -3.4,0zM39.80,32.35a1.7,1.7 0 1,0 3.4,0a1.7,1.7 0 1,0 -3.4,0zM48.50,51.75a1.6,1.6 0 1,0 3.2,0a1.6,1.6 0 1,0 -3.2,0zM44.61,49.50a1.6,1.6 0 1,0 3.2,0a1.6,1.6 0 1,0 -3.2,0zM56.30,51.75a1.6,1.6 0 1,0 3.2,0a1.6,1.6 0 1,0 -3.2,0zM60.19,49.50a1.6,1.6 0 1,0 3.2,0a1.6,1.6 0 1,0 -3.2,0zM64.09,47.25a1.6,1.6 0 1,0 3.2,0a1.6,1.6 0 1,0 -3.2,0zM67.99,45.00a1.6,1.6 0 1,0 3.2,0a1.6,1.6 0 1,0 -3.2,0z" />
-    <path android:fillColor="#7A7A7A" android:pathData="M55.91,29.14a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM58.50,29.55a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM61.03,30.22a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM63.47,31.16a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM67.99,33.77a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM70.03,35.42a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM71.88,37.27a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM73.53,39.31a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM76.14,43.83a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM77.08,46.27a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM77.75,48.80a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM78.16,51.39a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM78.16,56.61a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM77.75,59.20a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM77.08,61.73a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM76.14,64.17a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM73.53,68.69a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM71.88,70.73a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM70.03,72.58a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM67.99,74.23a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM63.47,76.84a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM61.03,77.78a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM58.50,78.45a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM55.91,78.86a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM50.69,78.86a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM48.10,78.45a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM45.57,77.78a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM43.13,76.84a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM38.61,74.23a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM36.57,72.58a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM34.72,70.73a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM33.07,68.69a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM30.46,64.17a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM29.52,61.73a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM28.85,59.20a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM28.44,56.61a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM28.44,51.39a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM28.85,48.80a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM29.52,46.27a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM30.46,43.83a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM33.07,39.31a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM34.72,37.27a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM36.57,35.42a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM38.61,33.77a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM43.13,31.16a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM45.57,30.22a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM48.10,29.55a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0zM50.69,29.14a0.7,0.7 0 1,0 1.4,0a0.7,0.7 0 1,0 -1.4,0z" />
-    <path android:fillColor="#E0282E" android:pathData="M51.00,54.00a3.0,3.0 0 1,0 6.0,0a3.0,3.0 0 1,0 -6.0,0z" />
+    <!-- The dial inside the ring stays black; around the ring the icon is transparent. -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M82,54 A28,28 0 1,1 26,54 A28,28 0 1,1 82,54 Z" />
+    <!-- The glass ring: bright edges, darker in the middle of its thickness, like a thick lens. -->
+    <path
+        android:fillType="evenOdd"
+        android:pathData="M86,54 A32,32 0 1,1 22,54 A32,32 0 1,1 86,54 Z M81.5,54 A27.5,27.5 0 1,1 26.5,54 A27.5,27.5 0 1,1 81.5,54 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="54"
+                android:centerY="54"
+                android:gradientRadius="32"
+                android:type="radial">
+                <item android:color="#E6BFC3C7" android:offset="0.8594" />
+                <item android:color="#E632363A" android:offset="0.9031" />
+                <item android:color="#E65A6065" android:offset="0.94" />
+                <item android:color="#E6DADDE0" android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Specular rim on both edges, brightest at the top left. -->
+    <path
+        android:pathData="M86,54 A32,32 0 1,1 22,54 A32,32 0 1,1 86,54 Z"
+        android:strokeWidth="1">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="29"
+                android:startY="25"
+                android:endX="79"
+                android:endY="84"
+                android:type="linear">
+                <item android:color="#FFFFFFFF" android:offset="0" />
+                <item android:color="#F2FFFFFF" android:offset="0.25" />
+                <item android:color="#3DFFFFFF" android:offset="0.55" />
+                <item android:color="#75FFFFFF" android:offset="0.8" />
+                <item android:color="#CCFFFFFF" android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:pathData="M81.5,54 A27.5,27.5 0 1,1 26.5,54 A27.5,27.5 0 1,1 81.5,54 Z"
+        android:strokeWidth="0.65">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="29"
+                android:startY="25"
+                android:endX="79"
+                android:endY="84"
+                android:type="linear">
+                <item android:color="#FFFFFFFF" android:offset="0" />
+                <item android:color="#F2FFFFFF" android:offset="0.25" />
+                <item android:color="#3DFFFFFF" android:offset="0.55" />
+                <item android:color="#75FFFFFF" android:offset="0.8" />
+                <item android:color="#CCFFFFFF" android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Hour and minute hands at 10:10. -->
+    <path
+        android:pathData="M40,44 L54,54 L72,42"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <!-- The red second hand. -->
+    <path
+        android:pathData="M54,54 V76"
+        android:strokeColor="#E0282E"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round" />
 </vector>
