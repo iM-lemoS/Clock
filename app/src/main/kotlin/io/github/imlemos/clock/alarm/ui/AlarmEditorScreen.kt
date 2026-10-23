@@ -26,6 +26,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -51,6 +52,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.imlemos.clock.R
@@ -143,10 +145,18 @@ fun AlarmEditorScreen(
                 timeSelectorSelectedContentColor = colors.content,
                 timeSelectorUnselectedContentColor = colors.contentMuted,
             )
-            if (keyboardInput) {
-                TimeInput(state = pickerState, colors = pickerColors)
-            } else {
-                TimePicker(state = pickerState, colors = pickerColors)
+            // The picker draws its own ":" with displayLarge; use the mono face there instead of
+            // Doto, whose colon glyph does not fit the design (DotTime draws its own).
+            MaterialTheme(
+                typography = MaterialTheme.typography.copy(
+                    displayLarge = ClockTheme.typography.headline.copy(fontSize = 52.sp, lineHeight = 60.sp),
+                ),
+            ) {
+                if (keyboardInput) {
+                    TimeInput(state = pickerState, colors = pickerColors)
+                } else {
+                    TimePicker(state = pickerState, colors = pickerColors)
+                }
             }
             Spacer(Modifier.height(16.dp))
             RecurrenceSection(state = state, viewModel = viewModel, locale = locale)

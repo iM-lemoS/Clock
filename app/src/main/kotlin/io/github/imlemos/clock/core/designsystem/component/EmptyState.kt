@@ -1,8 +1,6 @@
 package io.github.imlemos.clock.core.designsystem.component
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -30,13 +28,10 @@ fun EmptyState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        val display = ClockTheme.typography.timeDisplay
-        BasicText(
+        DotDigits(
             text = digits,
-            style = display.copy(color = ClockTheme.colors.contentFaint),
-            maxLines = 1,
-            // Longer readouts (00:00:00) shrink to fit narrow screens instead of being clipped.
-            autoSize = TextAutoSize.StepBased(minFontSize = 32.sp, maxFontSize = display.fontSize),
+            color = ClockTheme.colors.contentFaint,
+            minFontSize = 32.sp,
             // Decorative: screen readers get the title and body instead.
             modifier = Modifier.clearAndSetSemantics {},
         )
