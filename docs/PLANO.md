@@ -241,7 +241,7 @@ As definições estão organizadas por categorias, cada uma na sua página: Aspe
 
 ---
 
-Implementado (fase 9): som dos temporizadores; cor de destaque livre (seletor de cor, com aviso quando se vê mal num dos temas); secção "Sobre" com versão, privacidade, código-fonte e as licenças das fontes e ícones (os textos vão dentro da app); ícone final (mostrador de pontos às 10h10, centro vermelho, versão monocromática para ícones temáticos); transições com um deslize curto.
+Implementado (fase 9): som dos temporizadores; cor de destaque livre (seletor de cor, com aviso quando se vê mal num dos temas); secção "Sobre" com versão, privacidade, código-fonte e as licenças das fontes e ícones (os textos vão dentro da app); ícone final (anel de vidro fumado à volta de um mostrador preto, ponteiros brancos às 10h10 e ponteiro dos segundos vermelho; transparente à volta do anel; versão monocromática para ícones temáticos); transições com um deslize curto.
 
 ---
 
