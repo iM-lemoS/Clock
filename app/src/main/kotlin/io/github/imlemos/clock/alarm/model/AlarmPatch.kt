@@ -1,5 +1,7 @@
 package io.github.imlemos.clock.alarm.model
 
+import java.time.ZoneId
+
 /**
  * Batch edit (docs/PLANO.md 3.9): every field starts as "don't change" (`null`); only the fields
  * the user sets are applied to each selected alarm.
@@ -11,7 +13,11 @@ data class AlarmPatch(
     val gradual: GradualVolume? = null,
     val ringDurationSeconds: Int? = null,
     val singleUse: Boolean? = null,
+    val zone: Zone? = null,
 ) {
+    /** A time zone choice; [id] `null` is "Local time" (follows the app). */
+    data class Zone(val id: ZoneId?)
+
     /** A sound choice; [uri] `null` is the system default alarm sound. */
     data class Ringtone(val uri: String?, val title: String?)
 
@@ -20,6 +26,7 @@ data class AlarmPatch(
     fun applyTo(alarm: Alarm): Alarm = alarm.copy(
         label = label ?: alarm.label,
         singleUse = singleUse ?: alarm.singleUse,
+        zone = if (zone != null) zone.id else alarm.zone,
         sound = alarm.sound.copy(
             ringtoneUri = if (ringtone != null) ringtone.uri else alarm.sound.ringtoneUri,
             ringtoneTitle = if (ringtone != null) ringtone.title else alarm.sound.ringtoneTitle,

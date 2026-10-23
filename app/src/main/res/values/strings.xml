@@ -281,4 +281,21 @@
     <string name="collision_body">This alarm would ring together with %1$s on %2$s.</string>
     <string name="collision_save_anyway">Save anyway</string>
     <string name="collision_change">Change</string>
+    <!-- Time zones (docs/PLANO.md 3.6) -->
+    <string name="zone_field">Time zone</string>
+    <string name="zone_search">Search a city or country</string>
+    <string name="zone_local">Local time</string>
+    <string name="zone_local_summary_phone">Follows the phone\'s time zone</string>
+    <string name="zone_local_summary_app">Follows the app\'s time zone (%1$s)</string>
+    <string name="zone_automatic">Automatic</string>
+    <string name="zone_automatic_summary">Follows the phone\'s time zone</string>
+    <string name="settings_zone">Time zone</string>
+    <string name="settings_zone_automatic">Automatic · %1$s</string>
+    <string name="settings_zone_manual">Manual · %1$s</string>
+    <string name="settings_zone_manual_hint">Alarms without their own time zone ring at %1$s time, wherever you are.</string>
+    <!-- An alarm time and its city, e.g. "8:00 New York". -->
+    <string name="time_in_zone">%1$s %2$s</string>
+    <!-- The alarm's city and the same moment on the phone, e.g. "New York · 13:00 here". -->
+    <string name="zone_with_here">%1$s · %2$s here</string>
+    <string name="zone_here">%1$s here</string>
 </resources>

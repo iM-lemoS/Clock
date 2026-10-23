@@ -10,10 +10,12 @@ import io.github.imlemos.clock.R
 import io.github.imlemos.clock.core.data.prefs.TimeFormat
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
+import io.github.imlemos.clock.core.zones.ZoneNames
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Duration
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
@@ -55,6 +57,16 @@ fun formatTimeOfDay(context: Context, time: TimeOfDay, locale: Locale = Locale.g
     return DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, skeleton), locale)
         .format(LocalTime.of(time.hour, time.minute))
 }
+
+/** "08:00", or "08:00 New York" for an alarm whose time is not the phone's ([zone] not `null`). */
+fun formatAlarmTime(context: Context, time: TimeOfDay, zone: ZoneId?, locale: Locale = Locale.getDefault()): String {
+    val text = formatTimeOfDay(context, time, locale)
+    return if (zone == null) text else context.getString(R.string.time_in_zone, text, ZoneNames.city(zone, locale))
+}
+
+/** The wall-clock time of [at], formatted like [formatTimeOfDay]. */
+fun formatTimeOfDay(context: Context, at: ZonedDateTime, locale: Locale = Locale.getDefault()): String =
+    formatTimeOfDay(context, TimeOfDay(at.hour, at.minute), locale)
 
 /** "in 7 h 30 min" for the next 24 hours, otherwise the localized weekday and date. */
 fun describeNextRing(resources: Resources, now: ZonedDateTime, next: ZonedDateTime, locale: Locale): String {

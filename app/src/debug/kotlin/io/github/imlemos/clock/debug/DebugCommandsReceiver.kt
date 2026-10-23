@@ -36,11 +36,13 @@ import javax.inject.Inject
  *     --ei in_minutes 2 --es label "Doze test"
  * Optional extras: --es days 1,3,5 (ISO days, weekly) | --es dates today,2026-11-03 (dates)
  *     | --ez single_use true | --es vibration HEARTBEAT | --ei gradual_seconds 30 --ei gradual_target 80
- *     | --ei ring_seconds 120
+ *     | --ei ring_seconds 120 | --es zone America/New_York (the alarm's own zone; same moment)
  * adb shell am broadcast -a io.github.imlemos.clock.debug.DELETE_ALL_ALARMS -n <same component>
  * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_NOTICES -n <same component> --es minutes 30,5
  *     (empty string disables notices)
  * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_AUDIO_OUTPUT -n <same component> --es output PHONE_ONLY
+ * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_MANUAL_ZONE -n <same component> --es zone Asia/Tokyo
+ *     (empty string = automatic)
  * ```
  */
 @AndroidEntryPoint
@@ -62,12 +64,15 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                         days = intent.getStringExtra("days"),
                         dates = intent.getStringExtra("dates"),
                         singleUse = intent.getBooleanExtra("single_use", false),
+                        zone = intent.getStringExtra("zone")?.let(ZoneId::of),
                         sound = soundFrom(intent, settings.defaultSound.first()),
                     )
                     ACTION_DELETE_ALL -> {
                         repository.getGroups().forEach { controller.deleteGroup(it.id, withAlarms = true) }
                         repository.getAll().forEach { controller.delete(it.id) }
                     }
+                    ACTION_SET_MANUAL_ZONE ->
+                        settings.setManualZone(intent.getStringExtra("zone")?.takeIf(String::isNotBlank)?.let(ZoneId::of))
                     ACTION_SET_AUDIO_OUTPUT ->
                         settings.setAudioOutput(AudioOutput.valueOf(intent.getStringExtra("output").orEmpty()))
                     ACTION_SET_NOTICES -> {
@@ -102,9 +107,10 @@ class DebugCommandsReceiver : BroadcastReceiver() {
         days: String?,
         dates: String?,
         singleUse: Boolean,
+        zone: ZoneId?,
         sound: AlarmSound,
     ) {
-        val at = clock.instant().atZone(ZoneId.systemDefault()).plusMinutes(minutes.toLong()).truncatedTo(ChronoUnit.MINUTES)
+        val at = clock.instant().atZone(zone ?: settings.manualZone.first() ?: ZoneId.systemDefault()).plusMinutes(minutes.toLong()).truncatedTo(ChronoUnit.MINUTES)
         val recurrence = when {
             days != null -> Recurrence.Weekly(days.split(',').map { DayOfWeek.of(it.trim().toInt()) }.toSet())
             dates != null -> Recurrence.Dates(
@@ -119,6 +125,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                 label = label,
                 singleUse = singleUse,
                 sound = sound,
+                zone = zone,
                 createdAt = clock.instant(),
             ),
         )
@@ -130,6 +137,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
         const val ACTION_TEST_ALARM = "io.github.imlemos.clock.debug.TEST_ALARM"
         const val ACTION_DELETE_ALL = "io.github.imlemos.clock.debug.DELETE_ALL_ALARMS"
         const val ACTION_SET_NOTICES = "io.github.imlemos.clock.debug.SET_NOTICES"
+        const val ACTION_SET_MANUAL_ZONE = "io.github.imlemos.clock.debug.SET_MANUAL_ZONE"
         const val ACTION_SET_AUDIO_OUTPUT = "io.github.imlemos.clock.debug.SET_AUDIO_OUTPUT"
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }

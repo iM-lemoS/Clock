@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.alarm.ui.formatAlarmTime
 import io.github.imlemos.clock.alarm.ui.formatTimeOfDay
 import io.github.imlemos.clock.alarm.ui.timeParts
 import io.github.imlemos.clock.core.designsystem.component.DotGrid
@@ -103,6 +104,14 @@ fun AlarmRingingScreen(session: RingingSession, onDismiss: () -> Unit, onSnooze:
                     color = colors.content,
                     textAlign = TextAlign.Center,
                 )
+                if (ringing.zone != null) {
+                    Text(
+                        text = formatAlarmTime(context, ringing.time, ringing.zone),
+                        style = ClockTheme.typography.body,
+                        color = colors.contentMuted,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
             if (session.silenced) {
                 Spacer(Modifier.height(16.dp))

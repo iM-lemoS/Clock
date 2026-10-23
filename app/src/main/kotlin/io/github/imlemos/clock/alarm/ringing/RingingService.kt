@@ -16,7 +16,8 @@ import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.scheduling.AlarmIntents
-import io.github.imlemos.clock.alarm.ui.formatTimeOfDay
+import io.github.imlemos.clock.alarm.scheduling.AlarmScheduler
+import io.github.imlemos.clock.alarm.ui.formatAlarmTime
 import io.github.imlemos.clock.core.audio.AlarmSoundPlayer
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import kotlinx.coroutines.flow.first
@@ -47,6 +48,7 @@ class RingingService : Service() {
     @Inject lateinit var ringingState: RingingState
     @Inject lateinit var notifications: AlarmNotifications
     @Inject lateinit var settings: SettingsRepository
+    @Inject lateinit var scheduler: AlarmScheduler
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var timeoutJob: Job? = null
@@ -91,7 +93,12 @@ class RingingService : Service() {
             return
         }
         val previousPrimary = ringingState.session.value?.primary
-        ringingState.add(RingingAlarm(alarm.id, alarm.time, alarm.label, alarm.snoozeMinutes, alarm.createdAt))
+        ringingState.add(
+            RingingAlarm(
+                alarm.id, alarm.time, alarm.label, alarm.snoozeMinutes, alarm.createdAt,
+                zone = scheduler.displayZone(alarm, occurrence),
+            ),
+        )
         // In a collision the alarm created first leads (docs/PLANO.md 3.11), even if another
         // fired a few milliseconds earlier: switch to its sound unless the user silenced it.
         val session = ringingState.session.value
@@ -113,7 +120,7 @@ class RingingService : Service() {
     private suspend fun onTimeout() {
         val session = ringingState.session.value ?: return
         Log.i(TAG, "Ring duration elapsed; stopping and reporting missed alarms")
-        session.alarms.forEach { notifications.showMissed(it.id, it.time, it.label) }
+        session.alarms.forEach { notifications.showMissed(it.id, it.time, it.label, it.zone) }
         finishSession { controller.dismiss(it) }
     }
 
@@ -162,7 +169,7 @@ class RingingService : Service() {
     private fun updateNotification() {
         val alarm = ringingState.session.value?.primary ?: return
         val notification = buildNotification(
-            title = formatTimeOfDay(this, alarm.time),
+            title = formatAlarmTime(this, alarm.time, alarm.zone),
             text = alarm.label.ifBlank { getString(R.string.alarm_notification_title) },
         )
         getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification)

@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Clock
+import java.time.ZoneId
 import java.time.ZonedDateTime
 
 enum class RecurrenceKind { ONCE, WEEKLY, DATES }
@@ -44,6 +45,10 @@ data class AlarmEditorState(
     val sound: AlarmSound = AlarmSound(),
     val groupId: Long? = null,
     val groups: List<AlarmGroup> = emptyList(),
+    /** The alarm's own zone; `null` follows the app (docs/PLANO.md 3.6). */
+    val zone: ZoneId? = null,
+    /** The app's manual zone, for the "Local time" summary. */
+    val manualZone: ZoneId? = null,
     /** Set when saving would ring together with another alarm (docs/PLANO.md 3.11). */
     val collision: Collision? = null,
 ) {
@@ -90,6 +95,9 @@ class AlarmEditorViewModel @AssistedInject constructor(
             repository.observeGroups().collect { groups -> _state.update { it.copy(groups = groups) } }
         }
         viewModelScope.launch {
+            settings.manualZone.collect { zone -> _state.update { it.copy(manualZone = zone) } }
+        }
+        viewModelScope.launch {
             val alarm = if (alarmId == NEW_ALARM) null else repository.get(alarmId)
             original = alarm
             _state.update {
@@ -111,6 +119,7 @@ class AlarmEditorViewModel @AssistedInject constructor(
                         singleUse = alarm.singleUse,
                         sound = alarm.sound,
                         groupId = alarm.groupId,
+                        zone = alarm.zone,
                     )
                 }
             }
@@ -159,10 +168,23 @@ class AlarmEditorViewModel @AssistedInject constructor(
         }
     }
 
+    fun setZone(zone: ZoneId?) = _state.update { it.copy(zone = zone) }
+
+    /**
+     * The next ring on the phone's clock when the alarm's zone shows a different time, e.g.
+     * "13:00 here" under 08:00 New York. `null` otherwise.
+     */
+    fun hereTime(state: AlarmEditorState): ZonedDateTime? {
+        val recurrence = state.recurrence ?: return null
+        val draft = Alarm(time = state.time, recurrence = recurrence, zone = state.zone, createdAt = clock.instant())
+        val at = scheduler.nextTrigger(draft)?.at ?: return null
+        return at.takeIf { scheduler.displayZone(draft, it) != null }?.atZone(scheduler.systemZone())
+    }
+
     fun dismissCollision() = _state.update { it.copy(collision = null) }
 
-    /** First selectable date in the calendar: today, in the app's zone. */
-    fun today(): LocalDate = clock.instant().atZone(scheduler.appZone()).toLocalDate()
+    /** First selectable date in the calendar: today, in the alarm's zone. */
+    fun today(): LocalDate = clock.instant().atZone(_state.value.zone ?: scheduler.appZone()).toLocalDate()
 
     /**
      * Saves the alarm. Unless [force], first checks whether it would ring together with another
@@ -180,9 +202,10 @@ class AlarmEditorViewModel @AssistedInject constructor(
                 singleUse = current.singleUse,
                 sound = current.sound,
                 groupId = current.groupId,
+                zone = current.zone,
                 enabled = true,
             )
-            val zone = scheduler.appZone()
+            val zone = scheduler.zoneOf(edited)
             if (!force) {
                 controller.findCollision(edited)?.let { (other, at) ->
                     _state.update { it.copy(collision = Collision(other, at.atZone(zone))) }

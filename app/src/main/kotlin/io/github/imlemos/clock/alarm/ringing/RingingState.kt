@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.time.Instant
+import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,6 +15,8 @@ data class RingingAlarm(
     val label: String,
     val snoozeMinutes: Int,
     val createdAt: Instant,
+    /** The alarm's zone when its time is not the phone's, shown next to it (docs/PLANO.md 3.3). */
+    val zone: ZoneId? = null,
 )
 
 /**

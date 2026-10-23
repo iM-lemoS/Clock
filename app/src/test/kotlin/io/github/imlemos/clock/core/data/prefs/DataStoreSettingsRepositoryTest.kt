@@ -49,4 +49,14 @@ class DataStoreSettingsRepositoryTest {
 
         assertEquals(null, repository.appearance.first().accentArgb)
     }
+
+    @Test
+    fun `the manual zone is automatic by default and can be set and cleared`() = testScope.runTest {
+        val repository = repository()
+        assertEquals(null, repository.manualZone.first())
+        repository.setManualZone(java.time.ZoneId.of("America/New_York"))
+        assertEquals(java.time.ZoneId.of("America/New_York"), repository.manualZone.first())
+        repository.setManualZone(null)
+        assertEquals(null, repository.manualZone.first())
+    }
 }

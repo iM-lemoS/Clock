@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import android.util.Log
+import java.time.ZoneId
 import javax.inject.Inject
 
 class DataStoreSettingsRepository @Inject constructor(
@@ -103,6 +104,14 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { it[Keys.TIME_FORMAT] = format.name }
     }
 
+    override val manualZone: Flow<ZoneId?> = dataStore.data
+        .map { prefs -> prefs[Keys.MANUAL_ZONE]?.let { runCatching { ZoneId.of(it) }.getOrNull() } }
+        .distinctUntilChanged()
+
+    override suspend fun setManualZone(zone: ZoneId?) {
+        dataStore.edit { prefs -> if (zone == null) prefs.remove(Keys.MANUAL_ZONE) else prefs[Keys.MANUAL_ZONE] = zone.id }
+    }
+
     override val volumeButtonAction: Flow<VolumeButtonAction> = dataStore.data
         .map { prefs ->
             prefs[Keys.VOLUME_BUTTON_ACTION]
@@ -175,6 +184,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val AUDIO_OUTPUT = stringPreferencesKey("audio_output")
         val WARN_LOW_VOLUME = booleanPreferencesKey("warn_low_volume")
         val TIME_FORMAT = stringPreferencesKey("time_format")
+        val MANUAL_ZONE = stringPreferencesKey("manual_zone")
     }
 
     private fun String.toIntSet(): Set<Int> = split(',').mapNotNull(String::toIntOrNull).toSet()

@@ -5,11 +5,14 @@ import android.content.Context
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.imlemos.clock.alarm.model.Alarm
+import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.scheduling.AlarmCalculator
 import io.github.imlemos.clock.core.scheduling.Trigger
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,13 +24,44 @@ import javax.inject.Singleton
 class AlarmScheduler @Inject constructor(
     @ApplicationContext private val context: Context,
     private val clock: Clock,
+    private val settings: SettingsRepository,
 ) {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
-    /** The zone used for alarms without their own zone. The manual app zone arrives in phase 5. */
-    fun appZone(): ZoneId = ZoneId.systemDefault()
+    @Volatile private var manualZone: ZoneId? = null
+    @Volatile private var manualZoneLoaded = false
 
-    fun nextTrigger(alarm: Alarm): Trigger? = AlarmCalculator.nextTrigger(alarm.schedule, clock.instant(), appZone())
+    /** The phone's zone: "here". */
+    fun systemZone(): ZoneId = ZoneId.systemDefault()
+
+    /** The zone for alarms without their own: the manual app zone, else the phone's. */
+    fun appZone(): ZoneId {
+        // Read once synchronously so a cold start (e.g. boot) never schedules with the wrong zone;
+        // ClockApp keeps it current afterwards.
+        if (!manualZoneLoaded) updateManualZone(runBlocking { settings.manualZone.first() })
+        return AlarmCalculator.effectiveZone(null, manualZone, systemZone())
+    }
+
+    /** The zone [alarm] rings in. */
+    fun zoneOf(alarm: Alarm): ZoneId = alarm.zone ?: appZone()
+
+    /**
+     * The zone to name next to [alarm]'s time at [at], or `null` when its wall-clock time there is
+     * the phone's (docs/PLANO.md 3.6).
+     */
+    fun displayZone(alarm: Alarm, at: Instant): ZoneId? =
+        zoneOf(alarm).takeIf { AlarmCalculator.showsLocalTime(at, it, systemZone()) }
+
+    /** Stores the manual zone setting. Returns whether it changed, i.e. alarms must be rescheduled. */
+    fun updateManualZone(zone: ZoneId?): Boolean {
+        val changed = manualZoneLoaded && zone != manualZone
+        manualZone = zone
+        manualZoneLoaded = true
+        return changed
+    }
+
+    fun nextTrigger(alarm: Alarm, appZone: ZoneId = appZone()): Trigger? =
+        AlarmCalculator.nextTrigger(alarm.schedule, clock.instant(), appZone)
 
     /** Schedules (or cancels) the next trigger of [alarm]. Returns what was scheduled. */
     fun schedule(alarm: Alarm): Trigger? {

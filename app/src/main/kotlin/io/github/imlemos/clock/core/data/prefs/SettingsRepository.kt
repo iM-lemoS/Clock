@@ -2,6 +2,7 @@ package io.github.imlemos.clock.core.data.prefs
 
 import io.github.imlemos.clock.alarm.model.AlarmSound
 import kotlinx.coroutines.flow.Flow
+import java.time.ZoneId
 
 interface SettingsRepository {
     val appearance: Flow<AppearanceSettings>
@@ -30,6 +31,14 @@ interface SettingsRepository {
     val timeFormat: Flow<TimeFormat>
 
     suspend fun setTimeFormat(format: TimeFormat)
+
+    /**
+     * The manual app time zone (docs/PLANO.md 3.6): alarms without their own zone follow it.
+     * `null` is automatic, i.e. the phone's zone.
+     */
+    val manualZone: Flow<ZoneId?>
+
+    suspend fun setManualZone(zone: ZoneId?)
 
     val volumeButtonAction: Flow<VolumeButtonAction>
 

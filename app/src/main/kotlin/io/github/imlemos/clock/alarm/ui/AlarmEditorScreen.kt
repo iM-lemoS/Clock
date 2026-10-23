@@ -147,6 +147,15 @@ fun AlarmEditorScreen(
                     labels = rememberTimeWheelLabels(locale),
                 )
             }
+            val hereTime = remember(state.time, state.zone, state.kind, state.weekDays, state.dates) { viewModel.hereTime(state) }
+            if (hereTime != null) {
+                Text(
+                    stringResource(R.string.zone_here, formatTimeOfDay(context, hereTime)),
+                    style = ClockTheme.typography.body,
+                    color = colors.contentMuted,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
             Spacer(Modifier.height(16.dp))
             RecurrenceSection(state = state, viewModel = viewModel, locale = locale)
             Spacer(Modifier.height(16.dp))
@@ -186,6 +195,8 @@ fun AlarmEditorScreen(
             }
             Spacer(Modifier.height(8.dp))
             GroupField(state = state, viewModel = viewModel)
+            Spacer(Modifier.height(16.dp))
+            ZoneField(zone = state.zone, manualZone = state.manualZone, onChange = viewModel::setZone)
             Spacer(Modifier.height(16.dp))
             SoundSection(
                 sound = state.sound,

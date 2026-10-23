@@ -279,4 +279,19 @@
     <string name="collision_body">Este alarme tocaria ao mesmo tempo que %1$s, %2$s.</string>
     <string name="collision_save_anyway">Guardar mesmo assim</string>
     <string name="collision_change">Alterar</string>
+    <!-- Fusos horários (docs/PLANO.md 3.6) -->
+    <string name="zone_field">Fuso horário</string>
+    <string name="zone_search">Procura uma cidade ou país</string>
+    <string name="zone_local">Hora local</string>
+    <string name="zone_local_summary_phone">Segue o fuso do telemóvel</string>
+    <string name="zone_local_summary_app">Segue o fuso da app (%1$s)</string>
+    <string name="zone_automatic">Automático</string>
+    <string name="zone_automatic_summary">Segue o fuso do telemóvel</string>
+    <string name="settings_zone">Fuso horário</string>
+    <string name="settings_zone_automatic">Automático · %1$s</string>
+    <string name="settings_zone_manual">Manual · %1$s</string>
+    <string name="settings_zone_manual_hint">Os alarmes sem fuso próprio tocam à hora de %1$s, estejas onde estiveres.</string>
+    <string name="time_in_zone">%1$s %2$s</string>
+    <string name="zone_with_here">%1$s · %2$s aqui</string>
+    <string name="zone_here">%1$s aqui</string>
 </resources>

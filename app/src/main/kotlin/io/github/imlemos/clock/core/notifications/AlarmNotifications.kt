@@ -10,9 +10,11 @@ import io.github.imlemos.clock.MainActivity
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.scheduling.AlarmIntents
+import io.github.imlemos.clock.alarm.ui.formatAlarmTime
 import io.github.imlemos.clock.alarm.ui.formatTimeOfDay
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
 import java.time.Instant
+import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,10 +24,11 @@ class AlarmNotifications @Inject constructor(@ApplicationContext private val con
 
     private val manager = context.getSystemService(NotificationManager::class.java)
 
-    fun showMissed(alarmId: Long, time: TimeOfDay, label: String) {
+    /** [zone] names the alarm's zone when its time is not the phone's. */
+    fun showMissed(alarmId: Long, time: TimeOfDay, label: String, zone: ZoneId?) {
         val notification = NotificationCompat.Builder(context, NotificationChannels.ALARM_MISSED)
             .setSmallIcon(R.drawable.ic_alarm)
-            .setContentTitle(context.getString(R.string.alarm_missed_title, formatTimeOfDay(context, time)))
+            .setContentTitle(context.getString(R.string.alarm_missed_title, formatAlarmTime(context, time, zone)))
             .setContentText(label.ifBlank { null })
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setContentIntent(AlarmIntents.showAlarmsPendingIntent(context))
@@ -38,10 +41,16 @@ class AlarmNotifications @Inject constructor(@ApplicationContext private val con
      * One notification per alarm, updated in place, counting down to the alarm, with "Dismiss this
      * one" (docs/PLANO.md 3.4).
      */
-    fun showUpcoming(alarm: Alarm, occurrence: Instant) {
+    fun showUpcoming(alarm: Alarm, occurrence: Instant, zone: ZoneId?) {
+        // An alarm in another zone shows the phone's time first, then its own: "13:00 · 8:00 New York".
+        val title = if (zone == null) {
+            formatTimeOfDay(context, alarm.time)
+        } else {
+            formatTimeOfDay(context, occurrence.atZone(ZoneId.systemDefault())) + " · " + formatAlarmTime(context, alarm.time, zone)
+        }
         val notification = NotificationCompat.Builder(context, NotificationChannels.ALARM_UPCOMING)
             .setSmallIcon(R.drawable.ic_alarm)
-            .setContentTitle(context.getString(R.string.upcoming_title, formatTimeOfDay(context, alarm.time)))
+            .setContentTitle(context.getString(R.string.upcoming_title, title))
             .setContentText(alarm.label.ifBlank { null })
             .setWhen(occurrence.toEpochMilli())
             .setShowWhen(true)

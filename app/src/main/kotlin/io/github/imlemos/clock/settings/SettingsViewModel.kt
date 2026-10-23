@@ -66,6 +66,13 @@ class SettingsViewModel @Inject constructor(
     val timeFormat: StateFlow<TimeFormat> = settings.timeFormat
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TimeFormat.SYSTEM)
 
+    val manualZone: StateFlow<ZoneId?> = settings.manualZone
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    fun setManualZone(zone: ZoneId?) {
+        viewModelScope.launch { settings.setManualZone(zone) }
+    }
+
     fun setTimeFormat(format: TimeFormat) {
         viewModelScope.launch { settings.setTimeFormat(format) }
     }

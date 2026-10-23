@@ -55,7 +55,11 @@ import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import io.github.imlemos.clock.core.data.prefs.SettingsRepository
+import java.time.ZoneId
 import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = BatchEditViewModel.Factory::class)
@@ -64,6 +68,7 @@ class BatchEditViewModel @AssistedInject constructor(
     private val controller: AlarmController,
     private val ringtones: RingtoneStore,
     private val player: AlarmSoundPlayer,
+    settings: SettingsRepository,
 ) : ViewModel() {
 
     @AssistedFactory
@@ -75,6 +80,8 @@ class BatchEditViewModel @AssistedInject constructor(
 
     /** Every field starts as "don't change" (`null`). */
     val patch: StateFlow<AlarmPatch> = _patch.asStateFlow()
+
+    val manualZone: StateFlow<ZoneId?> = settings.manualZone.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun update(transform: (AlarmPatch) -> AlarmPatch) = _patch.update(transform)
 
@@ -184,6 +191,17 @@ fun BatchEditScreen(
                     Text(stringResource(R.string.alarm_editor_single_use_summary), style = ClockTheme.typography.caption, color = colors.contentMuted, modifier = Modifier.weight(1f))
                     ClockSwitch(checked = patch.singleUse == true, onCheckedChange = null)
                 }
+            }
+            ChangeableField(R.string.zone_field, patch.zone != null, { on ->
+                viewModel.update { it.copy(zone = if (on) AlarmPatch.Zone(null) else null) }
+            }) {
+                val manualZone by viewModel.manualZone.collectAsStateWithLifecycle()
+                ZoneField(
+                    zone = patch.zone?.id,
+                    manualZone = manualZone,
+                    onChange = { zone -> viewModel.update { it.copy(zone = AlarmPatch.Zone(zone)) } },
+                    showTitle = false,
+                )
             }
             Spacer(Modifier.height(24.dp))
         }

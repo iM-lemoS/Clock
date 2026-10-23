@@ -191,7 +191,7 @@ class AlarmController @Inject constructor(
             val missed = AlarmCalculator.missedOccurrence(alarm.schedule, alarm.armedAt, now, scheduler.appZone())
                 ?: return@forEach
             Log.i(TAG, "Alarm ${alarm.id} missed its occurrence at $missed")
-            notifications.showMissed(alarm.id, alarm.time, alarm.label)
+            notifications.showMissed(alarm.id, alarm.time, alarm.label, scheduler.displayZone(alarm, missed.toInstant()))
             finishOccurrence(alarm, missed.toInstant())
         }
     }
@@ -285,7 +285,7 @@ class AlarmController @Inject constructor(
         val minutes = settings.noticeMinutes.first()
         val now = clock.instant()
         if (AlarmLifecycle.isInNoticeWindow(trigger.occurrence, minutes, now)) {
-            notifications.showUpcoming(alarm, trigger.occurrence)
+            notifications.showUpcoming(alarm, trigger.occurrence, scheduler.displayZone(alarm, trigger.occurrence))
         } else {
             notifications.cancelUpcoming(alarm.id)
         }

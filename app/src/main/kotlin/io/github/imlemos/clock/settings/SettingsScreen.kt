@@ -50,6 +50,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.ui.SoundSection
 import io.github.imlemos.clock.core.data.prefs.AudioOutput
@@ -64,6 +68,9 @@ import io.github.imlemos.clock.core.designsystem.glass.CapsuleShape
 import io.github.imlemos.clock.core.designsystem.glass.rememberSystemReducesEffects
 import io.github.imlemos.clock.core.designsystem.theme.AccentPalette
 import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
+import io.github.imlemos.clock.core.zones.ZoneNames
+import io.github.imlemos.clock.core.zones.ZonePickerDialog
+import java.time.ZoneId
 
 /**
  * Phase 0 settings: only what is needed to exercise the design system. The full list from
@@ -220,6 +227,7 @@ fun SettingsScreen(
                 modifier = Modifier.padding(horizontal = 24.dp),
             )
             Spacer(Modifier.height(8.dp))
+            ZoneSetting(viewModel)
             ClickableRow(
                 title = stringResource(R.string.settings_reliability),
                 summary = stringResource(R.string.settings_reliability_summary),
@@ -253,6 +261,35 @@ fun SettingsScreen(
                 )
             }
         }
+    }
+}
+
+/** Automatic (the phone's zone) or a manual zone for every alarm without its own (docs/PLANO.md 3.6). */
+@Composable
+private fun ZoneSetting(viewModel: SettingsViewModel) {
+    val manualZone by viewModel.manualZone.collectAsStateWithLifecycle()
+    val locale = LocalConfiguration.current.locales[0]
+    var choosing by rememberSaveable { mutableStateOf(false) }
+    val summary = manualZone?.let { stringResource(R.string.settings_zone_manual, ZoneNames.city(it, locale)) }
+        ?: stringResource(R.string.settings_zone_automatic, ZoneNames.city(ZoneId.systemDefault(), locale))
+    ClickableRow(title = stringResource(R.string.settings_zone), summary = summary, onClick = { choosing = true })
+    manualZone?.let { zone ->
+        Text(
+            text = stringResource(R.string.settings_zone_manual_hint, ZoneNames.city(zone, locale)),
+            style = ClockTheme.typography.caption,
+            color = ClockTheme.colors.contentMuted,
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 8.dp),
+        )
+    }
+    if (choosing) {
+        ZonePickerDialog(
+            title = stringResource(R.string.settings_zone),
+            selected = manualZone,
+            noZoneLabel = stringResource(R.string.zone_automatic),
+            noZoneSummary = stringResource(R.string.zone_automatic_summary),
+            onSelect = { viewModel.setManualZone(it); choosing = false },
+            onDismiss = { choosing = false },
+        )
     }
 }
 

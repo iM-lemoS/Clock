@@ -54,6 +54,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.core.zones.ZoneNames
 import io.github.imlemos.clock.alarm.model.AlarmGroup
 import io.github.imlemos.clock.core.audio.AlarmVolume
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
@@ -312,6 +313,14 @@ private fun AlarmCard(
                 Text(alarm.label, style = ClockTheme.typography.body, color = colors.content, maxLines = 1)
             }
             Text(subtitle, style = ClockTheme.typography.caption, color = colors.contentMuted)
+            item.zone?.let { zone ->
+                val city = ZoneNames.city(zone, locale)
+                Text(
+                    text = item.hereTime?.let { stringResource(R.string.zone_with_here, city, formatTimeOfDay(context, it)) } ?: city,
+                    style = ClockTheme.typography.caption,
+                    color = colors.content,
+                )
+            }
             if (item.canSkip && !selecting) {
                 Spacer(Modifier.height(6.dp))
                 Text(
@@ -354,7 +363,7 @@ private fun GroupCard(
         val day = java.time.format.DateTimeFormatter
             .ofPattern(android.text.format.DateFormat.getBestDateTimePattern(locale, "EEEdMMM"), locale)
             .format(next)
-        stringResource(R.string.group_next, "$day, ${formatTimeOfDay(context, entry.next.alarm.time)}")
+        stringResource(R.string.group_next, "$day, ${formatAlarmTime(context, entry.next.alarm.time, entry.next.zone, locale)}")
     } ?: stringResource(if (group.enabled) R.string.group_none_active else R.string.group_off)
     Row(
         Modifier
