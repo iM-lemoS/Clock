@@ -458,4 +458,12 @@
     <string name="accent_low_contrast_dark">This colour is hard to see on the dark theme.</string>
     <string name="accent_low_contrast_light">This colour is hard to see on the light theme.</string>
     <string name="accent_low_contrast_both">This colour is hard to see on both themes.</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_summary">Version, privacy and licences</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_privacy_title">Privacy</string>
+    <string name="about_privacy_body">No internet access and no analytics: everything stays on your phone.</string>
+    <string name="about_source">Source code</string>
+    <string name="about_source_summary">Opens the project on GitHub.</string>
+    <string name="about_licences">Third-party licences</string>
 </resources>

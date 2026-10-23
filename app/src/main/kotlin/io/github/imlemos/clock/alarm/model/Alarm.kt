@@ -38,7 +38,7 @@ data class Alarm(
         )
 
     companion object {
-        // Defaults from docs/PLANO.md section 6; they become user settings in phase 9.
+        // Defaults from docs/PLANO.md section 6; settings hold the user's own defaults.
         const val DEFAULT_SNOOZE_MINUTES = 5
 
         /** Choices on the snooze wheel and in the editor (docs/PLANO.md 3.3). */

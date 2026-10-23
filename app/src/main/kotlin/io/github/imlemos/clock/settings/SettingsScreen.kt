@@ -76,16 +76,14 @@ import io.github.imlemos.clock.core.zones.ZoneNames
 import io.github.imlemos.clock.core.zones.ZonePickerDialog
 import java.time.ZoneId
 
-/**
- * Phase 0 settings: only what is needed to exercise the design system. The full list from
- * docs/PLANO.md section 6 arrives in phase 9.
- */
+/** The app settings (docs/PLANO.md section 6). */
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
     onOpenReliability: () -> Unit,
     onOpenTrash: () -> Unit,
     onOpenLayouts: () -> Unit,
+    onOpenAbout: () -> Unit,
     onOpenGlassLab: (() -> Unit)?,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -273,6 +271,12 @@ fun SettingsScreen(
                     },
                 )
             }
+
+            ClickableRow(
+                title = stringResource(R.string.settings_about),
+                summary = stringResource(R.string.settings_about_summary),
+                onClick = onOpenAbout,
+            )
 
             if (onOpenGlassLab != null) {
                 SectionHeader(stringResource(R.string.settings_section_developer))

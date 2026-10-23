@@ -233,6 +233,10 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 
 ---
 
+Implementado (fase 9): som dos temporizadores; cor de destaque livre (seletor de cor, com aviso quando se vê mal num dos temas); secção "Sobre" com versão, privacidade, código-fonte e as licenças das fontes e ícones (os textos vão dentro da app); ícone final (mostrador de pontos às 10h10, centro vermelho, versão monocromática para ícones temáticos); transições com um deslize curto.
+
+---
+
 ## 7. Design
 
 **Base: estética Nothing. Matéria: Liquid Glass.**

@@ -4,6 +4,7 @@ import android.app.KeyguardManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
@@ -68,6 +69,7 @@ import androidx.navigation3.ui.NavDisplay
 import io.github.imlemos.clock.BuildConfig
 import io.github.imlemos.clock.MainActivity
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.settings.AboutScreen
 import io.github.imlemos.clock.worldclock.WorldClockScreen
 import io.github.imlemos.clock.timer.TimerEditorScreen
 import io.github.imlemos.clock.timer.TimerEditorViewModel
@@ -161,8 +163,14 @@ fun ClockShell(
                     rememberSaveableStateHolderNavEntryDecorator(),
                     rememberViewModelStoreNavEntryDecorator(),
                 ),
-                transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
-                popTransitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) },
+                // A short slide gives depth (forward from the right, back from the left) without
+                // getting in the way.
+                transitionSpec = {
+                    (fadeIn(tween(220)) + slideInHorizontally(tween(260)) { it / 16 }) togetherWith fadeOut(tween(120))
+                },
+                popTransitionSpec = {
+                    (fadeIn(tween(220)) + slideInHorizontally(tween(260)) { -it / 16 }) togetherWith fadeOut(tween(120))
+                },
                 entryProvider = entryProvider {
                     entry<AlarmsDestination> {
                         AlarmsScreen(
@@ -192,6 +200,7 @@ fun ClockShell(
                             onOpenReliability = openReliability,
                             onOpenTrash = { backStack.add(TrashDestination) },
                             onOpenLayouts = { backStack.add(LayoutsDestination) },
+                            onOpenAbout = { backStack.add(AboutDestination) },
                             onOpenGlassLab = if (BuildConfig.DEBUG) ({ backStack.add(GlassLabDestination) }) else null,
                         )
                     }
@@ -216,6 +225,7 @@ fun ClockShell(
                     }
                     entry<ReliabilityDestination> { ReliabilityScreen(onBack = pop) }
                     entry<TrashDestination> { TrashScreen(onBack = pop) }
+                    entry<AboutDestination> { AboutScreen(onBack = pop) }
                     entry<BatchEditDestination> { key -> BatchEditScreen(alarmIds = key.alarmIds, onClose = pop) }
                 },
             )

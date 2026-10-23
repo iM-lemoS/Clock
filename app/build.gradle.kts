@@ -68,6 +68,13 @@ android {
         buildConfig = true
     }
 
+    // The licences of bundled fonts and icons ship inside the app (About > Licences).
+    sourceSets {
+        getByName("main") {
+            assets.srcDir(rootProject.file("licenses"))
+        }
+    }
+
     lint {
         abortOnError = true
         warningsAsErrors = true

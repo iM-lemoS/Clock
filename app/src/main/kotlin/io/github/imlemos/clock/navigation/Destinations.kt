@@ -57,6 +57,9 @@ data object ReliabilityDestination : NavKey
 @Serializable
 data object TrashDestination : NavKey
 
+@Serializable
+data object AboutDestination : NavKey
+
 /** Batch edit of the selected alarms (docs/PLANO.md 3.9). */
 @Serializable
 data class BatchEditDestination(val alarmIds: List<Long>) : NavKey
