@@ -1,2 +1,10 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Windows scripts need CRLF; the Unix wrapper must stay LF.
+*.bat text eol=crlf
+gradlew text eol=lf
+
+*.jar binary
+*.ttf binary
+*.png binary
