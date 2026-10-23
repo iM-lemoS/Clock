@@ -76,7 +76,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 
 ### 3.1 Configuração base
 
-- Hora e minutos.
+- Hora e minutos, escolhidos com **rodas de deslocar (estilo iPhone)**; o teclado fica como alternativa. As mesmas rodas servem os timers (h/m/s).
 - **Recorrência**, uma de três:
   - **Uma vez**: próxima ocorrência dessa hora.
   - **Dias da semana**: qualquer combinação seg–dom (primeiro dia da semana segue a região do sistema).
@@ -102,6 +102,8 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - **Volume gradual** (por alarme, desligado por defeito): volume final em % do volume de alarme; duração da subida em segundos.
 - **Duração do toque** (por alarme, 1 min por defeito): ao fim desse tempo o alarme **para** e fica uma **notificação de alarme perdido** (só notificação).
 - **Saída de áudio** (definição geral): **telemóvel + Bluetooth** (padrão), só telemóvel, só Bluetooth (se nada estiver ligado, toca no telemóvel).
+  - "Telemóvel + Bluetooth" toca dois leitores: o alarme no altifalante (volume de alarme, passa o Não incomodar) e uma cópia no Bluetooth como multimédia (volume de multimédia). O encaminhamento normal do Android, testado num Samsung, tocava só no altifalante.
+- Desde o Android 9 o volume de alarme não desce abaixo de 1, por isso o aviso de "volume a zero" raramente aparece.
 
 ### 3.3 Ecrã do alarme (interação)
 
