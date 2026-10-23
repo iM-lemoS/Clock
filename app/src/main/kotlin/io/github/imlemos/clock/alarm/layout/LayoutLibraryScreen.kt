@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.alarm.layout
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import io.github.imlemos.clock.core.designsystem.component.DialogButtonStyle
 import io.github.imlemos.clock.core.designsystem.component.DialogAction
 import io.github.imlemos.clock.core.designsystem.component.GlassAlertDialog
@@ -130,6 +131,7 @@ fun LayoutLibraryScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     var options by remember { mutableStateOf<AlarmLayout?>(null) }
     var renaming by remember { mutableStateOf<AlarmLayout?>(null) }
     var selection by remember { mutableStateOf(emptySet<Long>()) }
@@ -195,7 +197,10 @@ fun LayoutLibraryScreen(
                                 }
                             },
                             // Built-in layouts cannot be deleted, so they open their options instead.
-                            onLongClick = { if (layout.builtIn) options = layout else toggle() },
+                            onLongClick = {
+                                haptics.longPress()
+                                if (layout.builtIn) options = layout else toggle()
+                            },
                         )
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically,

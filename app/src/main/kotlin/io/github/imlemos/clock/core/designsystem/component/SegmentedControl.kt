@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.core.designsystem.component
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +31,7 @@ fun <T> SegmentedControl(
     modifier: Modifier = Modifier,
 ) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -47,7 +49,10 @@ fun <T> SegmentedControl(
                     .heightIn(min = 44.dp)
                     .clip(CapsuleShape)
                     .background(if (isSelected) colors.content else colors.background, CapsuleShape)
-                    .selectable(selected = isSelected, role = Role.RadioButton, onClick = { onSelect(value) })
+                    .selectable(selected = isSelected, role = Role.RadioButton, onClick = {
+                        if (!isSelected) haptics.tick()
+                        onSelect(value)
+                    })
                     .padding(horizontal = 6.dp),
                 contentAlignment = Alignment.Center,
             ) {

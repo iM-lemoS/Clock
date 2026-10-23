@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.core.designsystem.component
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable
@@ -192,13 +193,21 @@ fun DialogButton(action: DialogAction, modifier: Modifier = Modifier) {
         action.style == DialogButtonStyle.Destructive -> Triple(Color.Transparent, colors.accent, colors.accent)
         else -> Triple(colors.content.copy(alpha = 0.08f), colors.content.copy(alpha = 0.28f), colors.content)
     }
+    val haptics = rememberHaptics()
     Box(
         modifier
             .heightIn(min = 48.dp)
             .clip(CapsuleShape)
             .background(background, CapsuleShape)
             .border(1.dp, border, CapsuleShape)
-            .clickable(enabled = action.enabled, role = Role.Button, onClick = action.onClick)
+            .clickable(enabled = action.enabled, role = Role.Button) {
+                when (action.style) {
+                    DialogButtonStyle.Primary -> haptics.confirm()
+                    DialogButtonStyle.Destructive -> haptics.reject()
+                    DialogButtonStyle.Secondary -> Unit
+                }
+                action.onClick()
+            }
             .padding(horizontal = 12.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -323,10 +332,14 @@ private fun SheetRow(option: SheetOption) {
         option.destructive || option.selected -> colors.accent
         else -> colors.content
     }
+    val haptics = rememberHaptics()
     Row(
         Modifier
             .fillMaxWidth()
-            .clickable(role = Role.Button, onClick = option.onClick)
+            .clickable(role = Role.Button) {
+                if (option.destructive) haptics.reject() else haptics.tick()
+                option.onClick()
+            }
             .heightIn(min = 56.dp)
             .padding(horizontal = 24.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,

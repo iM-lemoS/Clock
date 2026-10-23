@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.timer
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -133,12 +134,16 @@ fun TimerEditorScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     Column(Modifier.fillMaxSize().background(colors.background)) {
         ClockTopBar(
             title = stringResource(if (viewModel.isNew) R.string.timer_new_title else R.string.timer_edit_title),
             navigationIcon = { TopBarIconButton(R.drawable.ic_arrow_back, stringResource(R.string.action_back), onClose) },
             actions = {
-                if (!viewModel.isNew) TopBarIconButton(R.drawable.ic_delete, stringResource(R.string.timer_delete)) { viewModel.delete(onClose) }
+                if (!viewModel.isNew) TopBarIconButton(R.drawable.ic_delete, stringResource(R.string.timer_delete)) {
+                    haptics.reject()
+                    viewModel.delete(onClose)
+                }
             },
         )
         if (!state.loaded) return@Column
@@ -190,9 +195,11 @@ fun TimerEditorScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             EditorButton(stringResource(R.string.action_save), accent = false, enabled = state.canSave, modifier = Modifier.weight(1f)) {
+                haptics.confirm()
                 viewModel.save(start = false, onDone = onClose)
             }
             EditorButton(stringResource(R.string.timer_start), accent = true, enabled = state.canSave, modifier = Modifier.weight(1f)) {
+                haptics.confirm()
                 viewModel.save(start = true, onDone = onClose)
             }
         }

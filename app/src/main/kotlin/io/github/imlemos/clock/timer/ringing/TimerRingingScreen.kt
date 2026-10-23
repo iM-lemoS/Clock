@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.timer.ringing
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +50,7 @@ import java.time.Instant
 @Composable
 fun TimerRingingScreen(timers: List<RingingTimer>, onStop: () -> Unit, onAddMinute: () -> Unit) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     val backdrop = rememberGlassBackdrop()
     val since = timers.minOf { it.since }
     var now by remember { mutableStateOf(Instant.now()) }
@@ -95,7 +97,10 @@ fun TimerRingingScreen(timers: List<RingingTimer>, onStop: () -> Unit, onAddMinu
                     modifier = Modifier
                         .weight(1f)
                         .clip(CapsuleShape)
-                        .clickable(role = Role.Button, onClick = onAddMinute)
+                        .clickable(role = Role.Button) {
+                            haptics.tick()
+                            onAddMinute()
+                        }
                         .heightIn(min = 72.dp),
                 ) {
                     Text(addLabel, style = ClockTheme.typography.title, color = colors.content)
@@ -105,7 +110,10 @@ fun TimerRingingScreen(timers: List<RingingTimer>, onStop: () -> Unit, onAddMinu
                         .weight(1f)
                         .clip(CapsuleShape)
                         .background(colors.accent, CapsuleShape)
-                        .clickable(role = Role.Button, onClick = onStop)
+                        .clickable(role = Role.Button) {
+                            haptics.confirm()
+                            onStop()
+                        }
                         .heightIn(min = 72.dp),
                     contentAlignment = Alignment.Center,
                 ) {

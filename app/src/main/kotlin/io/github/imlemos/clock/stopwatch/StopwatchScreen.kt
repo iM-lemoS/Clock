@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.stopwatch
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import android.os.SystemClock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -154,8 +155,13 @@ private fun LapRow(number: Int, duration: Long, total: Long, note: String?, high
 @Composable
 private fun RoundButton(icon: Int, label: String, accent: Boolean, onClick: () -> Unit) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     IconButton(
-        onClick = onClick,
+        // The main action (start, pause, stop) confirms; reset and lap tick.
+        onClick = {
+            if (accent) haptics.confirm() else haptics.tick()
+            onClick()
+        },
         modifier = Modifier
             .size(80.dp)
             .clip(CircleShape)

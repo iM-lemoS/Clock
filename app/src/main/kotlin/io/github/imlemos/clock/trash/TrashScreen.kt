@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.trash
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import io.github.imlemos.clock.core.designsystem.component.DialogButtonStyle
 import io.github.imlemos.clock.core.designsystem.component.DialogAction
 import io.github.imlemos.clock.core.designsystem.component.GlassDialog
@@ -187,6 +188,7 @@ private fun TrashRow(item: TrashedAlarm, onRestore: () -> Unit) {
     val context = LocalContext.current
     val resources = LocalResources.current
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     val locale = LocalConfiguration.current.locales[0]
     val parts = timeParts(context, item.alarm.time)
     val deletedOn = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
@@ -234,7 +236,10 @@ private fun TrashRow(item: TrashedAlarm, onRestore: () -> Unit) {
             color = colors.accent,
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
-                .clickable(role = Role.Button, onClick = onRestore)
+                .clickable(role = Role.Button) {
+                    haptics.confirm()
+                    onRestore()
+                }
                 .padding(8.dp),
         )
     }
@@ -243,6 +248,7 @@ private fun TrashRow(item: TrashedAlarm, onRestore: () -> Unit) {
 @Composable
 private fun TrashGroupRow(item: TrashedGroup, onRestore: () -> Unit) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     val locale = LocalConfiguration.current.locales[0]
     val deletedOn = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
         .format(item.deletedAt.atZone(ZoneId.systemDefault()))
@@ -271,7 +277,10 @@ private fun TrashGroupRow(item: TrashedGroup, onRestore: () -> Unit) {
             color = colors.accent,
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
-                .clickable(role = Role.Button, onClick = onRestore)
+                .clickable(role = Role.Button) {
+                    haptics.confirm()
+                    onRestore()
+                }
                 .padding(8.dp),
         )
     }
@@ -281,6 +290,7 @@ private fun TrashGroupRow(item: TrashedGroup, onRestore: () -> Unit) {
 @Composable
 private fun TrashLayoutRow(item: TrashedLayout, onRestore: () -> Unit) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     val locale = LocalConfiguration.current.locales[0]
     val deletedOn = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
         .format(item.deletedAt.atZone(ZoneId.systemDefault()))
@@ -307,7 +317,10 @@ private fun TrashLayoutRow(item: TrashedLayout, onRestore: () -> Unit) {
             color = colors.accent,
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))
-                .clickable(role = Role.Button, onClick = onRestore)
+                .clickable(role = Role.Button) {
+                    haptics.confirm()
+                    onRestore()
+                }
                 .padding(8.dp),
         )
     }

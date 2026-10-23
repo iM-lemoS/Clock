@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.settings
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.annotation.StringRes
@@ -479,6 +480,7 @@ private fun AccentSelector(
     onCustom: (Int) -> Unit,
 ) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     var picking by rememberSaveable { mutableStateOf(false) }
     Row(
         modifier = Modifier
@@ -493,7 +495,10 @@ private fun AccentSelector(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .selectable(selected = isSelected, role = Role.RadioButton, onClick = { onSelect(accent) })
+                    .selectable(selected = isSelected, role = Role.RadioButton, onClick = {
+                        if (!isSelected) haptics.tick()
+                        onSelect(accent)
+                    })
                     .semantics { contentDescription = label },
                 contentAlignment = Alignment.Center,
             ) {
@@ -615,13 +620,17 @@ private fun RowText(title: String, summary: String, modifier: Modifier = Modifie
 @Composable
 private fun <T> RadioList(options: List<Pair<T, Int>>, selected: T, onSelect: (T) -> Unit) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     Column(Modifier.selectableGroup()) {
         options.forEach { (value, label) ->
             val isSelected = value == selected
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .selectable(selected = isSelected, role = Role.RadioButton, onClick = { onSelect(value) })
+                    .selectable(selected = isSelected, role = Role.RadioButton, onClick = {
+                        if (!isSelected) haptics.tick()
+                        onSelect(value)
+                    })
                     .padding(horizontal = 20.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -702,12 +711,16 @@ private fun NoticeChips(selected: Set<Int>, onToggle: (Int) -> Unit) {
 @Composable
 private fun ChoiceChip(label: String, selected: Boolean, onClick: () -> Unit) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     Box(
         Modifier
             .clip(CapsuleShape)
             .background(if (selected) colors.accent else colors.background, CapsuleShape)
             .border(1.dp, if (selected) colors.accent else colors.outline, CapsuleShape)
-            .toggleable(value = selected, role = Role.Checkbox, onValueChange = { onClick() })
+            .toggleable(value = selected, role = Role.Checkbox, onValueChange = {
+                haptics.toggle(it)
+                onClick()
+            })
             .heightIn(min = 40.dp)
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center,

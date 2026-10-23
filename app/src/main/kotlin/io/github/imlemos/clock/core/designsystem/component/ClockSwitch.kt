@@ -1,5 +1,8 @@
 package io.github.imlemos.clock.core.designsystem.component
 
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
@@ -15,6 +18,15 @@ fun ClockSwitch(
     enabled: Boolean = true,
 ) {
     val colors = ClockTheme.colors
+    // Every switch in the app clicks when it flips (rows toggle it, so the switch itself watches).
+    val haptics = rememberHaptics()
+    val previous = remember { booleanArrayOf(checked) }
+    LaunchedEffect(checked) {
+        if (checked != previous[0]) {
+            previous[0] = checked
+            haptics.toggle(checked)
+        }
+    }
     Switch(
         checked = checked,
         onCheckedChange = onCheckedChange,

@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.core.designsystem.component
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -67,6 +68,7 @@ fun FloatingNavBar(
 @Composable
 private fun NavBarButton(item: NavBarItem, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     val iconTint by animateColorAsState(if (selected) colors.accent else colors.contentMuted, label = "navIcon")
     val labelColor by animateColorAsState(if (selected) colors.content else colors.contentMuted, label = "navLabel")
     val pill by animateColorAsState(
@@ -77,7 +79,10 @@ private fun NavBarButton(item: NavBarItem, selected: Boolean, onClick: () -> Uni
         modifier = modifier
             .clip(CapsuleShape)
             .background(pill, CapsuleShape)
-            .selectable(selected = selected, role = Role.Tab, onClick = onClick)
+            .selectable(selected = selected, role = Role.Tab, onClick = {
+                if (!selected) haptics.tick()
+                onClick()
+            })
             .heightIn(min = 52.dp)
             .padding(horizontal = 6.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,

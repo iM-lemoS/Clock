@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.timer
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import android.os.SystemClock
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -134,6 +135,7 @@ private fun TimerCard(
     onStop: () -> Unit,
 ) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     val left = TimerMath.remaining(timer.run, now)
     val running = timer.status == TimerStatus.RUNNING
     val shape = RoundedCornerShape(28.dp)
@@ -146,7 +148,10 @@ private fun TimerCard(
                 onClickLabel = stringResource(R.string.timer_edit),
                 onLongClickLabel = stringResource(R.string.layout_options),
                 onClick = onClick,
-                onLongClick = onLongClick,
+                onLongClick = {
+                    haptics.longPress()
+                    onLongClick()
+                },
             )
             .padding(horizontal = 20.dp, vertical = 18.dp),
     ) {
@@ -193,7 +198,10 @@ private fun TimerCard(
                     modifier = Modifier
                         .padding(top = 10.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .combinedClickable(onClick = onAddMinute)
+                        .combinedClickable {
+                            haptics.tick()
+                            onAddMinute()
+                        }
                         .padding(vertical = 6.dp),
                 )
             }
@@ -204,8 +212,13 @@ private fun TimerCard(
 @Composable
 private fun RoundButton(icon: Int, label: String, accent: Boolean, onClick: () -> Unit) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     IconButton(
-        onClick = onClick,
+        // The main action (start, pause, stop) confirms; reset and lap tick.
+        onClick = {
+            if (accent) haptics.confirm() else haptics.tick()
+            onClick()
+        },
         modifier = Modifier
             .size(56.dp)
             .clip(CircleShape)

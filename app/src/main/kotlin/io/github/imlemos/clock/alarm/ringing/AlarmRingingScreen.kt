@@ -127,7 +127,10 @@ fun AlarmRingingScreen(
                     chooseLabel = chooseLabel,
                     dismissLabel = dismissLabel,
                     note = if (session.silenced) stringResource(R.string.alarm_silenced) else null,
-                    onSnooze = { onSnooze(null) },
+                    onSnooze = {
+                        haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+                        onSnooze(null)
+                    },
                     onChooseSnooze = { choosingSnooze = true },
                     onDismiss = onDismiss,
                     onDialStart = { center ->
@@ -158,7 +161,10 @@ fun AlarmRingingScreen(
                     onDialEnd = {
                         val choice = dial?.selected
                         dial = null
-                        if (choice != null) onSnooze(snoozeChoices[choice])
+                        if (choice != null) {
+                            haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+                            onSnooze(snoozeChoices[choice])
+                        }
                     },
                 )
             },
@@ -168,7 +174,11 @@ fun AlarmRingingScreen(
             SnoozeWheel(
                 backdrop = backdrop,
                 initialMinutes = alarm.snoozeMinutes,
-                onSnooze = { minutes -> choosingSnooze = false; onSnooze(minutes) },
+                onSnooze = { minutes ->
+                    choosingSnooze = false
+                    haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+                    onSnooze(minutes)
+                },
                 onClose = { choosingSnooze = false },
             )
         }

@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.core.designsystem.component
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -124,6 +125,7 @@ private fun DayCell(
         return
     }
     val today = date == LocalDate.now()
+    val haptics = rememberHaptics()
     Box(
         modifier
             .aspectRatio(1f)
@@ -131,7 +133,10 @@ private fun DayCell(
             .clip(CircleShape)
             .background(if (isSelected) colors.accent else colors.background, CircleShape)
             .border(1.dp, if (today && !isSelected) colors.content else colors.background, CircleShape)
-            .toggleable(value = isSelected, enabled = enabled, role = Role.Checkbox, onValueChange = { onToggle(date) })
+            .toggleable(value = isSelected, enabled = enabled, role = Role.Checkbox, onValueChange = {
+                haptics.toggle(it)
+                onToggle(date)
+            })
             .semantics { contentDescription = formatter.format(date) },
         contentAlignment = Alignment.Center,
     ) {

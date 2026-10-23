@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.alarm.ui
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -154,6 +155,7 @@ private fun LayoutCard(layout: AlarmLayout, name: String, selected: Boolean, wid
     val colors = ClockTheme.colors
     val context = LocalContext.current
     val sampleLabel = stringResource(R.string.layout_sample_label)
+    val haptics = rememberHaptics()
     val shape = RoundedCornerShape(18.dp)
     Column(
         Modifier
@@ -161,7 +163,10 @@ private fun LayoutCard(layout: AlarmLayout, name: String, selected: Boolean, wid
             .clip(shape)
             .background(if (selected) colors.accent.copy(alpha = 0.16f) else colors.content.copy(alpha = 0.05f), shape)
             .border(if (selected) 2.dp else 1.dp, if (selected) colors.accent else colors.content.copy(alpha = 0.16f), shape)
-            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .selectable(selected = selected, role = Role.RadioButton) {
+                haptics.tick()
+                onClick()
+            }
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

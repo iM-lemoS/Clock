@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.alarm.ui
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import io.github.imlemos.clock.core.designsystem.component.DialogButtonStyle
 import io.github.imlemos.clock.core.designsystem.component.DialogAction
 import io.github.imlemos.clock.core.designsystem.component.GlassAlertDialog
@@ -90,6 +91,7 @@ fun AlarmEditorScreen(
     val resources = LocalResources.current
     val colors = ClockTheme.colors
     var keyboardInput by rememberSaveable { mutableStateOf(false) }
+    val haptics = rememberHaptics()
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
     val locale = LocalConfiguration.current.locales[0]
     val onSaved: (SavedAlarm) -> Unit = { saved ->
@@ -120,7 +122,10 @@ fun AlarmEditorScreen(
                     TopBarIconButton(
                         icon = R.drawable.ic_delete,
                         contentDescription = stringResource(R.string.action_delete_alarm),
-                        onClick = { viewModel.delete(onClose) },
+                        onClick = {
+                            haptics.reject()
+                            viewModel.delete(onClose)
+                        },
                     )
                 }
             },
@@ -249,6 +254,7 @@ fun AlarmEditorScreen(
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                         }
+                        haptics.confirm()
                         viewModel.save(onSaved = onSaved)
                     },
                 contentAlignment = Alignment.Center,

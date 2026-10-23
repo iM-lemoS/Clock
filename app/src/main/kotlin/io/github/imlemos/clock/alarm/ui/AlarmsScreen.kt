@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.alarm.ui
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -274,6 +275,7 @@ private fun AlarmCard(
     val resources = LocalResources.current
     val colors = ClockTheme.colors
     val alarm = item.alarm
+    val haptics = rememberHaptics()
     val parts = timeParts(context, alarm.time)
     val ringing = item.nextRing != null
     val selected = alarm.id in state.selection
@@ -297,7 +299,10 @@ private fun AlarmCard(
                 onClickLabel = stringResource(if (selecting) R.string.action_select else R.string.action_edit_alarm),
                 onLongClickLabel = stringResource(R.string.action_select),
                 onClick = { onClick(alarm.id) },
-                onLongClick = { viewModel.toggleSelection(alarm.id) },
+                onLongClick = {
+                    haptics.longPress()
+                    viewModel.toggleSelection(alarm.id)
+                },
             )
             .padding(horizontal = 20.dp, vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -363,6 +368,7 @@ private fun GroupCard(
     val colors = ClockTheme.colors
     val locale = LocalConfiguration.current.locales[0]
     val group = entry.group
+    val haptics = rememberHaptics()
     val shape = RoundedCornerShape(28.dp)
     val nextLine = entry.next?.nextRing?.let { next ->
         val day = java.time.format.DateTimeFormatter
@@ -379,7 +385,10 @@ private fun GroupCard(
                 onClickLabel = stringResource(if (group.expanded) R.string.group_collapse else R.string.group_expand),
                 onLongClickLabel = stringResource(R.string.group_options),
                 onClick = onToggleExpanded,
-                onLongClick = onLongClick,
+                onLongClick = {
+                    haptics.longPress()
+                    onLongClick()
+                },
             )
             .padding(horizontal = 20.dp, vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -426,17 +435,21 @@ private fun SelectionActions(
         SelectionAction(R.drawable.ic_toggle_off, R.string.selection_disable, onDisable)
         SelectionAction(R.drawable.ic_folder, R.string.selection_group, onMove)
         SelectionAction(R.drawable.ic_edit, R.string.selection_edit, onEdit)
-        SelectionAction(R.drawable.ic_delete, R.string.selection_delete, onDelete)
+        SelectionAction(R.drawable.ic_delete, R.string.selection_delete, onDelete, destructive = true)
     }
 }
 
 @Composable
-private fun SelectionAction(icon: Int, label: Int, onClick: () -> Unit) {
+private fun SelectionAction(icon: Int, label: Int, onClick: () -> Unit, destructive: Boolean = false) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     Column(
         Modifier
             .clip(RoundedCornerShape(16.dp))
-            .clickable(role = Role.Button, onClick = onClick)
+            .clickable(role = Role.Button) {
+                if (destructive) haptics.reject() else haptics.tick()
+                onClick()
+            }
             .heightIn(min = 52.dp)
             .padding(horizontal = 8.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,

@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.worldclock
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import android.content.res.Resources
 import android.text.format.DateFormat
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -212,13 +213,17 @@ private fun CityCard(zone: ZoneId, here: ZoneId, now: Instant, locale: java.util
     val time = TimeOfDay(local.hour, local.minute)
     val parts = timeParts(context, time)
     val day = WorldClockMath.isDaytime(zone, now)
+    val haptics = rememberHaptics()
     val shape = RoundedCornerShape(28.dp)
     Row(
         Modifier
             .fillMaxWidth()
             .clip(shape)
             .background(colors.surface, shape)
-            .combinedClickable(onClickLabel = stringResource(R.string.layout_options), onClick = onClick, onLongClick = onClick)
+            .combinedClickable(onClickLabel = stringResource(R.string.layout_options), onClick = onClick, onLongClick = {
+                haptics.longPress()
+                onClick()
+            })
             .padding(horizontal = 20.dp, vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

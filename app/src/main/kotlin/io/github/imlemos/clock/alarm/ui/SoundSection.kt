@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.alarm.ui
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import io.github.imlemos.clock.core.designsystem.component.SheetOption
 import io.github.imlemos.clock.core.designsystem.component.OptionsSheet
 import android.app.Activity
@@ -308,6 +309,7 @@ private fun ToneSourceDialog(onSystem: () -> Unit, onFile: () -> Unit, onDefault
 @Composable
 internal fun <T> ChipRow(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit, wrap: Boolean = true) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     val chips: @Composable () -> Unit = {
         options.forEach { (value, label) ->
             val isSelected = value == selected
@@ -316,7 +318,10 @@ internal fun <T> ChipRow(options: List<Pair<T, String>>, selected: T, onSelect: 
                     .clip(CapsuleShape)
                     .background(if (isSelected) colors.accent else colors.background, CapsuleShape)
                     .border(1.dp, if (isSelected) colors.accent else colors.outline, CapsuleShape)
-                    .toggleable(value = isSelected, role = Role.RadioButton, onValueChange = { onSelect(value) })
+                    .toggleable(value = isSelected, role = Role.RadioButton, onValueChange = {
+                        haptics.tick()
+                        onSelect(value)
+                    })
                     .heightIn(min = 40.dp)
                     .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center,

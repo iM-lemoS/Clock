@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.alarm.layout.editor
 
+import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -128,6 +129,7 @@ fun LayoutEditorScreen(
     var confirmingDiscard by rememberSaveable { mutableStateOf(false) }
     var panelVisible by rememberSaveable { mutableStateOf(true) }
     val sampleLabel = stringResource(R.string.layout_sample_label)
+    val haptics = rememberHaptics()
     BackHandler { if (state.unsaved) confirmingDiscard = true else onClose() }
 
     // The alarm screen is always dark, so the editor is too.
@@ -163,9 +165,14 @@ fun LayoutEditorScreen(
                 },
                 editing = LayoutEditing(
                     selected = state.selected,
-                    onSelect = viewModel::highlight,
+                    onSelect = { id ->
+                        // Called on every step of a drag: buzz once, when it starts on a new element.
+                        if (id != state.selected) haptics.dragStart()
+                        viewModel.highlight(id)
+                    },
                     // Tapping an element (or empty space, for the background) opens its options.
                     onOpen = { id ->
+                        haptics.tick()
                         viewModel.select(id)
                         panelVisible = true
                     },
@@ -207,7 +214,10 @@ fun LayoutEditorScreen(
                     // Previews what is on screen; nothing is saved.
                     context.startActivity(AlarmActivity.previewIntent(context, state.spec, sampleLabel))
                 }
-                PillButton(backdrop, stringResource(R.string.action_save), accent = true) { viewModel.save(onClose) }
+                PillButton(backdrop, stringResource(R.string.action_save), accent = true) {
+                    haptics.confirm()
+                    viewModel.save(onClose)
+                }
             }
 
             Column(
@@ -340,6 +350,7 @@ private fun EditorPanel(state: LayoutEditorState, viewModel: LayoutEditorViewMod
 @Composable
 private fun ClockFontOptions(clock: ClockElement, viewModel: LayoutEditorViewModel) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     val analog = clock.style == ClockStyle.ANALOG || clock.style == ClockStyle.ANALOG_LINES
     if (!analog) {
         Spacer(Modifier.height(12.dp))
@@ -352,7 +363,10 @@ private fun ClockFontOptions(clock: ClockElement, viewModel: LayoutEditorViewMod
                         .clip(RoundedCornerShape(16.dp))
                         .background(if (selected) colors.accent.copy(alpha = 0.18f) else colors.content.copy(alpha = 0.06f), RoundedCornerShape(16.dp))
                         .border(if (selected) 2.dp else 1.dp, if (selected) colors.accent else colors.content.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
-                        .selectable(selected = selected, role = Role.RadioButton) { viewModel.setClockFont(font) }
+                        .selectable(selected = selected, role = Role.RadioButton) {
+                            if (!selected) haptics.tick()
+                            viewModel.setClockFont(font)
+                        }
                         .padding(horizontal = 14.dp, vertical = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
@@ -574,6 +588,7 @@ private fun sliderColors() = SliderDefaults.colors(
 @Composable
 private fun EditorTabs(selected: LayoutElementId?, onSelect: (LayoutElementId?) -> Unit) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     val tabs = listOf(
         Triple(LayoutElementId.CLOCK, R.string.layout_tab_clock, R.drawable.ic_schedule),
         Triple(LayoutElementId.DATE, R.string.layout_tab_date, R.drawable.ic_calendar_today),
@@ -589,7 +604,10 @@ private fun EditorTabs(selected: LayoutElementId?, onSelect: (LayoutElementId?) 
                 Column(
                     Modifier
                         .weight(1f)
-                        .selectable(selected = isSelected, role = Role.Tab) { onSelect(id) }
+                        .selectable(selected = isSelected, role = Role.Tab) {
+                            if (!isSelected) haptics.tick()
+                            onSelect(id)
+                        }
                         .padding(top = 14.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
@@ -660,6 +678,7 @@ private fun DateOptions(parts: DateParts, onChange: (DateParts) -> Unit) {
 @Composable
 private fun ToggleChips(options: List<Pair<String, Boolean>>, onToggle: (index: Int, on: Boolean) -> Unit) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     val shape = RoundedCornerShape(12.dp)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEachIndexed { index, (label, on) ->
@@ -668,7 +687,10 @@ private fun ToggleChips(options: List<Pair<String, Boolean>>, onToggle: (index: 
                     .clip(shape)
                     .background(if (on) colors.accent.copy(alpha = 0.18f) else colors.content.copy(alpha = 0.06f), shape)
                     .border(if (on) 2.dp else 1.dp, if (on) colors.accent else colors.content.copy(alpha = 0.2f), shape)
-                    .toggleable(value = on, role = Role.Checkbox) { onToggle(index, it) }
+                    .toggleable(value = on, role = Role.Checkbox) {
+                        haptics.toggle(it)
+                        onToggle(index, it)
+                    }
                     .heightIn(min = 40.dp)
                     .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -691,6 +713,7 @@ private fun ToggleChips(options: List<Pair<String, Boolean>>, onToggle: (index: 
 @Composable
 private fun <T> OptionChips(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit) {
     val colors = ClockTheme.colors
+    val haptics = rememberHaptics()
     val shape = RoundedCornerShape(12.dp)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         options.forEach { (value, label) ->
@@ -700,7 +723,10 @@ private fun <T> OptionChips(options: List<Pair<T, String>>, selected: T, onSelec
                     .clip(shape)
                     .background(if (isSelected) colors.accent.copy(alpha = 0.18f) else colors.content.copy(alpha = 0.06f), shape)
                     .border(if (isSelected) 2.dp else 1.dp, if (isSelected) colors.accent else colors.content.copy(alpha = 0.2f), shape)
-                    .selectable(selected = isSelected, role = Role.RadioButton) { onSelect(value) }
+                    .selectable(selected = isSelected, role = Role.RadioButton) {
+                        if (!isSelected) haptics.tick()
+                        onSelect(value)
+                    }
                     .heightIn(min = 40.dp)
                     .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
