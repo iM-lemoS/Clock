@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand name: identical in every language. -->
+    <string name="app_name" translatable="false">Clock</string>
+</resources>
