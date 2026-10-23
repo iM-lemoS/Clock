@@ -76,7 +76,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 
 ### 3.1 Configuração base
 
-- Hora e minutos, escolhidos com **rodas de deslocar (estilo iPhone)**; o teclado fica como alternativa. As mesmas rodas servem os timers (h/m/s). A roda AM/PM só aparece no formato de 12 h.
+- Hora e minutos, escolhidos com **rodas de deslocar (estilo iPhone)**; o teclado fica como alternativa, com a mesma letra de pontos e os dois pontos desenhados (as horas passam sozinhas para os minutos). As mesmas rodas servem os timers (h/m/s). A roda AM/PM só aparece no formato de 12 h.
 - **Recorrência**, uma de três:
   - **Uma vez**: próxima ocorrência dessa hora.
   - **Dias da semana**: qualquer combinação seg–dom (primeiro dia da semana segue a região do sistema).
@@ -101,7 +101,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - Comportamento normal do Android: o modo silêncio não corta alarmes; só o volume de alarme a zero os silencia.
 - **Aviso na app** quando o volume de alarme está a zero e há alarmes ativos.
 - **Volume gradual** (por alarme, desligado por defeito): volume final em % do volume de alarme; duração da subida em segundos.
-- **Duração do toque** (por alarme, 1 min por defeito): ao fim desse tempo o alarme **para** e fica uma **notificação de alarme perdido** (só notificação).
+- **Duração do toque** (por alarme, 1 min por defeito): ao fim desse tempo o alarme **para** e fica uma **notificação de alarme perdido** (só notificação). Opções: 1, 2, 5, 10, 15, 30 min ou **personalizado** (horas e minutos, nunca dias).
 - **Saída de áudio** (definição geral): **telemóvel + Bluetooth** (padrão), só telemóvel, só Bluetooth (se nada estiver ligado, toca no telemóvel).
   - "Telemóvel + Bluetooth" toca dois leitores: o alarme no altifalante (volume de alarme, passa o Não incomodar) e uma cópia no Bluetooth como multimédia (volume de multimédia). O encaminhamento normal do Android, testado num Samsung, tocava só no altifalante.
 - Desde o Android 9 o volume de alarme não desce abaixo de 1, por isso o aviso de "volume a zero" raramente aparece.
@@ -109,7 +109,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 ### 3.3 Ecrã do alarme (interação)
 
 - **Desligar**: arrastar para o lado.
-- **Snooze**: **toque simples** → duração padrão (**5 min**, configurável por alarme, em lote e nas predefinições); **pressão longa** → abre um **dial** em meia-lua à volta do botão com **5, 10, 15, 20, 30, 45 min, 1 h**: sem levantar o dedo, desliza-se até ao tempo e **larga-se para adiar** (largar junto ao botão cancela). Um só gesto, rápido. **Sem limite** de snoozes. Com TalkBack, "Escolher quanto tempo adiar" abre uma roda acessível.
+- **Snooze**: **toque simples** → duração padrão (**5 min**, configurável por alarme, em lote e nas predefinições); **pressão longa** → abre um **dial** em meia-lua à volta do botão com **5, 10, 15, 20, 30, 45 min, 1 h** e, se o alarme tiver um snooze **personalizado** (horas e minutos), também esse: sem levantar o dedo, desliza-se até ao tempo e **larga-se para adiar** (largar junto ao botão cancela). Um só gesto, rápido. **Sem limite** de snoozes. Com TalkBack, "Escolher quanto tempo adiar" abre uma roda acessível.
 - **Acessibilidade**: com TalkBack, desligar e snooze ficam disponíveis como ações diretas, sem gestos.
 - Se o alarme tem fuso diferente do local, mostra **as duas horas**.
 - **Botão de baixar volume** (definição, desligado por defeito): enquanto o alarme toca, carregar em "baixar volume" **cala só aquele toque** — só o som, ou som e vibração, conforme a definição — sem desligar o alarme nem o adiar. O toque seguinte (snooze ou outro alarme) é normal.
@@ -117,7 +117,8 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 ### 3.4 Avisos antes do alarme
 
 - Notificação antes do alarme com **"Desligar este"**.
-- Por defeito **30 min antes**; nas definições podem adicionar-se vários tempos (ex.: 1 dia, 1 h, 30 min, 5 min).
+- Por defeito **30 min antes**; nas definições podem adicionar-se vários tempos (ex.: 1 dia, 1 h, 30 min, 5 min), incluindo **personalizados** em dias, horas e minutos.
+- Um aviso que calharia **antes de o alarme ser criado ou ligado** é ignorado (ex.: aviso de 1 dia num alarme criado para daqui a 2 h). As definições explicam isto.
 - **Uma só notificação por alarme, atualizada** ("daqui a 30 min" → "daqui a 5 min").
 - Desligar antecipadamente: recorrente → cancela só essa ocorrência; datas → conta como cumprida (se era a última, vai para o lixo); utilização única → vai para o lixo.
 
@@ -148,6 +149,8 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - Relógios: estilos digital, empilhado, analógico com pontos e analógico com traços; 7 letras (Doto, JetBrains Mono, Outfit, Playfair Display, Orbitron, Big Shoulders Display, Comfortaa, todas OFL e variáveis); espessura ajustável e, na Doto, pontos mais ou menos redondos.
 - A app fica sempre na vertical (o Android 16 pode ignorar isto em ecrãs grandes, ≥ 600 dp).
 - Cores: seletor completo (tom, saturação/brilho e opacidade) com cores rápidas e "cor automática".
+- Tocar num elemento (ou no espaço vazio, para o fundo) abre as opções desse elemento. Os elementos são separadores com ícone; as opções de cada um (estilo, letra, tipo de fundo) são botões com outro aspeto, para não se confundirem.
+- Ao escolher o ecrã de um alarme, a lista mostra pré-visualizações de cada layout e "Ver" abre-o em ecrã inteiro, sem som.
 - Foto e vídeo: no separador Fundo, arrastar e afastar os dedos posiciona e amplia (sem nunca deixar margens vazias). Elementos escondidos desaparecem também no editor.
 - "Testar" abre o ecrã do alarme verdadeiro com o que está no editor (sem guardar), sem som; adiar ou desligar só fecham a pré-visualização.
 - Um layout novo ou duplicado é um rascunho até se carregar em Guardar; sair com alterações por guardar pede confirmação.
@@ -161,6 +164,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
   - **Grupo**: nome, interruptor, expandir/recolher e o **próximo alarme completo** ("próximo: qui, 3 nov, 7:30").
 - **Ordenação**: pelo próximo a tocar (data + hora reais, com fusos). Grupos posicionados pelo seu próximo alarme. Desativados no fundo, também por ordem.
 - Cada alarme pertence a **no máximo um grupo**.
+- Um grupo novo criado no editor de um alarme só é criado quando o alarme é guardado.
 - **Interruptor do grupo** como interruptor mestre (não altera o estado individual de cada alarme).
 
 ### 3.9 Seleção, edição em lote e apagar
@@ -231,6 +235,8 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 | Configurar fiabilidade | ecrã de fiabilidade |
 | Caixote do lixo | acesso ao lixo |
 
+As definições estão organizadas por categorias, cada uma na sua página: Aspeto, Alarmes (avisos, botões de volume), Som dos alarmes (predefinições para alarmes novos), Temporizadores e Data e hora; depois Ecrã do alarme, Fiabilidade, Caixote do lixo, Idioma e Sobre.
+
 ---
 
 Implementado (fase 9): som dos temporizadores; cor de destaque livre (seletor de cor, com aviso quando se vê mal num dos temas); secção "Sobre" com versão, privacidade, código-fonte e as licenças das fontes e ícones (os textos vão dentro da app); ícone final (mostrador de pontos às 10h10, centro vermelho, versão monocromática para ícones temáticos); transições com um deslize curto.
@@ -253,7 +259,7 @@ Implementado (fase 9): som dos temporizadores; cor de destaque livre (seletor de
 
 ### Liquid Glass
 
-- O conteúdo base é plano e sólido (Nothing); o **vidro só nas camadas que flutuam**: botões, roda de snooze e etiqueta no ecrã do alarme (por cima da foto/vídeo); barra de navegação flutuante em cápsula; botão "+"; bottom sheets, menus e o pop-up "Anular"; barra de ações da seleção múltipla.
+- O conteúdo base é plano e sólido (Nothing); o **vidro só nas camadas que flutuam**: botões, roda de snooze e etiqueta no ecrã do alarme (por cima da foto/vídeo); barra de navegação flutuante em cápsula; botão "+"; bottom sheets, menus, diálogos e o pop-up "Anular" (os diálogos e menus são desenhados dentro da janela da app, porque muitos telemóveis não desfocam o que está atrás de outra janela); barra de ações da seleção múltipla.
 - Cartões da lista e texto principal ficam sólidos, para leitura nítida.
 - Efeito: desfoque do fundo, refração leve nas bordas, reflexo subtil no contorno, animações com ligeiro "derreter".
 - Técnica: desfoque com `RenderEffect` (Android 12+) / biblioteca Haze; refração com shaders AGSL (`RuntimeShader`, Android 13+). **No Android 12 só desfoque, sem refração.** Avaliar bibliotecas da comunidade (manutenção ativa, licença compatível).
