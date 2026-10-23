@@ -80,11 +80,15 @@ class RingingService : Service() {
             if (ringingState.session.value == null) stopService()
             return
         }
-        val firstOfSession = ringingState.session.value == null
-        ringingState.add(RingingAlarm(alarm.id, alarm.time, alarm.label, alarm.snoozeMinutes))
-        if (firstOfSession) {
-            // In a collision the first alarm's sound wins (docs/PLANO.md 3.11).
+        val previousPrimary = ringingState.session.value?.primary
+        ringingState.add(RingingAlarm(alarm.id, alarm.time, alarm.label, alarm.snoozeMinutes, alarm.createdAt))
+        // In a collision the alarm created first leads (docs/PLANO.md 3.11), even if another
+        // fired a few milliseconds earlier: switch to its sound unless the user silenced it.
+        val session = ringingState.session.value
+        if (session?.primary?.id == alarm.id && !session.silenced) {
             player.start(alarm.ringtoneUri?.toUri(), alarm.vibrate)
+        }
+        if (previousPrimary == null) {
             timeoutJob = scope.launch {
                 delay(alarm.ringDurationSeconds * 1_000L)
                 // Clear first: finishSession cancels timeoutJob, which must not cancel this coroutine.

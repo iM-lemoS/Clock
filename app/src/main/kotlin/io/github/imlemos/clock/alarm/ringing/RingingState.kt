@@ -4,12 +4,22 @@ import io.github.imlemos.clock.core.scheduling.TimeOfDay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
-data class RingingAlarm(val id: Long, val time: TimeOfDay, val label: String, val snoozeMinutes: Int)
+data class RingingAlarm(
+    val id: Long,
+    val time: TimeOfDay,
+    val label: String,
+    val snoozeMinutes: Int,
+    val createdAt: Instant,
+)
 
-/** Alarms currently ringing together (collisions share one screen, see docs/PLANO.md 3.11). */
+/**
+ * Alarms currently ringing together. Collisions share one screen, and the alarm created first
+ * leads: its sound and layout are used (docs/PLANO.md 3.11). [alarms] is kept in that order.
+ */
 data class RingingSession(val alarms: List<RingingAlarm>, val silenced: Boolean = false) {
     val primary: RingingAlarm get() = alarms.first()
 }
@@ -22,7 +32,10 @@ class RingingState @Inject constructor() {
 
     fun add(alarm: RingingAlarm) {
         val current = _session.value?.alarms.orEmpty().filterNot { it.id == alarm.id }
-        _session.value = RingingSession(current + alarm, silenced = _session.value?.silenced ?: false)
+        _session.value = RingingSession(
+            alarms = (current + alarm).sortedWith(compareBy({ it.createdAt }, { it.id })),
+            silenced = _session.value?.silenced ?: false,
+        )
     }
 
     fun markSilenced() {

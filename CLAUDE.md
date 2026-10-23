@@ -128,11 +128,23 @@ Launch the debug app: `adb shell am start -n io.github.imlemos.clock.debug/io.gi
 3. Only ask the maintainer for what needs a person: hearing sound, feeling vibration, unlocking
    with PIN/biometrics, accepting system dialogs adb cannot tap, judging visuals. Say exactly what
    to do and what to observe.
-4. Screen staying on: `adb shell svc power stayon usb` during a session; restore with
+4. Debug builds expose adb hooks (`DebugCommandsReceiver`, protected by `DUMP`), handy while the
+   phone is locked:
+   ```sh
+   C=io.github.imlemos.clock.debug/io.github.imlemos.clock.debug.DebugCommandsReceiver
+   adb shell am broadcast -a io.github.imlemos.clock.debug.TEST_ALARM -n $C --ei in_minutes 1 --es label "'Test'"
+   adb shell am broadcast -a io.github.imlemos.clock.debug.DELETE_ALL_ALARMS -n $C
+   ```
+   Add `--include-stopped-packages` if the app was force-stopped.
+5. Emulators: `clock_api31` (Android 12) exists; start it headless with
+   `emulator -avd clock_api31 -no-window -no-audio -gpu swiftshader_indirect` and target it with
+   `ANDROID_SERIAL=emulator-5554` (zsh does not split `adb -s ...` stored in a variable). Use it for
+   what ColorOS blocks (appops, time zone changes, `adb root`) and for Android 12 behaviour.
+6. Screen staying on: `adb shell svc power stayon usb` during a session; restore with
    `adb shell svc power stayon false` at the end.
-5. At the end of each test session give a short summary: what passed, what failed, what the
+7. At the end of each test session give a short summary: what passed, what failed, what the
    maintainer must still check by hand.
-6. Never leave a release build signed with a non-release key installed (it would block the real
+8. Never leave a release build signed with a non-release key installed (it would block the real
    release from updating): uninstall it after testing.
 
 ### ColorOS notes (reference device)
@@ -146,5 +158,11 @@ Launch the debug app: `adb shell am start -n io.github.imlemos.clock.debug/io.gi
   `adb uninstall` + reinstall. Some `pm grant`/`appops` changes may hit the same restriction.
 - If installs start failing, check Developer options > **"Install via USB"** (may require an
   OPPO account).
-- ColorOS kills background apps aggressively: reliability work (phase 1) must be tested with the
-  app removed from recents and after a reboot.
+- Also blocked from adb on ColorOS: `appops set`, time zone changes (`cmd time_zone_detector`).
+  Use the emulator for those scenarios.
+- After a reboot, adb is unavailable until the first unlock (USB data is off while locked), so
+  direct-boot ringing must be observed by the maintainer; verify afterwards in
+  `adb logcat -b events | grep am_proc_start` (LOCKED_BOOT_COMPLETED and ALARM_FIRE entries).
+- Verified on ColorOS 16: swiping the app away from recents only kills the process (alarms still
+  ring). Force-stop removes all alarms and blocks boot broadcasts until the app is opened again;
+  that is Android behaviour no app can work around.
