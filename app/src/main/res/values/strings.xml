@@ -40,8 +40,7 @@
     <string name="accent_orange">Orange</string>
     <string name="accent_green">Green</string>
     <string name="accent_blue">Blue</string>
-    <string name="accent_violet">Violet</string>
-    <string name="accent_pink">Pink</string>
+    <string name="accent_violet">Purple</string>
     <string name="settings_reduce_transparency">Reduce transparency</string>
     <string name="settings_reduce_transparency_summary">Use solid surfaces instead of glass.</string>
     <string name="settings_reduce_transparency_forced">Turned on by the system, for example by battery saver.</string>

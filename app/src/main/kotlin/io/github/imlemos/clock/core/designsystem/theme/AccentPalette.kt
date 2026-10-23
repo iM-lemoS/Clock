@@ -11,11 +11,10 @@ import io.github.imlemos.clock.R
  */
 enum class AccentPalette(val color: Color, @param:StringRes val label: Int) {
     Red(Color(0xFFE0282E), R.string.accent_red),
-    Orange(Color(0xFFD9580D), R.string.accent_orange),
-    Green(Color(0xFF1E9E4A), R.string.accent_green),
-    Blue(Color(0xFF2F6BFF), R.string.accent_blue),
     Violet(Color(0xFF9B4DFF), R.string.accent_violet),
-    Pink(Color(0xFFE5337A), R.string.accent_pink),
+    Orange(Color(0xFFD9580D), R.string.accent_orange),
+    Blue(Color(0xFF2F6BFF), R.string.accent_blue),
+    Green(Color(0xFF1E9E4A), R.string.accent_green),
     ;
 
     companion object {
