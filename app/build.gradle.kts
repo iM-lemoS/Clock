@@ -1,3 +1,6 @@
+import com.android.build.api.artifact.SingleArtifact
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -5,6 +8,16 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.room)
+}
+
+/**
+ * Release signing comes from keystore.properties at the repository root (git-ignored), which
+ * points to a keystore stored outside the repository. Without it, release builds are unsigned.
+ * See README.md, "Release signing".
+ */
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.isFile) file.inputStream().use(::load)
 }
 
 android {
@@ -21,6 +34,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (keystoreProperties.isNotEmpty()) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -30,6 +54,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
 
@@ -67,6 +92,52 @@ android {
         named("androidTest") {
             assets.directories += "$projectDir/schemas"
         }
+    }
+}
+
+/**
+ * Fails the build if the merged manifest of any variant requests a forbidden permission, e.g. one
+ * added silently by a dependency. The app must never reach the network or shared storage.
+ */
+abstract class VerifyPermissionsTask : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val mergedManifest: RegularFileProperty
+
+    @get:Input
+    abstract val forbidden: ListProperty<String>
+
+    @get:OutputFile
+    abstract val report: RegularFileProperty
+
+    @TaskAction
+    fun verify() {
+        val manifest = mergedManifest.get().asFile.readText()
+        val found = forbidden.get().filter { manifest.contains("\"$it\"") }
+        check(found.isEmpty()) { "Forbidden permissions in merged manifest: $found" }
+        report.get().asFile.writeText("OK\n")
+    }
+}
+
+val forbiddenPermissions = listOf(
+    "android.permission.INTERNET",
+    "android.permission.READ_EXTERNAL_STORAGE",
+    "android.permission.WRITE_EXTERNAL_STORAGE",
+    "android.permission.MANAGE_EXTERNAL_STORAGE",
+    "android.permission.READ_MEDIA_IMAGES",
+    "android.permission.READ_MEDIA_VIDEO",
+    "android.permission.READ_MEDIA_AUDIO",
+)
+
+androidComponents {
+    onVariants { variant ->
+        val name = variant.name.replaceFirstChar(Char::titlecase)
+        val verify = tasks.register<VerifyPermissionsTask>("verify${name}Permissions") {
+            mergedManifest.set(variant.artifacts.get(SingleArtifact.MERGED_MANIFEST))
+            forbidden.set(forbiddenPermissions)
+            report.set(layout.buildDirectory.file("reports/permissions/${variant.name}.txt"))
+        }
+        tasks.named("check") { dependsOn(verify) }
     }
 }
 
