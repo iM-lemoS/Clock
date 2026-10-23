@@ -17,6 +17,7 @@ keystore.properties
 *.jks
 *.keystore
 *.p12
+*.dmg
 
 # Build outputs
 *.apk
