@@ -15,7 +15,11 @@ data class AlarmPatch(
     val singleUse: Boolean? = null,
     val snoozeMinutes: Int? = null,
     val zone: Zone? = null,
+    val layout: Layout? = null,
 ) {
+    /** A layout choice; [id] `null` is the default layout. */
+    data class Layout(val id: Long?)
+
     /** A time zone choice; [id] `null` is "Local time" (follows the app). */
     data class Zone(val id: ZoneId?)
 
@@ -28,6 +32,7 @@ data class AlarmPatch(
         label = label ?: alarm.label,
         singleUse = singleUse ?: alarm.singleUse,
         zone = if (zone != null) zone.id else alarm.zone,
+        layoutId = if (layout != null) layout.id else alarm.layoutId,
         sound = alarm.sound.copy(
             ringtoneUri = if (ringtone != null) ringtone.uri else alarm.sound.ringtoneUri,
             ringtoneTitle = if (ringtone != null) ringtone.title else alarm.sound.ringtoneTitle,

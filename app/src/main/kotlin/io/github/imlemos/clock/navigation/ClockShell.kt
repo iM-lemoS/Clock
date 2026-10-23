@@ -64,6 +64,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import io.github.imlemos.clock.BuildConfig
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.alarm.layout.LayoutLibraryScreen
+import io.github.imlemos.clock.alarm.layout.editor.LayoutEditorScreen
 import io.github.imlemos.clock.alarm.ui.AlarmEditorScreen
 import io.github.imlemos.clock.alarm.ui.AlarmEditorViewModel
 import io.github.imlemos.clock.alarm.ui.AlarmsScreen
@@ -158,11 +160,22 @@ fun ClockShell(
                             onBack = pop,
                             onOpenReliability = openReliability,
                             onOpenTrash = { backStack.add(TrashDestination) },
+                            onOpenLayouts = { backStack.add(LayoutsDestination) },
                             onOpenGlassLab = if (BuildConfig.DEBUG) ({ backStack.add(GlassLabDestination) }) else null,
                         )
                     }
                     entry<GlassLabDestination> { GlassLabScreen(onBack = pop) }
-                    entry<AlarmEditorDestination> { key -> AlarmEditorScreen(alarmId = key.alarmId, onClose = pop) }
+                    entry<AlarmEditorDestination> { key ->
+                        AlarmEditorScreen(
+                            alarmId = key.alarmId,
+                            onClose = pop,
+                            onEditLayout = { backStack.add(LayoutEditorDestination(it)) },
+                        )
+                    }
+                    entry<LayoutsDestination> {
+                        LayoutLibraryScreen(onBack = pop, onEdit = { backStack.add(LayoutEditorDestination(it)) })
+                    }
+                    entry<LayoutEditorDestination> { key -> LayoutEditorScreen(layoutId = key.layoutId, onClose = pop) }
                     entry<ReliabilityDestination> { ReliabilityScreen(onBack = pop) }
                     entry<TrashDestination> { TrashScreen(onBack = pop) }
                     entry<BatchEditDestination> { key -> BatchEditScreen(alarmIds = key.alarmIds, onClose = pop) }

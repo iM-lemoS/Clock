@@ -9,6 +9,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.alarm.data.AlarmRepository
 import android.net.Uri
+import io.github.imlemos.clock.alarm.layout.AlarmLayout
+import io.github.imlemos.clock.alarm.layout.LayoutRepository
+import io.github.imlemos.clock.alarm.layout.PresetLayouts
 import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.model.AlarmGroup
 import io.github.imlemos.clock.alarm.model.AlarmSound
@@ -49,6 +52,10 @@ data class AlarmEditorState(
     val zone: ZoneId? = null,
     /** The app's manual zone, for the "Local time" summary. */
     val manualZone: ZoneId? = null,
+    /** Alarm screen layout; `null` uses the default (docs/PLANO.md 3.7). */
+    val layoutId: Long? = null,
+    val layouts: List<AlarmLayout> = emptyList(),
+    val defaultLayoutId: Long = PresetLayouts.DEFAULT,
     /** Set when saving would ring together with another alarm (docs/PLANO.md 3.11). */
     val collision: Collision? = null,
 ) {
@@ -79,6 +86,7 @@ class AlarmEditorViewModel @AssistedInject constructor(
     private val ringtones: RingtoneStore,
     private val player: AlarmSoundPlayer,
     private val clock: Clock,
+    private val layoutRepository: LayoutRepository,
 ) : ViewModel() {
 
     @AssistedFactory
@@ -96,6 +104,12 @@ class AlarmEditorViewModel @AssistedInject constructor(
         }
         viewModelScope.launch {
             settings.manualZone.collect { zone -> _state.update { it.copy(manualZone = zone) } }
+        }
+        viewModelScope.launch {
+            layoutRepository.observeAll().collect { all ->
+                val defaultId = layoutRepository.defaultId()
+                _state.update { it.copy(layouts = all, defaultLayoutId = defaultId) }
+            }
         }
         viewModelScope.launch {
             val alarm = if (alarmId == NEW_ALARM) null else repository.get(alarmId)
@@ -120,6 +134,7 @@ class AlarmEditorViewModel @AssistedInject constructor(
                         sound = alarm.sound,
                         groupId = alarm.groupId,
                         zone = alarm.zone,
+                        layoutId = alarm.layoutId,
                     )
                 }
             }
@@ -170,6 +185,17 @@ class AlarmEditorViewModel @AssistedInject constructor(
 
     fun setZone(zone: ZoneId?) = _state.update { it.copy(zone = zone) }
 
+    fun setLayout(layoutId: Long?) = _state.update { it.copy(layoutId = layoutId) }
+
+    /** A new layout copied from the default, chosen for this alarm; [onCreated] opens its editor. */
+    fun createLayout(name: String, onCreated: (Long) -> Unit) {
+        viewModelScope.launch {
+            val id = layoutRepository.duplicate(layoutRepository.defaultId(), name)
+            _state.update { it.copy(layoutId = id) }
+            onCreated(id)
+        }
+    }
+
     /**
      * The next ring on the phone's clock when the alarm's zone shows a different time, e.g.
      * "13:00 here" under 08:00 New York. `null` otherwise.
@@ -203,6 +229,7 @@ class AlarmEditorViewModel @AssistedInject constructor(
                 sound = current.sound,
                 groupId = current.groupId,
                 zone = current.zone,
+                layoutId = current.layoutId,
                 enabled = true,
             )
             val zone = scheduler.zoneOf(edited)

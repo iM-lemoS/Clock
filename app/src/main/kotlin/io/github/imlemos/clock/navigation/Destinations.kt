@@ -54,6 +54,14 @@ data object TrashDestination : NavKey
 @Serializable
 data class BatchEditDestination(val alarmIds: List<Long>) : NavKey
 
+/** The layout library (docs/PLANO.md 3.7). */
+@Serializable
+data object LayoutsDestination : NavKey
+
+/** Edits one of the user's layouts. */
+@Serializable
+data class LayoutEditorDestination(val layoutId: Long) : NavKey
+
 /** Debug builds only: compares the glass levels over busy content. */
 @Serializable
 data object GlassLabDestination : NavKey

@@ -37,6 +37,7 @@ import javax.inject.Inject
  * Optional extras: --es days 1,3,5 (ISO days, weekly) | --es dates today,2026-11-03 (dates)
  *     | --ez single_use true | --es vibration HEARTBEAT | --ei gradual_seconds 30 --ei gradual_target 80
  *     | --ei ring_seconds 120 | --es zone America/New_York (the alarm's own zone; same moment)
+ *     | --el layout -2 (layout id; presets are negative)
  * adb shell am broadcast -a io.github.imlemos.clock.debug.DELETE_ALL_ALARMS -n <same component>
  * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_NOTICES -n <same component> --es minutes 30,5
  *     (empty string disables notices)
@@ -65,6 +66,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                         dates = intent.getStringExtra("dates"),
                         singleUse = intent.getBooleanExtra("single_use", false),
                         zone = intent.getStringExtra("zone")?.let(ZoneId::of),
+                        layoutId = if (intent.hasExtra("layout")) intent.getLongExtra("layout", 0) else null,
                         sound = soundFrom(intent, settings.defaultSound.first()),
                     )
                     ACTION_DELETE_ALL -> {
@@ -108,6 +110,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
         dates: String?,
         singleUse: Boolean,
         zone: ZoneId?,
+        layoutId: Long?,
         sound: AlarmSound,
     ) {
         val at = clock.instant().atZone(zone ?: settings.manualZone.first() ?: ZoneId.systemDefault()).plusMinutes(minutes.toLong()).truncatedTo(ChronoUnit.MINUTES)
@@ -126,6 +129,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                 singleUse = singleUse,
                 sound = sound,
                 zone = zone,
+                layoutId = layoutId,
                 createdAt = clock.instant(),
             ),
         )

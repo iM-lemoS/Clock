@@ -64,14 +64,16 @@ class RingingService : Service() {
 
     /**
      * Locking the phone while an alarm rings (it started while the phone was in use, so only a
-     * heads-up notification appeared) must bring up the alarm screen: re-alert the notification so
-     * the system launches its full-screen intent now that the screen is off.
+     * heads-up notification appeared) must bring up the alarm screen. The system launches a
+     * full-screen intent only when a notification is added, not updated, so the ringing
+     * notification moves to the other id and the old one is removed.
      */
     private val screenOffReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (ringingState.session.value != null) updateNotification(alert = true)
+            if (ringingState.session.value != null) repostNotification()
         }
     }
+    private var notificationId = NOTIFICATION_ID
     private var screenOffRegistered = false
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -189,32 +191,46 @@ class RingingService : Service() {
 
     private fun startInForeground(notification: Notification) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(NOTIFICATION_ID, notification)
+            startForeground(notificationId, notification)
             return
         }
         try {
             ServiceCompat.startForeground(
-                this, NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED,
+                this, notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED,
             )
         } catch (e: RuntimeException) {
             Log.w(TAG, "systemExempted refused; falling back to mediaPlayback", e)
             ServiceCompat.startForeground(
-                this, NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK,
+                this, notificationId, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK,
             )
         }
     }
 
-    private fun updateNotification(alert: Boolean = false) {
+    /** See [screenOffReceiver]. */
+    private fun repostNotification() {
+        val alarm = ringingState.session.value?.primary ?: return
+        val previous = notificationId
+        notificationId = if (previous == NOTIFICATION_ID) NOTIFICATION_ID_ALT else NOTIFICATION_ID
+        startInForeground(
+            buildNotification(
+                title = formatAlarmTime(this, alarm.time, alarm.zone),
+                text = alarm.label.ifBlank { getString(R.string.alarm_notification_title) },
+            ),
+        )
+        getSystemService(NotificationManager::class.java).cancel(previous)
+        Log.i(TAG, "Screen off while ringing; full-screen notification posted again")
+    }
+
+    private fun updateNotification() {
         val alarm = ringingState.session.value?.primary ?: return
         val notification = buildNotification(
             title = formatAlarmTime(this, alarm.time, alarm.zone),
             text = alarm.label.ifBlank { getString(R.string.alarm_notification_title) },
-            alert = alert,
         )
-        getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification)
+        getSystemService(NotificationManager::class.java).notify(notificationId, notification)
     }
 
-    private fun buildNotification(title: String, text: String?, alert: Boolean = false): Notification {
+    private fun buildNotification(title: String, text: String?): Notification {
         val fullScreen = AlarmIntents.ringingActivityPendingIntent(this)
         val snoozeMinutes = ringingState.session.value?.primary?.snoozeMinutes ?: Alarm.DEFAULT_SNOOZE_MINUTES
         return NotificationCompat.Builder(this, NotificationChannels.ALARM_RINGING)
@@ -225,9 +241,8 @@ class RingingService : Service() {
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOngoing(true)
-            // Updates (label, colliding alarms) must not alert or relaunch the full-screen intent,
-            // except deliberately when the screen turns off.
-            .setOnlyAlertOnce(!alert)
+            // Updates (label, colliding alarms) must not alert or relaunch the full-screen intent.
+            .setOnlyAlertOnce(true)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setFullScreenIntent(fullScreen, true)
             .setContentIntent(fullScreen)
@@ -259,6 +274,7 @@ class RingingService : Service() {
     private companion object {
         const val TAG = "RingingService"
         const val NOTIFICATION_ID = 1_000
+        const val NOTIFICATION_ID_ALT = 1_001
         const val WAKE_LOCK_TIMEOUT_MS = 10 * 60 * 1_000L
     }
 }

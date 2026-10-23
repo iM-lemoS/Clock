@@ -55,6 +55,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.alarm.layout.layoutName
 import io.github.imlemos.clock.alarm.ui.SoundSection
 import io.github.imlemos.clock.core.data.prefs.AudioOutput
 import io.github.imlemos.clock.core.data.prefs.ThemeMode
@@ -81,6 +82,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onOpenReliability: () -> Unit,
     onOpenTrash: () -> Unit,
+    onOpenLayouts: () -> Unit,
     onOpenGlassLab: (() -> Unit)?,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -161,6 +163,12 @@ fun SettingsScreen(
             )
             val notices by viewModel.noticeMinutes.collectAsStateWithLifecycle()
             NoticeChips(selected = notices, onToggle = viewModel::toggleNotice)
+            val defaultLayout by viewModel.defaultLayout.collectAsStateWithLifecycle()
+            ClickableRow(
+                title = stringResource(R.string.settings_layouts),
+                summary = stringResource(R.string.settings_layouts_summary, defaultLayout?.let { layoutName(it) }.orEmpty()),
+                onClick = onOpenLayouts,
+            )
             ClickableRow(
                 title = stringResource(R.string.settings_trash),
                 summary = stringResource(R.string.settings_trash_summary),

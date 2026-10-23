@@ -292,9 +292,9 @@ private fun ToneSourceDialog(onSystem: () -> Unit, onFile: () -> Unit, onDefault
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun <T> ChipRow(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit) {
+internal fun <T> ChipRow(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit, wrap: Boolean = true) {
     val colors = ClockTheme.colors
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    val chips: @Composable () -> Unit = {
         options.forEach { (value, label) ->
             val isSelected = value == selected
             Box(
@@ -310,6 +310,11 @@ internal fun <T> ChipRow(options: List<Pair<T, String>>, selected: T, onSelect: 
                 Text(label, style = ClockTheme.typography.label, color = if (isSelected) colors.onAccent else colors.content)
             }
         }
+    }
+    if (wrap) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) { chips() }
+    } else {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { chips() }
     }
 }
 

@@ -57,6 +57,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import io.github.imlemos.clock.alarm.layout.AlarmLayout
+import io.github.imlemos.clock.alarm.layout.LayoutRepository
+import io.github.imlemos.clock.alarm.layout.PresetLayouts
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
@@ -70,6 +74,7 @@ class BatchEditViewModel @AssistedInject constructor(
     private val ringtones: RingtoneStore,
     private val player: AlarmSoundPlayer,
     settings: SettingsRepository,
+    layoutRepository: LayoutRepository,
 ) : ViewModel() {
 
     @AssistedFactory
@@ -81,6 +86,10 @@ class BatchEditViewModel @AssistedInject constructor(
 
     /** Every field starts as "don't change" (`null`). */
     val patch: StateFlow<AlarmPatch> = _patch.asStateFlow()
+
+    val layouts: StateFlow<Pair<List<AlarmLayout>, Long>> = layoutRepository.observeAll()
+        .map { it to layoutRepository.defaultId() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList<AlarmLayout>() to PresetLayouts.DEFAULT)
 
     val manualZone: StateFlow<ZoneId?> = settings.manualZone.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -197,6 +206,19 @@ fun BatchEditScreen(
                     Text(stringResource(R.string.alarm_editor_single_use_summary), style = ClockTheme.typography.caption, color = colors.contentMuted, modifier = Modifier.weight(1f))
                     ClockSwitch(checked = patch.singleUse == true, onCheckedChange = null)
                 }
+            }
+            ChangeableField(R.string.layout_field, patch.layout != null, { on ->
+                viewModel.update { it.copy(layout = if (on) AlarmPatch.Layout(null) else null) }
+            }) {
+                val (layouts, defaultId) = viewModel.layouts.collectAsStateWithLifecycle().value
+                LayoutField(
+                    layoutId = patch.layout?.id,
+                    layouts = layouts,
+                    defaultLayoutId = defaultId,
+                    onSelect = { id -> viewModel.update { it.copy(layout = AlarmPatch.Layout(id)) } },
+                    onNew = null,
+                    showTitle = false,
+                )
             }
             ChangeableField(R.string.zone_field, patch.zone != null, { on ->
                 viewModel.update { it.copy(zone = if (on) AlarmPatch.Zone(null) else null) }

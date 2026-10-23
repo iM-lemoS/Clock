@@ -1,6 +1,5 @@
 package io.github.imlemos.clock.alarm.layout.render
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,6 +17,11 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
@@ -89,9 +92,20 @@ fun AlarmLayoutView(
                 Box(
                     Modifier
                         .matchParentSize()
-                        .then(
-                            if (selected) Modifier.border(2.dp, colors.accent, RoundedCornerShape(12.dp)) else Modifier,
-                        )
+                        // The outline sits just outside the element so it never covers its edges.
+                        .drawWithContent {
+                            drawContent()
+                            if (selected) {
+                                val inset = 6.dp.toPx()
+                                drawRoundRect(
+                                    color = colors.accent,
+                                    topLeft = Offset(-inset, -inset),
+                                    size = Size(size.width + 2 * inset, size.height + 2 * inset),
+                                    cornerRadius = CornerRadius(12.dp.toPx()),
+                                    style = Stroke(2.dp.toPx()),
+                                )
+                            }
+                        }
                         .pointerInput(id) { detectTapGestures { editing.onSelect(id) } }
                         .pointerInput(id) {
                             detectTransformGestures { _, pan, zoom, _ ->

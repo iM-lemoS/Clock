@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.alarm.layout.newLayoutName
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
 import io.github.imlemos.clock.core.designsystem.component.ClockTopBar
 import io.github.imlemos.clock.core.designsystem.component.MultiDateCalendar
@@ -78,6 +79,7 @@ import io.github.imlemos.clock.core.scheduling.TimeOfDay
 fun AlarmEditorScreen(
     alarmId: Long,
     onClose: () -> Unit,
+    onEditLayout: (Long) -> Unit,
     viewModel: AlarmEditorViewModel = hiltViewModel<AlarmEditorViewModel, AlarmEditorViewModel.Factory>(
         key = "alarm-editor-$alarmId",
         creationCallback = { factory -> factory.create(alarmId) },
@@ -200,6 +202,15 @@ fun AlarmEditorScreen(
             GroupField(state = state, viewModel = viewModel)
             Spacer(Modifier.height(16.dp))
             ZoneField(zone = state.zone, manualZone = state.manualZone, onChange = viewModel::setZone)
+            Spacer(Modifier.height(16.dp))
+            val newLayoutName = newLayoutName(state.layouts)
+            LayoutField(
+                layoutId = state.layoutId,
+                layouts = state.layouts,
+                defaultLayoutId = state.defaultLayoutId,
+                onSelect = viewModel::setLayout,
+                onNew = { viewModel.createLayout(newLayoutName, onEditLayout) },
+            )
             Spacer(Modifier.height(16.dp))
             SoundSection(
                 sound = state.sound,

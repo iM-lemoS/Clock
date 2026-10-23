@@ -1,8 +1,13 @@
+// The platform ExifInterface is enough from minSdk 31 (see decodeSampled).
+@file:Suppress("ExifInterface")
+
 package io.github.imlemos.clock.alarm.layout.render
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.graphics.SurfaceTexture
+import android.media.ExifInterface
 import android.media.MediaPlayer
 import android.view.Surface
 import android.view.TextureView
@@ -150,13 +155,31 @@ private fun ImageBackground(path: String) {
     image?.let { Image(it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
 }
 
-/** Decodes at roughly the screen's width so large photos do not exhaust memory. */
+/**
+ * Decodes at roughly the screen's width so large photos do not exhaust memory.
+ *
+ * The platform ExifInterface is fine from minSdk 31; the AndroidX copy only backports fixes for
+ * much older releases, so no extra dependency.
+ */
 private fun decodeSampled(path: String, targetWidth: Int): ImageBitmap? = runCatching {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeFile(path, bounds)
     var sample = 1
     while (bounds.outWidth / (sample * 2) >= targetWidth) sample *= 2
-    BitmapFactory.decodeFile(path, BitmapFactory.Options().apply { inSampleSize = sample })?.asImageBitmap()
+    val bitmap = BitmapFactory.decodeFile(path, BitmapFactory.Options().apply { inSampleSize = sample }) ?: return@runCatching null
+    // Camera photos are often stored sideways with an EXIF orientation, which BitmapFactory ignores.
+    val degrees = when (ExifInterface(path).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+        ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+        ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+        else -> 0f
+    }
+    val upright = if (degrees == 0f) {
+        bitmap
+    } else {
+        Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, Matrix().apply { postRotate(degrees) }, true)
+    }
+    upright.asImageBitmap()
 }.getOrNull()
 
 /** A muted, looping video scaled to fill the screen (centre crop). No extra library: MediaPlayer. */

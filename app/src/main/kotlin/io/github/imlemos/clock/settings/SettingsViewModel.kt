@@ -18,7 +18,11 @@ import io.github.imlemos.clock.core.data.prefs.TimeFormat
 import io.github.imlemos.clock.core.data.prefs.VolumeButtonAction
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import io.github.imlemos.clock.alarm.layout.AlarmLayout
+import io.github.imlemos.clock.alarm.layout.LayoutRepository
+import io.github.imlemos.clock.alarm.layout.PresetLayouts
 import kotlinx.coroutines.launch
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
 import java.time.Clock
@@ -32,7 +36,13 @@ class SettingsViewModel @Inject constructor(
     private val ringtones: RingtoneStore,
     private val player: AlarmSoundPlayer,
     private val clock: Clock,
+    layouts: LayoutRepository,
 ) : ViewModel() {
+
+    /** The layout alarms use unless they have their own. */
+    val defaultLayout: StateFlow<AlarmLayout?> = combine(layouts.observeAll(), settings.defaultLayoutId) { all, id ->
+        all.firstOrNull { it.id == id } ?: all.firstOrNull { it.id == PresetLayouts.DEFAULT }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     val defaultSound: StateFlow<AlarmSound> = settings.defaultSound
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AlarmSound())
