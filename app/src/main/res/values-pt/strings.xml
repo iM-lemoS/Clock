@@ -40,7 +40,6 @@
     <string name="settings_reduce_transparency">Reduzir transparência</string>
     <string name="settings_reduce_transparency_summary">Usa superfícies sólidas em vez de vidro.</string>
     <string name="settings_reduce_transparency_forced">Ativado pelo sistema, por exemplo pela poupança de bateria.</string>
-    <string name="settings_section_general">Geral</string>
     <string name="settings_section_datetime">Data e hora</string>
     <string name="settings_datetime_summary">Formato das horas e fuso horário</string>
     <string name="settings_language">Idioma</string>

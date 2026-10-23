@@ -45,7 +45,6 @@
     <string name="settings_reduce_transparency">Reduce transparency</string>
     <string name="settings_reduce_transparency_summary">Use solid surfaces instead of glass.</string>
     <string name="settings_reduce_transparency_forced">Turned on by the system, for example by battery saver.</string>
-    <string name="settings_section_general">General</string>
     <string name="settings_section_datetime">Date and time</string>
     <string name="settings_datetime_summary">Time format and time zone</string>
     <string name="settings_language">Language</string>
