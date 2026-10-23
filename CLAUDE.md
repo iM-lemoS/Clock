@@ -165,6 +165,17 @@ Launch the debug app: `adb shell am start -n io.github.imlemos.clock.debug/io.gi
 - After a reboot, adb is unavailable until the first unlock (USB data is off while locked), so
   direct-boot ringing must be observed by the maintainer; verify afterwards in
   `adb logcat -b events | grep am_proc_start` (LOCKED_BOOT_COMPLETED and ALARM_FIRE entries).
+### Samsung notes (Galaxy S22 Ultra, One UI 8 / Android 16)
+
+- adb works without extra options; `appops`/`pm grant` not yet tried.
+- Verified path for the vendor step: App info > Battery > Unrestricted.
+- After a reboot the boot broadcasts (`LOCKED_BOOT_COMPLETED`, `BOOT_COMPLETED`, `TIME_SET`) reached
+  the app about 60 s after `sys.boot_completed` (queued as "PENDING OFFLOAD"). Alarms due in that
+  window are reported as missed once the app runs; there is no app-side way to speed this up.
+- `adb shell dumpsys activity broadcasts history | grep -A3 imlemos` shows pending deliveries.
+
+### ColorOS notes, continued
+
 - Verified on ColorOS 16: swiping the app away from recents only kills the process (alarms still
   ring). Force-stop removes all alarms and blocks boot broadcasts until the app is opened again;
   that is Android behaviour no app can work around.
