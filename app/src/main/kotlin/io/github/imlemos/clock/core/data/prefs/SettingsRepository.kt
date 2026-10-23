@@ -12,6 +12,10 @@ interface SettingsRepository {
 
     suspend fun setReduceTransparency(enabled: Boolean)
 
+    val volumeButtonAction: Flow<VolumeButtonAction>
+
+    suspend fun setVolumeButtonAction(action: VolumeButtonAction)
+
     /** Whether "Set up reliability" was already shown on first launch. */
     val reliabilityIntroShown: Flow<Boolean>
 

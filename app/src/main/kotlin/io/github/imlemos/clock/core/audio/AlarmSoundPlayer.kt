@@ -55,6 +55,16 @@ class AlarmSoundPlayer @Inject constructor(@ApplicationContext private val conte
         if (vibrate) startVibration()
     }
 
+    /**
+     * Mutes the current ringing only (volume-down shortcut). The next [start] plays at full
+     * volume again, so a snooze or the next alarm is unaffected.
+     */
+    fun silence(alsoVibration: Boolean) {
+        player?.runCatching { setVolume(0f, 0f) }
+        tone?.runCatching { stopTone() }
+        if (alsoVibration) vibrator.cancel()
+    }
+
     fun stop() {
         player?.runCatching { stop(); release() }
         player = null

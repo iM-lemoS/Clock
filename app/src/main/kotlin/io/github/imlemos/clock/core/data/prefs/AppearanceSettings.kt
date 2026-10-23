@@ -14,3 +14,15 @@ data class AppearanceSettings(
     val accentArgb: Int? = null,
     val reduceTransparency: Boolean = false,
 )
+
+/** What the volume-down button does while an alarm rings (docs/PLANO.md 3.3). */
+enum class VolumeButtonAction {
+    /** The system handles the key as usual (changes the alarm volume). */
+    OFF,
+
+    /** Mutes this ringing only; vibration continues and the alarm stays on screen. */
+    SILENCE_SOUND,
+
+    /** Mutes sound and stops vibration for this ringing only. */
+    SILENCE_SOUND_AND_VIBRATION,
+}

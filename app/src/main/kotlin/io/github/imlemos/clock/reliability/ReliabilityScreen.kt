@@ -1,9 +1,13 @@
 package io.github.imlemos.clock.reliability
 
+import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -69,6 +73,18 @@ fun ReliabilityScreen(onBack: () -> Unit, viewModel: ReliabilityViewModel = hilt
         onPauseOrDispose { }
     }
     val profile = viewModel.oemProfile
+    // Android 13+: ask with the system dialog first; if the user already refused, open settings.
+    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (!granted) context.launchFirst(listOf(viewModel.checker.fixIntent(ReliabilityCheck.Notifications)))
+        status = viewModel.checker.status()
+    }
+    val fix: (ReliabilityCheck) -> Unit = { check ->
+        if (check == ReliabilityCheck.Notifications && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            context.launchFirst(listOf(viewModel.checker.fixIntent(check)))
+        }
+    }
 
     Column(
         Modifier
@@ -98,7 +114,7 @@ fun ReliabilityScreen(onBack: () -> Unit, viewModel: ReliabilityViewModel = hilt
                 CheckRow(
                     check = check,
                     ok = ok,
-                    onClick = { context.launchFirst(listOf(viewModel.checker.fixIntent(check))) },
+                    onClick = { fix(check) },
                 )
             }
 

@@ -104,6 +104,14 @@ fun AlarmRingingScreen(session: RingingSession, onDismiss: () -> Unit, onSnooze:
                     textAlign = TextAlign.Center,
                 )
             }
+            if (session.silenced) {
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text = stringResource(R.string.alarm_silenced),
+                    style = ClockTheme.typography.label,
+                    color = colors.contentMuted,
+                )
+            }
             Spacer(Modifier.weight(1.4f))
 
             GlassSurface(

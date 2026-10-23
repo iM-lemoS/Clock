@@ -109,6 +109,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - **Snooze**: **toque simples** → duração padrão (**5 min**, configurável); **pressão longa** → **roda** com **5, 10, 15, 20, 30, 45 min, 1 h**. **Sem limite** de snoozes.
 - **Acessibilidade**: com TalkBack, desligar e snooze ficam disponíveis como ações diretas, sem gestos.
 - Se o alarme tem fuso diferente do local, mostra **as duas horas**.
+- **Botão de baixar volume** (definição, desligado por defeito): enquanto o alarme toca, carregar em "baixar volume" **cala só aquele toque** — só o som, ou som e vibração, conforme a definição — sem desligar o alarme nem o adiar. O toque seguinte (snooze ou outro alarme) é normal.
 
 ### 3.4 Avisos antes do alarme
 
@@ -192,6 +193,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 | Avisos antes do alarme | 30 min (lista editável) |
 | Layout padrão do ecrã do alarme | preset da app |
 | Saída de áudio | telemóvel + Bluetooth |
+| Botão de baixar volume a tocar | não fazer nada (ou calar o som, ou calar som e vibração) |
 | Formato de hora | seguir o sistema (ou fixar 12 h / 24 h) |
 | Fuso horário | automático (ou manual) |
 | Som dos timers | toque padrão |

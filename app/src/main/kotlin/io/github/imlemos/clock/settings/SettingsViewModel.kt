@@ -8,6 +8,7 @@ import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.core.data.prefs.AppearanceSettings
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.data.prefs.ThemeMode
+import io.github.imlemos.clock.core.data.prefs.VolumeButtonAction
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -26,6 +27,13 @@ class SettingsViewModel @Inject constructor(
 
     val appearance: StateFlow<AppearanceSettings> = settings.appearance
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppearanceSettings())
+
+    val volumeButtonAction: StateFlow<VolumeButtonAction> = settings.volumeButtonAction
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), VolumeButtonAction.OFF)
+
+    fun setVolumeButtonAction(action: VolumeButtonAction) {
+        viewModelScope.launch { settings.setVolumeButtonAction(action) }
+    }
 
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { settings.setThemeMode(mode) }

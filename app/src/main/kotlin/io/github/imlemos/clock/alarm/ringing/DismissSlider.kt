@@ -7,6 +7,7 @@ import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -66,7 +67,11 @@ fun DismissSlider(
                 onClick(label = actionLabel) { onDismiss(); true }
             },
     ) {
-        BoxWithConstraints(Modifier.padding(6.dp)) {
+        BoxWithConstraints(
+            Modifier
+                .fillMaxSize()
+                .padding(6.dp),
+        ) {
             val maxOffset = with(LocalDensity.current) { (maxWidth - ThumbSize).toPx() }.coerceAtLeast(1f)
             val progress = offset.value / maxOffset
             Text(

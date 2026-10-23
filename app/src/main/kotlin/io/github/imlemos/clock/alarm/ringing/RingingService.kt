@@ -63,6 +63,11 @@ class RingingService : Service() {
             }
             AlarmIntents.ACTION_DISMISS -> scope.launch { finishSession { controller.dismiss(it) } }
             AlarmIntents.ACTION_SNOOZE -> scope.launch { finishSession { controller.snooze(it) } }
+            AlarmIntents.ACTION_SILENCE -> if (ringingState.session.value != null) {
+                player.silence(alsoVibration = intent.getBooleanExtra(AlarmIntents.EXTRA_SILENCE_VIBRATION, false))
+                ringingState.markSilenced()
+                Log.i(TAG, "Ringing silenced with the volume button")
+            }
             else -> if (ringingState.session.value == null) stopSelf(startId)
         }
         return START_NOT_STICKY
@@ -82,6 +87,8 @@ class RingingService : Service() {
             player.start(alarm.ringtoneUri?.toUri(), alarm.vibrate)
             timeoutJob = scope.launch {
                 delay(alarm.ringDurationSeconds * 1_000L)
+                // Clear first: finishSession cancels timeoutJob, which must not cancel this coroutine.
+                timeoutJob = null
                 onTimeout()
             }
         }

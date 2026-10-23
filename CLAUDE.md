@@ -21,6 +21,8 @@ the maintainer's phone.
 - **No text in code.** Every user-visible string lives in resources with English
   (`values/`, default) and European Portuguese (`values-pt-rPT/`). Missing translations fail lint.
   Non-translatable strings (brand name, sample digits) use `translatable="false"`.
+- **Portuguese UI speaks informally**: address the user as "tu" ("Toca em +", "Confirma que…",
+  "o teu telemóvel"), never "você"/formal imperatives ("Toque", "Confirme", "o seu").
 - **No vendor-specific code outside `core/oem`.** Anything OEM-specific goes behind `OemProfile`
   with a generic fallback.
 - **Privacy**: no `INTERNET` permission, no analytics, no dependency that talks to the network,

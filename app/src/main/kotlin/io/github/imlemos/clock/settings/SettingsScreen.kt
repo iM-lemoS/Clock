@@ -48,6 +48,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.core.data.prefs.ThemeMode
+import io.github.imlemos.clock.core.data.prefs.VolumeButtonAction
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
 import io.github.imlemos.clock.core.designsystem.component.ClockTopBar
 import io.github.imlemos.clock.core.designsystem.component.TopBarIconButton
@@ -114,6 +115,25 @@ fun SettingsScreen(
                 checked = appearance.reduceTransparency || systemReducesEffects,
                 enabled = !systemReducesEffects,
                 onCheckedChange = viewModel::setReduceTransparency,
+            )
+
+            SectionHeader(stringResource(R.string.settings_section_alarms))
+            SettingLabel(stringResource(R.string.settings_volume_button))
+            Text(
+                text = stringResource(R.string.settings_volume_button_summary),
+                style = ClockTheme.typography.caption,
+                color = ClockTheme.colors.contentMuted,
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 8.dp),
+            )
+            val volumeAction by viewModel.volumeButtonAction.collectAsStateWithLifecycle()
+            RadioList(
+                options = listOf(
+                    VolumeButtonAction.OFF to R.string.volume_button_off,
+                    VolumeButtonAction.SILENCE_SOUND to R.string.volume_button_sound,
+                    VolumeButtonAction.SILENCE_SOUND_AND_VIBRATION to R.string.volume_button_sound_vibration,
+                ),
+                selected = volumeAction,
+                onSelect = viewModel::setVolumeButtonAction,
             )
 
             SectionHeader(stringResource(R.string.settings_section_general))
@@ -293,5 +313,32 @@ private fun RowText(title: String, summary: String, modifier: Modifier = Modifie
         Text(title, style = ClockTheme.typography.body, color = ClockTheme.colors.content)
         Spacer(Modifier.height(2.dp))
         Text(summary, style = ClockTheme.typography.caption, color = ClockTheme.colors.contentMuted)
+    }
+}
+
+@Composable
+private fun <T> RadioList(options: List<Pair<T, Int>>, selected: T, onSelect: (T) -> Unit) {
+    val colors = ClockTheme.colors
+    Column(Modifier.selectableGroup()) {
+        options.forEach { (value, label) ->
+            val isSelected = value == selected
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .selectable(selected = isSelected, role = Role.RadioButton, onClick = { onSelect(value) })
+                    .padding(horizontal = 24.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    Modifier
+                        .size(22.dp)
+                        .border(1.5.dp, if (isSelected) colors.accent else colors.outline, CircleShape)
+                        .padding(5.dp)
+                        .background(if (isSelected) colors.accent else colors.background, CircleShape),
+                )
+                Spacer(Modifier.width(16.dp))
+                Text(stringResource(label), style = ClockTheme.typography.body, color = colors.content)
+            }
+        }
     }
 }

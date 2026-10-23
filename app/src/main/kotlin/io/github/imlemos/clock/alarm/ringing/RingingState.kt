@@ -10,7 +10,7 @@ import javax.inject.Singleton
 data class RingingAlarm(val id: Long, val time: TimeOfDay, val label: String, val snoozeMinutes: Int)
 
 /** Alarms currently ringing together (collisions share one screen, see docs/PLANO.md 3.11). */
-data class RingingSession(val alarms: List<RingingAlarm>) {
+data class RingingSession(val alarms: List<RingingAlarm>, val silenced: Boolean = false) {
     val primary: RingingAlarm get() = alarms.first()
 }
 
@@ -22,7 +22,11 @@ class RingingState @Inject constructor() {
 
     fun add(alarm: RingingAlarm) {
         val current = _session.value?.alarms.orEmpty().filterNot { it.id == alarm.id }
-        _session.value = RingingSession(current + alarm)
+        _session.value = RingingSession(current + alarm, silenced = _session.value?.silenced ?: false)
+    }
+
+    fun markSilenced() {
+        _session.value = _session.value?.copy(silenced = true)
     }
 
     fun clear() {

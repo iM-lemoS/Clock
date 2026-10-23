@@ -41,6 +41,18 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { it[Keys.REDUCE_TRANSPARENCY] = enabled }
     }
 
+    override val volumeButtonAction: Flow<VolumeButtonAction> = dataStore.data
+        .map { prefs ->
+            prefs[Keys.VOLUME_BUTTON_ACTION]
+                ?.let { name -> VolumeButtonAction.entries.firstOrNull { it.name == name } }
+                ?: VolumeButtonAction.OFF
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setVolumeButtonAction(action: VolumeButtonAction) {
+        dataStore.edit { it[Keys.VOLUME_BUTTON_ACTION] = action.name }
+    }
+
     override val reliabilityIntroShown: Flow<Boolean> = dataStore.data
         .map { it[Keys.RELIABILITY_INTRO_SHOWN] ?: false }
         .distinctUntilChanged()
@@ -55,5 +67,6 @@ class DataStoreSettingsRepository @Inject constructor(
         val ACCENT_ARGB = intPreferencesKey("accent_argb")
         val REDUCE_TRANSPARENCY = booleanPreferencesKey("reduce_transparency")
         val RELIABILITY_INTRO_SHOWN = booleanPreferencesKey("reliability_intro_shown")
+        val VOLUME_BUTTON_ACTION = stringPreferencesKey("volume_button_action")
     }
 }

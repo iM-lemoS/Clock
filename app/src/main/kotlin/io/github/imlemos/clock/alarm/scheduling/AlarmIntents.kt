@@ -17,6 +17,8 @@ object AlarmIntents {
     const val ACTION_FIRE = "io.github.imlemos.clock.action.ALARM_FIRE"
     const val ACTION_DISMISS = "io.github.imlemos.clock.action.ALARM_DISMISS"
     const val ACTION_SNOOZE = "io.github.imlemos.clock.action.ALARM_SNOOZE"
+    const val ACTION_SILENCE = "io.github.imlemos.clock.action.ALARM_SILENCE"
+    const val EXTRA_SILENCE_VIBRATION = "silence_vibration"
 
     /** Unique per alarm, so one alarm's PendingIntent never replaces another's. */
     private fun alarmUri(alarmId: Long) = "clock://alarm/$alarmId".toUri()
