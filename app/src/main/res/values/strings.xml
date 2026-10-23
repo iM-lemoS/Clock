@@ -339,6 +339,8 @@
     <string name="layout_tab_label">Label</string>
     <string name="layout_tab_buttons">Buttons</string>
     <string name="layout_tab_background">Background</string>
+    <string name="layout_style_title">Style</string>
+    <string name="layout_bg_type">Type</string>
     <string name="layout_style_analog">Analog</string>
     <string name="layout_size">Size</string>
     <string name="layout_color">Colour</string>

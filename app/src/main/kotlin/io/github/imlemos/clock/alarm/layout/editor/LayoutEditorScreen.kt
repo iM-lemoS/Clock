@@ -1,5 +1,13 @@
 package io.github.imlemos.clock.alarm.layout.editor
 
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+import androidx.compose.material3.HorizontalDivider
 import io.github.imlemos.clock.core.designsystem.component.DialogButtonStyle
 import io.github.imlemos.clock.core.designsystem.component.DialogAction
 import io.github.imlemos.clock.core.designsystem.component.GlassAlertDialog
@@ -81,7 +89,6 @@ import io.github.imlemos.clock.alarm.layout.render.LayoutLabel
 import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.ringing.AlarmActivity
 import io.github.imlemos.clock.alarm.ringing.AlarmControls
-import io.github.imlemos.clock.alarm.ui.ChipRow
 import io.github.imlemos.clock.alarm.ui.Label
 import io.github.imlemos.clock.alarm.ui.formatSnooze
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
@@ -155,7 +162,11 @@ fun LayoutEditorScreen(
                 },
                 editing = LayoutEditing(
                     selected = state.selected,
-                    onSelect = viewModel::select,
+                    // Tapping an element (or empty space, for the background) opens its options.
+                    onSelect = { id ->
+                        viewModel.select(id)
+                        panelVisible = true
+                    },
                     onPlacementChange = viewModel::setPlacement,
                     // On the Background tab, empty space moves and zooms a photo or video.
                     onBackgroundTransform = viewModel::transformBackground.takeIf {
@@ -282,24 +293,13 @@ private fun EditorPanel(state: LayoutEditorState, viewModel: LayoutEditorViewMod
         if (uri != null) viewModel.importBackground(uri, video = true) { Toast.makeText(context, failed, Toast.LENGTH_SHORT).show() }
     }
     val spec = state.spec
-    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp)) {
-        Row {
-            ChipRow(
-                options = listOf(
-                    LayoutElementId.CLOCK to stringResource(R.string.layout_tab_clock),
-                    LayoutElementId.DATE to stringResource(R.string.layout_tab_date),
-                    LayoutElementId.LABEL to stringResource(R.string.layout_tab_label),
-                    LayoutElementId.CONTROLS to stringResource(R.string.layout_tab_buttons),
-                    null to stringResource(R.string.layout_tab_background),
-                ),
-                selected = state.tab,
-                onSelect = viewModel::showTab,
-            )
-        }
-        Spacer(Modifier.height(12.dp))
+    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
+        EditorTabs(selected = state.tab, onSelect = viewModel::showTab)
+        Spacer(Modifier.height(16.dp))
         when (val tab = state.tab) {
             LayoutElementId.CLOCK -> {
-                ChipRow(
+                Label(stringResource(R.string.layout_style_title))
+                OptionChips(
                     options = listOf(
                         ClockStyle.DIGITAL to stringResource(R.string.layout_style_digital),
                         ClockStyle.STACKED to stringResource(R.string.layout_style_stacked),
@@ -347,15 +347,15 @@ private fun ClockFontOptions(clock: ClockElement, viewModel: LayoutEditorViewMod
                 Column(
                     Modifier
                         .clip(RoundedCornerShape(16.dp))
-                        .background(if (selected) colors.accent else colors.background, RoundedCornerShape(16.dp))
-                        .border(1.dp, if (selected) colors.accent else colors.outline, RoundedCornerShape(16.dp))
+                        .background(if (selected) colors.accent.copy(alpha = 0.18f) else colors.content.copy(alpha = 0.06f), RoundedCornerShape(16.dp))
+                        .border(if (selected) 2.dp else 1.dp, if (selected) colors.accent else colors.content.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
                         .selectable(selected = selected, role = Role.RadioButton) { viewModel.setClockFont(font) }
                         .padding(horizontal = 14.dp, vertical = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     // Each font shows itself; Doto through DotDigits, which draws round colon dots.
                     val sample = TextStyle(fontFamily = rememberClockFontFamily(font, font.spec.defaultWeight), fontSize = 22.sp, lineHeight = 26.sp)
-                    val sampleColor = if (selected) colors.onAccent else colors.content
+                    val sampleColor = colors.content
                     if (font == ClockFont.DOTO) {
                         DotDigits("12:30", style = sample, color = sampleColor, minFontSize = 22.sp)
                     } else {
@@ -364,7 +364,7 @@ private fun ClockFontOptions(clock: ClockElement, viewModel: LayoutEditorViewMod
                     Text(
                         stringResource(font.nameRes),
                         style = ClockTheme.typography.caption,
-                        color = if (selected) colors.onAccent else colors.contentMuted,
+                        color = if (selected) colors.content else colors.contentMuted,
                     )
                 }
             }
@@ -445,7 +445,8 @@ private fun BackgroundOptions(
         is Background.Image -> PHOTO
         is Background.Video -> VIDEO
     }
-    ChipRow(
+    Label(stringResource(R.string.layout_bg_type))
+    OptionChips(
         options = listOf<Pair<Any, String>>(
             PresetKind.DOTS to stringResource(R.string.layout_bg_dots),
             PresetKind.WAVES to stringResource(R.string.layout_bg_waves),
@@ -548,6 +549,87 @@ private fun sliderColors() = SliderDefaults.colors(
     activeTrackColor = ClockTheme.colors.accent,
     inactiveTrackColor = ClockTheme.colors.outline,
 )
+
+/**
+ * The elements as tabs: icon and name, the chosen one underlined in the accent colour. They look
+ * nothing like the option chips below them, which hold the chosen element's settings.
+ */
+@Composable
+private fun EditorTabs(selected: LayoutElementId?, onSelect: (LayoutElementId?) -> Unit) {
+    val colors = ClockTheme.colors
+    val tabs = listOf(
+        Triple(LayoutElementId.CLOCK, R.string.layout_tab_clock, R.drawable.ic_schedule),
+        Triple(LayoutElementId.DATE, R.string.layout_tab_date, R.drawable.ic_calendar_today),
+        Triple(LayoutElementId.LABEL, R.string.layout_tab_label, R.drawable.ic_label),
+        Triple(LayoutElementId.CONTROLS, R.string.layout_tab_buttons, R.drawable.ic_touch_app),
+        Triple(null, R.string.layout_tab_background, R.drawable.ic_wallpaper),
+    )
+    Column(Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth().selectableGroup()) {
+            tabs.forEach { (id, label, icon) ->
+                val isSelected = id == selected
+                val tint = if (isSelected) colors.content else colors.contentMuted
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .selectable(selected = isSelected, role = Role.Tab) { onSelect(id) }
+                        .padding(top = 14.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Icon(painterResource(icon), contentDescription = null, tint = if (isSelected) colors.accent else tint, modifier = Modifier.size(24.dp))
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        stringResource(label),
+                        style = ClockTheme.typography.caption,
+                        color = tint,
+                        maxLines = 1,
+                        autoSize = TextAutoSize.StepBased(minFontSize = 9.sp, maxFontSize = ClockTheme.typography.caption.fontSize),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Box(
+                        Modifier
+                            .size(width = 28.dp, height = 3.dp)
+                            .clip(CapsuleShape)
+                            .background(if (isSelected) colors.accent else Color.Transparent),
+                    )
+                }
+            }
+        }
+        HorizontalDivider(thickness = 1.dp, color = colors.content.copy(alpha = 0.16f))
+    }
+}
+
+/**
+ * Choices for the chosen element (clock style, background type): rounded rectangles, the chosen
+ * one outlined in the accent colour with a check.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun <T> OptionChips(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit) {
+    val colors = ClockTheme.colors
+    val shape = RoundedCornerShape(12.dp)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        options.forEach { (value, label) ->
+            val isSelected = value == selected
+            Row(
+                Modifier
+                    .clip(shape)
+                    .background(if (isSelected) colors.accent.copy(alpha = 0.18f) else colors.content.copy(alpha = 0.06f), shape)
+                    .border(if (isSelected) 2.dp else 1.dp, if (isSelected) colors.accent else colors.content.copy(alpha = 0.2f), shape)
+                    .selectable(selected = isSelected, role = Role.RadioButton) { onSelect(value) }
+                    .heightIn(min = 40.dp)
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (isSelected) {
+                    Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = colors.accent, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                }
+                Text(label, style = ClockTheme.typography.label, color = colors.content)
+            }
+        }
+    }
+}
 
 private const val PHOTO = "photo"
 private const val VIDEO = "video"

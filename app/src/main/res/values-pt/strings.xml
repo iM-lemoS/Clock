@@ -334,6 +334,8 @@
     <string name="layout_tab_label">Etiqueta</string>
     <string name="layout_tab_buttons">Botões</string>
     <string name="layout_tab_background">Fundo</string>
+    <string name="layout_style_title">Estilo</string>
+    <string name="layout_bg_type">Tipo</string>
     <string name="layout_style_analog">Analógico</string>
     <string name="layout_size">Tamanho</string>
     <string name="layout_color">Cor</string>

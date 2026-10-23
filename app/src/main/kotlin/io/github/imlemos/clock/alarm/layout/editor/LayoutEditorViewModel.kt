@@ -79,8 +79,8 @@ class LayoutEditorViewModel @AssistedInject constructor(
         }
     }
 
-    /** Selecting an element on the canvas also shows its options; empty space keeps the tab. */
-    fun select(id: LayoutElementId?) = _state.update { if (id == null) it.copy(selected = null) else it.copy(selected = id, tab = id) }
+    /** Tapping an element on the canvas shows its options; empty space shows the background's. */
+    fun select(id: LayoutElementId?) = _state.update { it.copy(selected = id, tab = id) }
 
     fun showTab(tab: LayoutElementId?) = _state.update { it.copy(tab = tab, selected = tab) }
 
