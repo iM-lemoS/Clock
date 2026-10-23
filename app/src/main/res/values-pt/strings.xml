@@ -431,4 +431,23 @@
     </plurals>
     <string name="channel_stopwatch">Cronómetro</string>
     <string name="channel_stopwatch_description">O cronómetro enquanto corre.</string>
+    <!-- Relógio mundial (docs/PLANO.md 5.1) -->
+    <string name="nav_world">Mundo</string>
+    <string name="world_title">Relógio mundial</string>
+    <string name="world_add_city">Juntar cidade</string>
+    <string name="world_here">Aqui, %1$s</string>
+    <string name="world_empty_title">Sem cidades</string>
+    <string name="world_empty_body">Toca em + para juntar uma cidade.</string>
+    <string name="world_today">Hoje</string>
+    <string name="world_tomorrow">Amanhã</string>
+    <string name="world_yesterday">Ontem</string>
+    <string name="world_same_time">mesma hora</string>
+    <string name="world_ahead">%1$s à frente</string>
+    <string name="world_behind">%1$s atrás</string>
+    <string name="world_new_alarm">Novo alarme à hora de %1$s</string>
+    <string name="world_move_up">Subir</string>
+    <string name="world_move_down">Descer</string>
+    <string name="world_remove">Remover</string>
+    <string name="world_day">Dia</string>
+    <string name="world_night">Noite</string>
 </resources>

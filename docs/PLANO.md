@@ -204,6 +204,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - Lista de cidades escolhidas (começa vazia), com o mesmo seletor de fusos dos alarmes (pesquisa por cidade ou país, nomes no idioma do telemóvel).
 - Cada cidade mostra a **hora atual**, a **diferença para aqui** ("+5 h", "−3 h 30") , **dia ou noite** e a **data quando é outro dia**.
 - Reordenar e apagar; atalho para **criar um alarme no fuso dessa cidade**.
+- Implementado (fase 8): "dia" é das 7h às 19h locais (regra simples, sem localização); a barra de baixo tem 4 botões da mesma largura e os nomes longos encolhem para caber.
 
 ---
 

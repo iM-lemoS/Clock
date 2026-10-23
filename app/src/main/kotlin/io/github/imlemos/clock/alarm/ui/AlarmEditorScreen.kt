@@ -80,9 +80,10 @@ fun AlarmEditorScreen(
     alarmId: Long,
     onClose: () -> Unit,
     onNewLayout: (fromId: Long, name: String, requestId: Long) -> Unit,
+    initialZone: String? = null,
     viewModel: AlarmEditorViewModel = hiltViewModel<AlarmEditorViewModel, AlarmEditorViewModel.Factory>(
-        key = "alarm-editor-$alarmId",
-        creationCallback = { factory -> factory.create(alarmId) },
+        key = "alarm-editor-$alarmId-$initialZone",
+        creationCallback = { factory -> factory.create(alarmId, initialZone) },
     ),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

@@ -24,6 +24,13 @@ data object AlarmsDestination : TopLevelDestination {
 }
 
 @Serializable
+data object WorldClockDestination : TopLevelDestination {
+    override val icon get() = R.drawable.ic_world
+    override val label get() = R.string.nav_world
+    override val addAction get() = R.string.world_add_city
+}
+
+@Serializable
 data object TimersDestination : TopLevelDestination {
     override val icon get() = R.drawable.ic_hourglass_empty
     override val label get() = R.string.nav_timers
@@ -40,9 +47,9 @@ data object StopwatchDestination : TopLevelDestination {
 @Serializable
 data object SettingsDestination : NavKey
 
-/** Alarm editor; [alarmId] 0 creates a new alarm. */
+/** Alarm editor; [alarmId] 0 creates a new alarm, in [zoneId] when given (from the world clock). */
 @Serializable
-data class AlarmEditorDestination(val alarmId: Long) : NavKey
+data class AlarmEditorDestination(val alarmId: Long, val zoneId: String? = null) : NavKey
 
 @Serializable
 data object ReliabilityDestination : NavKey
@@ -74,4 +81,4 @@ data class LayoutEditorDestination(val layoutId: Long, val newName: String? = nu
 data object GlassLabDestination : NavKey
 
 val TopLevelDestinations: List<TopLevelDestination> =
-    listOf(AlarmsDestination, TimersDestination, StopwatchDestination)
+    listOf(AlarmsDestination, WorldClockDestination, TimersDestination, StopwatchDestination)

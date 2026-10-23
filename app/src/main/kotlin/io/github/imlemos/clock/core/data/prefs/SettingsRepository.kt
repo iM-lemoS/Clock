@@ -40,6 +40,11 @@ interface SettingsRepository {
 
     suspend fun setManualZone(zone: ZoneId?)
 
+    /** Cities on the world clock, in the user's order (docs/PLANO.md 5.1). */
+    val worldClockZones: Flow<List<ZoneId>>
+
+    suspend fun setWorldClockZones(zones: List<ZoneId>)
+
     /** Layout for alarms without their own (docs/PLANO.md 3.7); `null` is the app's preset. */
     val defaultLayoutId: Flow<Long?>
 

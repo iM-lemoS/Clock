@@ -80,6 +80,7 @@ data class SavedAlarm(val nextRing: ZonedDateTime?, val now: ZonedDateTime)
 @HiltViewModel(assistedFactory = AlarmEditorViewModel.Factory::class)
 class AlarmEditorViewModel @AssistedInject constructor(
     @Assisted private val alarmId: Long,
+    @Assisted private val initialZone: String?,
     private val repository: AlarmRepository,
     private val controller: AlarmController,
     private val scheduler: AlarmScheduler,
@@ -93,7 +94,8 @@ class AlarmEditorViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(alarmId: Long): AlarmEditorViewModel
+        /** [initialZone] presets a new alarm's zone (a world clock city). */
+        fun create(alarmId: Long, initialZone: String?): AlarmEditorViewModel
     }
 
     private var original: Alarm? = null
@@ -121,7 +123,13 @@ class AlarmEditorViewModel @AssistedInject constructor(
             original = alarm
             _state.update {
                 if (alarm == null) {
-                    it.copy(loaded = true, time = defaultTimeForNewAlarm(), sound = settings.defaultSound.first())
+                    val zone = initialZone?.let { id -> runCatching { ZoneId.of(id) }.getOrNull() }
+                    it.copy(
+                        loaded = true,
+                        time = defaultTimeForNewAlarm(zone ?: scheduler.appZone()),
+                        sound = settings.defaultSound.first(),
+                        zone = zone,
+                    )
                 } else {
                     val recurrence = alarm.recurrence
                     it.copy(
@@ -258,9 +266,9 @@ class AlarmEditorViewModel @AssistedInject constructor(
         }
     }
 
-    /** The next full hour, a sensible starting point for a new alarm. */
-    private fun defaultTimeForNewAlarm(): TimeOfDay {
-        val now = clock.instant().atZone(scheduler.appZone())
+    /** The next full hour in [zone], a sensible starting point for a new alarm. */
+    private fun defaultTimeForNewAlarm(zone: ZoneId): TimeOfDay {
+        val now = clock.instant().atZone(zone)
         return TimeOfDay((now.hour + 1) % 24, 0)
     }
 

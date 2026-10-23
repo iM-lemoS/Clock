@@ -115,6 +115,17 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { prefs -> if (zone == null) prefs.remove(Keys.MANUAL_ZONE) else prefs[Keys.MANUAL_ZONE] = zone.id }
     }
 
+    override val worldClockZones: Flow<List<ZoneId>> = dataStore.data
+        .map { prefs ->
+            prefs[Keys.WORLD_CLOCK_ZONES].orEmpty().split(',').filter(String::isNotBlank)
+                .mapNotNull { runCatching { ZoneId.of(it) }.getOrNull() }
+        }
+        .distinctUntilChanged()
+
+    override suspend fun setWorldClockZones(zones: List<ZoneId>) {
+        dataStore.edit { it[Keys.WORLD_CLOCK_ZONES] = zones.distinct().joinToString(",") { zone -> zone.id } }
+    }
+
     override val defaultLayoutId: Flow<Long?> = dataStore.data
         .map { it[Keys.DEFAULT_LAYOUT_ID] }
         .distinctUntilChanged()
@@ -198,6 +209,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val TIME_FORMAT = stringPreferencesKey("time_format")
         val MANUAL_ZONE = stringPreferencesKey("manual_zone")
         val DEFAULT_LAYOUT_ID = longPreferencesKey("default_layout_id")
+        val WORLD_CLOCK_ZONES = stringPreferencesKey("world_clock_zones")
     }
 
     private fun String.toIntSet(): Set<Int> = split(',').mapNotNull(String::toIntOrNull).toSet()

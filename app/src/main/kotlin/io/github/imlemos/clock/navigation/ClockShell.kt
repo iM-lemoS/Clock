@@ -49,6 +49,9 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,6 +68,7 @@ import androidx.navigation3.ui.NavDisplay
 import io.github.imlemos.clock.BuildConfig
 import io.github.imlemos.clock.MainActivity
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.worldclock.WorldClockScreen
 import io.github.imlemos.clock.timer.TimerEditorScreen
 import io.github.imlemos.clock.timer.TimerEditorViewModel
 import io.github.imlemos.clock.alarm.layout.LayoutLibraryScreen
@@ -112,6 +116,8 @@ fun ClockShell(
         onTabShown()
     }
     val chrome = remember { ShellChrome() }
+    // "+" on the world clock opens its city picker inside the screen.
+    var worldAddRequests by rememberSaveable { mutableIntStateOf(0) }
     val pendingUndo by shellViewModel.pendingUndo.collectAsStateWithLifecycle()
     // The pop-up disappears if the app is closed and reopened without touching it (docs/PLANO.md 3.1).
     // "Seen" means on screen for a moment with the phone unlocked: when an alarm screen closes over
@@ -167,6 +173,14 @@ fun ClockShell(
                             onBatchEdit = { ids -> if (ids.isNotEmpty()) backStack.add(BatchEditDestination(ids)) },
                         )
                     }
+                    entry<WorldClockDestination> {
+                        WorldClockScreen(
+                            tabPadding,
+                            onOpenSettings = openSettings,
+                            addRequests = worldAddRequests,
+                            onNewAlarm = { zone -> backStack.add(AlarmEditorDestination(AlarmEditorViewModel.NEW_ALARM, zone.id)) },
+                        )
+                    }
                     entry<TimersDestination> {
                         TimersScreen(tabPadding, onOpenSettings = openSettings, onEditTimer = { backStack.add(TimerEditorDestination(it)) })
                     }
@@ -185,6 +199,7 @@ fun ClockShell(
                     entry<AlarmEditorDestination> { key ->
                         AlarmEditorScreen(
                             alarmId = key.alarmId,
+                            initialZone = key.zoneId,
                             onClose = pop,
                             onNewLayout = { from, name, request -> backStack.add(LayoutEditorDestination(from, name, request)) },
                         )
@@ -259,6 +274,7 @@ fun ClockShell(
                             icon = R.drawable.ic_add,
                             contentDescription = stringResource(addAction),
                             onClick = {
+                                if (currentTab == WorldClockDestination) worldAddRequests++
                                 if (currentTab == TimersDestination) {
                                     backStack.add(TimerEditorDestination(TimerEditorViewModel.NEW_TIMER))
                                 }

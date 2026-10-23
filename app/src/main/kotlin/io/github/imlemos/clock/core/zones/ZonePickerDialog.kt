@@ -62,8 +62,8 @@ import java.time.ZoneId
 fun ZonePickerDialog(
     title: String,
     selected: ZoneId?,
-    noZoneLabel: String,
-    noZoneSummary: String,
+    noZoneLabel: String?,
+    noZoneSummary: String?,
     onSelect: (ZoneId?) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -108,11 +108,11 @@ fun ZonePickerDialog(
                     .padding(horizontal = 24.dp, vertical = 8.dp),
             )
             LazyColumn(Modifier.fillMaxWidth().weight(1f)) {
-                if (query.isBlank()) {
+                if (query.isBlank() && noZoneLabel != null) {
                     item(key = "none") {
                         ZoneRow(
                             title = noZoneLabel,
-                            summary = noZoneSummary,
+                            summary = noZoneSummary.orEmpty(),
                             trailing = null,
                             selected = selected == null,
                             onClick = { onSelect(null) },

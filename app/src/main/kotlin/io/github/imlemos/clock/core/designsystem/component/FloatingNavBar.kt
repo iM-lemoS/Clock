@@ -6,17 +6,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -25,7 +26,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.imlemos.clock.core.designsystem.glass.CapsuleShape
 import io.github.imlemos.clock.core.designsystem.glass.GlassBackdrop
@@ -48,7 +48,7 @@ fun FloatingNavBar(
     modifier: Modifier = Modifier,
 ) {
     GlassSurface(backdrop = backdrop, modifier = modifier.heightIn(min = 64.dp)) {
-        // Edge to edge: the first and last tabs sit in the corners, the others evenly between.
+        // Equal widths edge to edge: the outer tabs sit in the corners, the others evenly between.
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -58,14 +58,14 @@ fun FloatingNavBar(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             items.forEach { item ->
-                NavBarButton(item = item, selected = item.key == selectedKey, onClick = { onSelect(item) })
+                NavBarButton(item = item, selected = item.key == selectedKey, onClick = { onSelect(item) }, modifier = Modifier.weight(1f))
             }
         }
     }
 }
 
 @Composable
-private fun NavBarButton(item: NavBarItem, selected: Boolean, onClick: () -> Unit) {
+private fun NavBarButton(item: NavBarItem, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = ClockTheme.colors
     val iconTint by animateColorAsState(if (selected) colors.accent else colors.contentMuted, label = "navIcon")
     val labelColor by animateColorAsState(if (selected) colors.content else colors.contentMuted, label = "navLabel")
@@ -74,24 +74,23 @@ private fun NavBarButton(item: NavBarItem, selected: Boolean, onClick: () -> Uni
         label = "navPill",
     )
     Column(
-        modifier = Modifier
+        modifier = modifier
             .clip(CapsuleShape)
             .background(pill, CapsuleShape)
             .selectable(selected = selected, role = Role.Tab, onClick = onClick)
-            .widthIn(min = 88.dp)
             .heightIn(min = 52.dp)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 6.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Icon(painterResource(item.icon), contentDescription = null, tint = iconTint, modifier = Modifier.size(24.dp))
         Spacer(Modifier.height(2.dp))
-        Text(
+        // Long labels ("Temporizadores") shrink to fit rather than being cut.
+        BasicText(
             text = item.label,
-            style = ClockTheme.typography.caption,
-            color = labelColor,
+            style = ClockTheme.typography.caption.copy(color = labelColor),
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = ClockTheme.typography.caption.fontSize),
         )
     }
 }

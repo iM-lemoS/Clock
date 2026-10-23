@@ -432,4 +432,24 @@
     </plurals>
     <string name="channel_stopwatch">Stopwatch</string>
     <string name="channel_stopwatch_description">The stopwatch while it runs.</string>
+    <!-- World clock (docs/PLANO.md 5.1) -->
+    <string name="nav_world">World</string>
+    <string name="world_title">World clock</string>
+    <string name="world_add_city">Add city</string>
+    <string name="world_here">Here, %1$s</string>
+    <string name="world_empty_digits" translatable="false">00:00</string>
+    <string name="world_empty_title">No cities</string>
+    <string name="world_empty_body">Tap + to add a city.</string>
+    <string name="world_today">Today</string>
+    <string name="world_tomorrow">Tomorrow</string>
+    <string name="world_yesterday">Yesterday</string>
+    <string name="world_same_time">same time</string>
+    <string name="world_ahead">%1$s ahead</string>
+    <string name="world_behind">%1$s behind</string>
+    <string name="world_new_alarm">New alarm in %1$s time</string>
+    <string name="world_move_up">Move up</string>
+    <string name="world_move_down">Move down</string>
+    <string name="world_remove">Remove</string>
+    <string name="world_day">Daytime</string>
+    <string name="world_night">Night</string>
 </resources>
