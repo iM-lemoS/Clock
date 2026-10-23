@@ -109,6 +109,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 ### 3.3 Ecrã do alarme (interação)
 
 - **Desligar**: arrastar para o lado.
+- **Deslizar para desligar**: largar a partir de 80% do percurso (ou lançar com força a partir de metade, ou chegar ao fim) desliga; noutro sítio, o botão volta sempre ao início.
 - **Snooze**: **toque simples** → duração padrão (**5 min**, configurável por alarme, em lote e nas predefinições); **pressão longa** → abre um **dial** em meia-lua à volta do botão com **5, 10, 15, 20, 30, 45 min, 1 h** e, se o alarme tiver um snooze **personalizado** (horas e minutos), também esse: sem levantar o dedo, desliza-se até ao tempo e **larga-se para adiar** (largar junto ao botão cancela). Um só gesto, rápido. **Sem limite** de snoozes. Com TalkBack, "Escolher quanto tempo adiar" abre uma roda acessível.
 - **Acessibilidade**: com TalkBack, desligar e snooze ficam disponíveis como ações diretas, sem gestos.
 - Se o alarme tem fuso diferente do local, mostra **as duas horas**.
@@ -142,14 +143,15 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - **"Testar alarme"** para pré-visualizar a sério.
 - **Biblioteca de layouts** com nome; cada alarme escolhe um ou cria um novo; **layout padrão** nas definições.
 - **Presets incluídos**: fundos abstratos e animações em código (pontos, ondas, matriz de pontos). Só recursos feitos para o projeto ou com licença livre compatível.
-- Implementado: elementos relógio, data, etiqueta e botões (adiar + deslizar); estilos de relógio pontos, mono e analógico; fundos pontos, ondas, matriz, cor, gradiente, foto e vídeo (copiados para a app; a foto respeita a orientação EXIF; o vídeo toca sem som com `MediaPlayer`, sem bibliotecas extra).
+- Implementado: elementos relógio, data, etiqueta e botões (adiar + deslizar); estilos de relógio pontos, mono e analógico; fundos pontos, ondas, matriz, cor, gradiente (vertical, horizontal ou diagonal), foto e vídeo (copiados para a app; a foto respeita a orientação EXIF; o vídeo toca sem som com `MediaPlayer`, sem bibliotecas extra).
 - Layouts incluídos (Pontos, Ondas, Matriz de pontos, Analógico) não se editam: duplicam-se. Apagar um layout devolve os alarmes que o usavam ao predefinido.
 - Se num ecrã pequeno ou com letra grande dois elementos se tocam, o de baixo desce até deixar de tocar.
 - No editor, com TalkBack, cada elemento tem ações para mover e mudar de tamanho, sem gestos.
 - Relógios: estilos digital, empilhado, analógico com pontos e analógico com traços; 7 letras (Doto, JetBrains Mono, Outfit, Playfair Display, Orbitron, Big Shoulders Display, Comfortaa, todas OFL e variáveis); espessura ajustável e, na Doto, pontos mais ou menos redondos.
 - A app fica sempre na vertical (o Android 16 pode ignorar isto em ecrãs grandes, ≥ 600 dp).
 - Cores: seletor completo (tom, saturação/brilho e opacidade) com cores rápidas e "cor automática".
-- Tocar num elemento (ou no espaço vazio, para o fundo) abre as opções desse elemento. Os elementos são separadores com ícone; as opções de cada um (estilo, letra, tipo de fundo) são botões com outro aspeto, para não se confundirem.
+- A data pode mostrar qualquer combinação de dia da semana, dia, mês e ano, na ordem e nas palavras da língua do telemóvel; com o dia da semana e mais alguma coisa, pode ficar na mesma linha ou o dia da semana em cima ou em baixo.
+- Tocar num elemento (tocar e largar, sem arrastar nem manter premido) ou no espaço vazio, para o fundo, abre as opções desse elemento. Os elementos são separadores com ícone; as opções de cada um (estilo, letra, tipo de fundo) são botões com outro aspeto, para não se confundirem.
 - Ao escolher o ecrã de um alarme, a lista mostra pré-visualizações de cada layout e "Ver" abre-o em ecrã inteiro, sem som.
 - Foto e vídeo: no separador Fundo, arrastar e afastar os dedos posiciona e amplia (sem nunca deixar margens vazias). Elementos escondidos desaparecem também no editor.
 - "Testar" abre o ecrã do alarme verdadeiro com o que está no editor (sem guardar), sem som; adiar ou desligar só fecham a pré-visualização.
@@ -229,7 +231,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 | Fuso horário | automático (ou manual) |
 | Som dos timers | toque padrão |
 | Tema | seguir o sistema (ou fixar escuro/claro) |
-| Cor de destaque | vermelho (personalizável) |
+| Cor de destaque | vermelho (predefinidas: vermelho, roxo, laranja, azul, verde; ou qualquer cor) |
 | Reduzir transparência | desligado (e ligado automaticamente com a poupança de bateria; o Android não tem uma definição de "reduzir transparência") |
 | Idioma | seguir o sistema (seletor por app do Android 13+) |
 | Configurar fiabilidade | ecrã de fiabilidade |
@@ -248,6 +250,8 @@ Implementado (fase 9): som dos temporizadores; cor de destaque livre (seletor de
 **Base: estética Nothing. Matéria: Liquid Glass.**
 
 - **Preto e branco**; **modo escuro** (preto puro, ótimo em OLED) e **modo claro** (inversão direta).
+- **Resposta tátil** curta nos momentos que contam: interruptores, escolhas (chips, segmentos, separadores, dias), confirmações (guardar, iniciar, adiar), ações destrutivas e gestos (premir longamente, arrastar). Toques que só navegam não vibram. Respeita a definição "Resposta tátil" do sistema.
+- **Animações** curtas e leves (cores, opacidade, posições e tamanhos), para não pesar em telemóveis fracos; o gesto de voltar do Android pré-visualiza a transição.
 - **Uma cor de destaque**, vermelho por defeito e personalizável, só em pontos de ação (interruptores ativos, "+", seleção, botões principais). Garantir contraste suficiente em ambos os modos.
 - **Tipografia** (licenças livres, ficheiros de licença incluídos no repo):
   - horas em **matriz de pontos**: **Doto** (OFL);
