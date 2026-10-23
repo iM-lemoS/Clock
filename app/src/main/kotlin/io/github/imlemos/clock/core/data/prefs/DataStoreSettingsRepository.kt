@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import android.util.Log
 import javax.inject.Inject
 
 class DataStoreSettingsRepository @Inject constructor(
@@ -53,6 +54,39 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { it[Keys.VOLUME_BUTTON_ACTION] = action.name }
     }
 
+    override val noticeMinutes: Flow<Set<Int>> = dataStore.data
+        .map { prefs -> prefs[Keys.NOTICE_MINUTES]?.toIntSet() ?: DEFAULT_NOTICE_MINUTES }
+        .distinctUntilChanged()
+
+    override suspend fun setNoticeMinutes(minutes: Set<Int>) {
+        dataStore.edit { it[Keys.NOTICE_MINUTES] = minutes.sorted().joinToString(",") }
+    }
+
+    override val pendingUndo: Flow<List<Long>> = dataStore.data
+        .map { prefs -> prefs[Keys.PENDING_UNDO].orEmpty().split(',').mapNotNull(String::toLongOrNull) }
+        .distinctUntilChanged()
+
+    override suspend fun addPendingUndo(trashId: Long) {
+        dataStore.edit { prefs ->
+            val current = prefs[Keys.PENDING_UNDO].orEmpty().split(',').filter(String::isNotBlank)
+            prefs[Keys.PENDING_UNDO] = (current + trashId.toString()).joinToString(",")
+        }
+        Log.i(TAG, "Pending undo added: $trashId")
+    }
+
+    override suspend fun removePendingUndo(trashId: Long) {
+        dataStore.edit { prefs ->
+            prefs[Keys.PENDING_UNDO] = prefs[Keys.PENDING_UNDO].orEmpty().split(',')
+                .filter { it.isNotBlank() && it != trashId.toString() }
+                .joinToString(",")
+        }
+    }
+
+    override suspend fun clearPendingUndo() {
+        Log.i(TAG, "Pending undo cleared")
+        dataStore.edit { it.remove(Keys.PENDING_UNDO) }
+    }
+
     override val reliabilityIntroShown: Flow<Boolean> = dataStore.data
         .map { it[Keys.RELIABILITY_INTRO_SHOWN] ?: false }
         .distinctUntilChanged()
@@ -68,5 +102,14 @@ class DataStoreSettingsRepository @Inject constructor(
         val REDUCE_TRANSPARENCY = booleanPreferencesKey("reduce_transparency")
         val RELIABILITY_INTRO_SHOWN = booleanPreferencesKey("reliability_intro_shown")
         val VOLUME_BUTTON_ACTION = stringPreferencesKey("volume_button_action")
+        val NOTICE_MINUTES = stringPreferencesKey("notice_minutes")
+        val PENDING_UNDO = stringPreferencesKey("pending_undo")
+    }
+
+    private fun String.toIntSet(): Set<Int> = split(',').mapNotNull(String::toIntOrNull).toSet()
+
+    companion object {
+        val DEFAULT_NOTICE_MINUTES = setOf(30)
+        private const val TAG = "Settings"
     }
 }

@@ -129,4 +129,56 @@
     <string name="volume_button_off">Não fazer nada (muda o volume)</string>
     <string name="volume_button_sound">Calar o som</string>
     <string name="volume_button_sound_vibration">Calar o som e a vibração</string>
+    <!-- Phase 2: recurrence, lifecycle, trash, notices -->
+    <string name="recurrence_once">Uma vez</string>
+    <string name="recurrence_weekly">Dias da semana</string>
+    <string name="recurrence_dates">Datas</string>
+    <string name="recurrence_every_day">Todos os dias</string>
+    <string name="recurrence_weekdays">Dias úteis</string>
+    <string name="recurrence_weekends">Fins de semana</string>
+    <string name="recurrence_more">+%1$d</string>
+    <string name="alarm_editor_repeat">REPETIÇÃO</string>
+    <string name="alarm_editor_pick_days">Escolhe pelo menos um dia.</string>
+    <string name="alarm_editor_pick_dates">Escolhe pelo menos uma data.</string>
+    <string name="alarm_editor_single_use">Utilização única</string>
+    <string name="alarm_editor_single_use_summary">Vai para o caixote do lixo assim que o desligares.</string>
+    <string name="calendar_previous_month">Mês anterior</string>
+    <string name="calendar_next_month">Mês seguinte</string>
+    <string name="alarm_skip_next">Saltar próxima</string>
+    <string name="alarm_unskip">Não saltar</string>
+    <string name="alarm_next_skipped">A próxima vai ser saltada.</string>
+    <string name="upcoming_title">Alarme às %1$s</string>
+    <string name="upcoming_dismiss">Desligar este</string>
+    <string name="channel_alarm_upcoming">Próximos alarmes</string>
+    <string name="channel_alarm_upcoming_description">Aparece antes de um alarme tocar, para o poderes desligar mais cedo.</string>
+    <string name="channel_alarm_deleted">Alarmes apagados</string>
+    <string name="channel_alarm_deleted_description">Quando um alarme toca pela última vez e vai para o caixote do lixo.</string>
+    <string name="deleted_title">Alarme das %1$s apagado</string>
+    <string name="deleted_body">Este alarme tocou pela última vez e foi apagado. Toca para anular.</string>
+    <string name="alarm_restored">Alarme reposto</string>
+    <plurals name="undo_alarms_deleted">
+        <item quantity="one">%d alarme apagado</item>
+        <item quantity="many">%d alarmes apagados</item>
+        <item quantity="other">%d alarmes apagados</item>
+    </plurals>
+    <string name="action_undo">Anular</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="trash_title">Caixote do lixo</string>
+    <string name="trash_empty_title">O caixote do lixo está vazio</string>
+    <string name="trash_empty_body">Os alarmes apagados ficam aqui durante 30 dias.</string>
+    <string name="trash_restore">Repor</string>
+    <string name="trash_empty_action">Esvaziar</string>
+    <string name="trash_empty_confirm_title">Esvaziar o caixote do lixo?</string>
+    <string name="trash_empty_confirm_body">Os alarmes apagados desaparecem de vez.</string>
+    <string name="trash_deleted_on">Apagado a %1$s</string>
+    <string name="trash_deleted_automatically">Apagado depois do último toque, a %1$s</string>
+    <string name="settings_notices">Avisos antes do alarme</string>
+    <string name="settings_notices_summary">Uma notificação antes de cada alarme deixa-te desligá-lo mais cedo.</string>
+    <plurals name="notice_days">
+        <item quantity="one">%d dia</item>
+        <item quantity="many">%d dias</item>
+        <item quantity="other">%d dias</item>
+    </plurals>
+    <string name="settings_trash">Caixote do lixo</string>
+    <string name="settings_trash_summary">Alarmes apagados nos últimos 30 dias.</string>
 </resources>

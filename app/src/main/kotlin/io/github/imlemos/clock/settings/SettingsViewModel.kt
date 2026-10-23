@@ -31,6 +31,18 @@ class SettingsViewModel @Inject constructor(
     val volumeButtonAction: StateFlow<VolumeButtonAction> = settings.volumeButtonAction
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), VolumeButtonAction.OFF)
 
+    val noticeMinutes: StateFlow<Set<Int>> = settings.noticeMinutes
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
+    fun toggleNotice(minutes: Int) {
+        val current = noticeMinutes.value
+        viewModelScope.launch {
+            settings.setNoticeMinutes(if (minutes in current) current - minutes else current + minutes)
+            // Notices are scheduled together with each alarm.
+            alarms.rescheduleAll()
+        }
+    }
+
     fun setVolumeButtonAction(action: VolumeButtonAction) {
         viewModelScope.launch { settings.setVolumeButtonAction(action) }
     }

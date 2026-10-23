@@ -8,6 +8,7 @@ import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.core.scheduling.AlarmCalculator
 import io.github.imlemos.clock.core.scheduling.Trigger
 import java.time.Clock
+import java.time.Instant
 import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -59,7 +60,25 @@ class AlarmScheduler @Inject constructor(
 
     fun cancel(alarmId: Long) {
         alarmManager.cancel(AlarmIntents.firePendingIntent(context, alarmId, null, false))
+        cancelNotice(alarmId)
         Log.i(TAG, "Alarm $alarmId cancelled")
+    }
+
+    /**
+     * Wakes the app to show or update the upcoming-alarm notice. Exact but without the alarm clock
+     * icon; a notice a minute late is harmless.
+     */
+    fun scheduleNotice(alarmId: Long, at: Instant) {
+        val operation = AlarmIntents.noticePendingIntent(context, alarmId)
+        if (canScheduleExactAlarms()) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at.toEpochMilli(), operation)
+        } else {
+            alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at.toEpochMilli(), operation)
+        }
+    }
+
+    fun cancelNotice(alarmId: Long) {
+        alarmManager.cancel(AlarmIntents.noticePendingIntent(context, alarmId))
     }
 
     fun canScheduleExactAlarms(): Boolean = alarmManager.canScheduleExactAlarms()

@@ -47,6 +47,9 @@ data class AlarmEditorDestination(val alarmId: Long) : NavKey
 @Serializable
 data object ReliabilityDestination : NavKey
 
+@Serializable
+data object TrashDestination : NavKey
+
 /** Debug builds only: compares the glass levels over busy content. */
 @Serializable
 data object GlassLabDestination : NavKey

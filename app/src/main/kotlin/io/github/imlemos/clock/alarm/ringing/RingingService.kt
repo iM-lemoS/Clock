@@ -19,6 +19,7 @@ import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.scheduling.AlarmIntents
 import io.github.imlemos.clock.alarm.ui.formatTimeOfDay
 import io.github.imlemos.clock.core.audio.AlarmSoundPlayer
+import io.github.imlemos.clock.core.notifications.AlarmNotifications
 import io.github.imlemos.clock.core.notifications.NotificationChannels
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,18 +44,25 @@ class RingingService : Service() {
     @Inject lateinit var controller: AlarmController
     @Inject lateinit var player: AlarmSoundPlayer
     @Inject lateinit var ringingState: RingingState
+    @Inject lateinit var notifications: AlarmNotifications
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var timeoutJob: Job? = null
     private var wakeLock: PowerManager.WakeLock? = null
+    private var inForeground = false
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             AlarmIntents.ACTION_FIRE -> {
-                // Go foreground before any I/O: the system allows only a few seconds.
-                startInForeground(buildNotification(title = getString(R.string.alarm_notification_title), text = null))
+                // Go foreground before any I/O: the system allows only a few seconds. Only once per
+                // session: re-posting the full-screen notification for every colliding alarm within
+                // milliseconds can make the system drop the full-screen launch.
+                if (!inForeground) {
+                    startInForeground(buildNotification(title = getString(R.string.alarm_notification_title), text = null))
+                    inForeground = true
+                }
                 acquireWakeLock()
                 val id = intent.getLongExtra(AlarmIntents.EXTRA_ALARM_ID, -1)
                 val occurrence = Instant.ofEpochMilli(intent.getLongExtra(AlarmIntents.EXTRA_OCCURRENCE, 0))
@@ -103,7 +111,7 @@ class RingingService : Service() {
     private suspend fun onTimeout() {
         val session = ringingState.session.value ?: return
         Log.i(TAG, "Ring duration elapsed; stopping and reporting missed alarms")
-        session.alarms.forEach { postMissedNotification(it) }
+        session.alarms.forEach { notifications.showMissed(it.id, it.time, it.label) }
         finishSession { controller.dismiss(it) }
     }
 
@@ -119,6 +127,7 @@ class RingingService : Service() {
 
     private fun stopService() {
         ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+        inForeground = false
         releaseWakeLock()
         stopSelf()
     }
@@ -168,6 +177,8 @@ class RingingService : Service() {
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOngoing(true)
+            // Updates (label, colliding alarms) must not alert or relaunch the full-screen intent.
+            .setOnlyAlertOnce(true)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setFullScreenIntent(fullScreen, true)
             .setContentIntent(fullScreen)
@@ -182,18 +193,6 @@ class RingingService : Service() {
                 AlarmIntents.serviceActionPendingIntent(this, AlarmIntents.ACTION_DISMISS),
             )
             .build()
-    }
-
-    private fun postMissedNotification(alarm: RingingAlarm) {
-        val notification = NotificationCompat.Builder(this, NotificationChannels.ALARM_MISSED)
-            .setSmallIcon(R.drawable.ic_alarm)
-            .setContentTitle(getString(R.string.alarm_missed_title, formatTimeOfDay(this, alarm.time)))
-            .setContentText(alarm.label.ifBlank { null })
-            .setCategory(NotificationCompat.CATEGORY_REMINDER)
-            .setContentIntent(AlarmIntents.showAlarmsPendingIntent(this))
-            .setAutoCancel(true)
-            .build()
-        getSystemService(NotificationManager::class.java).notify(MISSED_NOTIFICATION_BASE + alarm.id.toInt(), notification)
     }
 
     private fun acquireWakeLock() {
@@ -211,7 +210,6 @@ class RingingService : Service() {
     private companion object {
         const val TAG = "RingingService"
         const val NOTIFICATION_ID = 1_000
-        const val MISSED_NOTIFICATION_BASE = 2_000
         const val WAKE_LOCK_TIMEOUT_MS = 10 * 60 * 1_000L
     }
 }

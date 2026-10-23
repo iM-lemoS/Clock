@@ -8,6 +8,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,6 +40,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.core.net.toUri
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -51,6 +54,7 @@ import io.github.imlemos.clock.core.data.prefs.ThemeMode
 import io.github.imlemos.clock.core.data.prefs.VolumeButtonAction
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
 import io.github.imlemos.clock.core.designsystem.component.ClockTopBar
+import io.github.imlemos.clock.core.designsystem.component.SegmentedControl
 import io.github.imlemos.clock.core.designsystem.component.TopBarIconButton
 import io.github.imlemos.clock.core.designsystem.glass.CapsuleShape
 import io.github.imlemos.clock.core.designsystem.glass.rememberSystemReducesEffects
@@ -65,6 +69,7 @@ import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
 fun SettingsScreen(
     onBack: () -> Unit,
     onOpenReliability: () -> Unit,
+    onOpenTrash: () -> Unit,
     onOpenGlassLab: (() -> Unit)?,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
@@ -136,6 +141,21 @@ fun SettingsScreen(
                 onSelect = viewModel::setVolumeButtonAction,
             )
 
+            SettingLabel(stringResource(R.string.settings_notices))
+            Text(
+                text = stringResource(R.string.settings_notices_summary),
+                style = ClockTheme.typography.caption,
+                color = ClockTheme.colors.contentMuted,
+                modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 10.dp),
+            )
+            val notices by viewModel.noticeMinutes.collectAsStateWithLifecycle()
+            NoticeChips(selected = notices, onToggle = viewModel::toggleNotice)
+            ClickableRow(
+                title = stringResource(R.string.settings_trash),
+                summary = stringResource(R.string.settings_trash_summary),
+                onClick = onOpenTrash,
+            )
+
             SectionHeader(stringResource(R.string.settings_section_general))
             ClickableRow(
                 title = stringResource(R.string.settings_reliability),
@@ -197,42 +217,16 @@ private fun SettingLabel(text: String) {
 
 @Composable
 private fun ThemeSelector(selected: ThemeMode, onSelect: (ThemeMode) -> Unit) {
-    val colors = ClockTheme.colors
-    val options = listOf(
-        ThemeMode.SYSTEM to R.string.theme_system,
-        ThemeMode.LIGHT to R.string.theme_light,
-        ThemeMode.DARK to R.string.theme_dark,
+    SegmentedControl(
+        options = listOf(
+            ThemeMode.SYSTEM to stringResource(R.string.theme_system),
+            ThemeMode.LIGHT to stringResource(R.string.theme_light),
+            ThemeMode.DARK to stringResource(R.string.theme_dark),
+        ),
+        selected = selected,
+        onSelect = onSelect,
+        modifier = Modifier.padding(horizontal = 24.dp),
     )
-    Row(
-        modifier = Modifier
-            .padding(horizontal = 24.dp)
-            .fillMaxWidth()
-            .clip(CapsuleShape)
-            .border(1.dp, colors.outline, CapsuleShape)
-            .padding(4.dp)
-            .selectableGroup(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        options.forEach { (mode, label) ->
-            val isSelected = mode == selected
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = 44.dp)
-                    .clip(CapsuleShape)
-                    .background(if (isSelected) colors.content else colors.background, CapsuleShape)
-                    .selectable(selected = isSelected, role = Role.RadioButton, onClick = { onSelect(mode) }),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = stringResource(label),
-                    style = ClockTheme.typography.label,
-                    color = if (isSelected) colors.background else colors.content,
-                    maxLines = 1,
-                )
-            }
-        }
-    }
 }
 
 @Composable
@@ -338,6 +332,40 @@ private fun <T> RadioList(options: List<Pair<T, Int>>, selected: T, onSelect: (T
                 )
                 Spacer(Modifier.width(16.dp))
                 Text(stringResource(label), style = ClockTheme.typography.body, color = colors.content)
+            }
+        }
+    }
+}
+
+private val NoticePresets = listOf(5, 10, 15, 30, 60, 120, 1440)
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun NoticeChips(selected: Set<Int>, onToggle: (Int) -> Unit) {
+    val colors = ClockTheme.colors
+    FlowRow(
+        modifier = Modifier.padding(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        NoticePresets.forEach { minutes ->
+            val isSelected = minutes in selected
+            val label = when {
+                minutes >= 1440 -> pluralStringResource(R.plurals.notice_days, minutes / 1440, minutes / 1440)
+                minutes >= 60 -> stringResource(R.string.duration_hours, minutes / 60)
+                else -> stringResource(R.string.duration_minutes, minutes)
+            }
+            Box(
+                Modifier
+                    .clip(CapsuleShape)
+                    .background(if (isSelected) colors.accent else colors.background, CapsuleShape)
+                    .border(1.dp, if (isSelected) colors.accent else colors.outline, CapsuleShape)
+                    .toggleable(value = isSelected, role = Role.Checkbox, onValueChange = { onToggle(minutes) })
+                    .heightIn(min = 40.dp)
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(label, style = ClockTheme.typography.label, color = if (isSelected) colors.onAccent else colors.content)
             }
         }
     }

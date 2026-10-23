@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,7 +54,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
 import io.github.imlemos.clock.core.designsystem.component.ClockTopBar
+import io.github.imlemos.clock.core.designsystem.component.MultiDateCalendar
+import io.github.imlemos.clock.core.designsystem.component.SegmentedControl
+import io.github.imlemos.clock.core.designsystem.component.WeekdayPicker
 import io.github.imlemos.clock.core.designsystem.component.TopBarIconButton
 import io.github.imlemos.clock.core.designsystem.glass.CapsuleShape
 import io.github.imlemos.clock.core.designsystem.theme.ClockTheme
@@ -144,6 +149,8 @@ fun AlarmEditorScreen(
                 TimePicker(state = pickerState, colors = pickerColors)
             }
             Spacer(Modifier.height(16.dp))
+            RecurrenceSection(state = state, viewModel = viewModel, locale = locale)
+            Spacer(Modifier.height(16.dp))
             OutlinedTextField(
                 value = state.label,
                 onValueChange = viewModel::setLabel,
@@ -160,6 +167,24 @@ fun AlarmEditorScreen(
                 ),
                 modifier = Modifier.fillMaxWidth(),
             )
+            Spacer(Modifier.height(8.dp))
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .toggleable(value = state.singleUse, role = Role.Switch, onValueChange = viewModel::setSingleUse)
+                    .padding(vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.alarm_editor_single_use), style = ClockTheme.typography.body, color = colors.content)
+                    Text(
+                        stringResource(R.string.alarm_editor_single_use_summary),
+                        style = ClockTheme.typography.caption,
+                        color = colors.contentMuted,
+                    )
+                }
+                ClockSwitch(checked = state.singleUse, onCheckedChange = null)
+            }
             Spacer(Modifier.height(24.dp))
         }
 
@@ -175,8 +200,8 @@ fun AlarmEditorScreen(
                     .fillMaxWidth()
                     .heightIn(min = 56.dp)
                     .clip(CapsuleShape)
-                    .background(colors.accent, CapsuleShape)
-                    .clickable(role = Role.Button) {
+                    .background(if (state.canSave) colors.accent else colors.surface, CapsuleShape)
+                    .clickable(enabled = state.canSave, role = Role.Button) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                         }
@@ -193,8 +218,63 @@ fun AlarmEditorScreen(
                     },
                 contentAlignment = Alignment.Center,
             ) {
-                Text(stringResource(R.string.action_save), style = ClockTheme.typography.title, color = colors.onAccent)
+                Text(
+                    stringResource(R.string.action_save),
+                    style = ClockTheme.typography.title,
+                    color = if (state.canSave) colors.onAccent else colors.contentMuted,
+                )
             }
         }
     }
+}
+
+@Composable
+private fun RecurrenceSection(state: AlarmEditorState, viewModel: AlarmEditorViewModel, locale: java.util.Locale) {
+    val colors = ClockTheme.colors
+    Column(Modifier.fillMaxWidth()) {
+        Text(
+            stringResource(R.string.alarm_editor_repeat),
+            style = ClockTheme.typography.label,
+            color = colors.contentMuted,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+        SegmentedControl(
+            options = listOf(
+                RecurrenceKind.ONCE to stringResource(R.string.recurrence_once),
+                RecurrenceKind.WEEKLY to stringResource(R.string.recurrence_weekly),
+                RecurrenceKind.DATES to stringResource(R.string.recurrence_dates),
+            ),
+            selected = state.kind,
+            onSelect = viewModel::setKind,
+        )
+        Spacer(Modifier.height(12.dp))
+        when (state.kind) {
+            RecurrenceKind.ONCE -> Unit
+            RecurrenceKind.WEEKLY -> {
+                WeekdayPicker(selected = state.weekDays, onToggle = viewModel::toggleDay, locale = locale)
+                if (state.weekDays.isEmpty()) Hint(stringResource(R.string.alarm_editor_pick_days))
+            }
+            RecurrenceKind.DATES -> {
+                MultiDateCalendar(
+                    selected = state.dates,
+                    onToggle = viewModel::toggleDate,
+                    minDate = viewModel.today(),
+                    locale = locale,
+                    previousLabel = stringResource(R.string.calendar_previous_month),
+                    nextLabel = stringResource(R.string.calendar_next_month),
+                )
+                if (state.dates.isEmpty()) Hint(stringResource(R.string.alarm_editor_pick_dates))
+            }
+        }
+    }
+}
+
+@Composable
+private fun Hint(text: String) {
+    Text(
+        text,
+        style = ClockTheme.typography.caption,
+        color = ClockTheme.colors.contentMuted,
+        modifier = Modifier.padding(top = 8.dp),
+    )
 }

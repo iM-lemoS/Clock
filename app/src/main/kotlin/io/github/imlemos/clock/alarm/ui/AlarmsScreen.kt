@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -84,6 +85,7 @@ fun AlarmsScreen(
                         state = state,
                         onClick = { onEditAlarm(item.alarm.id) },
                         onToggle = { viewModel.setEnabled(item.alarm.id, it) },
+                        onSkip = { viewModel.setSkipNext(item.alarm.id, !item.skipped) },
                     )
                 }
             }
@@ -92,17 +94,26 @@ fun AlarmsScreen(
 }
 
 @Composable
-private fun AlarmCard(item: AlarmListItem, state: AlarmListState, onClick: () -> Unit, onToggle: (Boolean) -> Unit) {
+private fun AlarmCard(
+    item: AlarmListItem,
+    state: AlarmListState,
+    onClick: () -> Unit,
+    onToggle: (Boolean) -> Unit,
+    onSkip: () -> Unit,
+) {
     val context = LocalContext.current
     val colors = ClockTheme.colors
     val alarm = item.alarm
     val parts = timeParts(context, alarm.time)
     val enabled = item.nextRing != null
     val locale = LocalConfiguration.current.locales[0]
-    val subtitle = when {
-        item.nextRing != null && state.now != null -> describeNextRing(LocalResources.current, state.now, item.nextRing, locale)
+    val resources = LocalResources.current
+    val today = state.now?.toLocalDate() ?: java.time.LocalDate.now()
+    val nextText = when {
+        item.nextRing != null && state.now != null -> describeNextRing(resources, state.now, item.nextRing, locale)
         else -> stringResource(R.string.alarm_off)
     }
+    val subtitle = describeRecurrence(resources, alarm.recurrence, locale, today) + " · " + nextText
     val shape = RoundedCornerShape(28.dp)
     Row(
         modifier = Modifier
@@ -126,6 +137,21 @@ private fun AlarmCard(item: AlarmListItem, state: AlarmListState, onClick: () ->
                 Text(alarm.label, style = ClockTheme.typography.body, color = colors.content, maxLines = 1)
             }
             Text(subtitle, style = ClockTheme.typography.caption, color = colors.contentMuted)
+            if (item.canSkip) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = stringResource(if (item.skipped) R.string.alarm_unskip else R.string.alarm_skip_next),
+                    style = ClockTheme.typography.label,
+                    color = colors.accent,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(role = Role.Button, onClick = onSkip)
+                        .padding(vertical = 6.dp),
+                )
+                if (item.skipped) {
+                    Text(stringResource(R.string.alarm_next_skipped), style = ClockTheme.typography.caption, color = colors.content)
+                }
+            }
         }
         Spacer(Modifier.width(12.dp))
         ClockSwitch(checked = alarm.enabled, onCheckedChange = onToggle)

@@ -60,6 +60,11 @@
             android:directBootAware="true"
             android:exported="false" />
 
+        <receiver
+            android:name=".alarm.scheduling.NoticeReceiver"
+            android:directBootAware="true"
+            android:exported="false" />
+
         <!-- Only protected system broadcasts, which other apps cannot send. -->
         <receiver
             android:name=".alarm.scheduling.SystemEventsReceiver"

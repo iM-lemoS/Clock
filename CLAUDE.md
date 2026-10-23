@@ -19,7 +19,9 @@ the maintainer's phone.
 - **Language**: code, comments, identifiers, commit messages and technical docs in English.
   `docs/PLANO.md` stays in Portuguese.
 - **No text in code.** Every user-visible string lives in resources with English
-  (`values/`, default) and European Portuguese (`values-pt-rPT/`). Missing translations fail lint.
+  (`values/`, default) and European Portuguese (`values-pt/`, so every Portuguese locale, Brazil
+  included, gets Portuguese rather than English). Missing translations fail lint. The app always
+  follows the system language (or the per-app language chosen in Android 13+ settings).
   Non-translatable strings (brand name, sample digits) use `translatable="false"`.
 - **Portuguese UI speaks informally**: address the user as "tu" ("Toca em +", "Confirma que…",
   "o teu telemóvel"), never "você"/formal imperatives ("Toque", "Confirme", "o seu").

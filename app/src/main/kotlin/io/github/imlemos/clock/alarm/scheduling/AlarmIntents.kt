@@ -18,6 +18,8 @@ object AlarmIntents {
     const val ACTION_DISMISS = "io.github.imlemos.clock.action.ALARM_DISMISS"
     const val ACTION_SNOOZE = "io.github.imlemos.clock.action.ALARM_SNOOZE"
     const val ACTION_SILENCE = "io.github.imlemos.clock.action.ALARM_SILENCE"
+    const val ACTION_NOTICE = "io.github.imlemos.clock.action.ALARM_NOTICE"
+    const val ACTION_DISMISS_EARLY = "io.github.imlemos.clock.action.ALARM_DISMISS_EARLY"
     const val EXTRA_SILENCE_VIBRATION = "silence_vibration"
 
     /** Unique per alarm, so one alarm's PendingIntent never replaces another's. */
@@ -35,6 +37,26 @@ object AlarmIntents {
                 .putExtra(EXTRA_SNOOZE, snooze),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
+
+    fun noticePendingIntent(context: Context, alarmId: Long): PendingIntent = PendingIntent.getBroadcast(
+        context,
+        0,
+        Intent(context, NoticeReceiver::class.java)
+            .setAction(ACTION_NOTICE)
+            .setData("clock://notice/$alarmId".toUri())
+            .putExtra(EXTRA_ALARM_ID, alarmId),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
+
+    fun dismissEarlyPendingIntent(context: Context, alarmId: Long): PendingIntent = PendingIntent.getBroadcast(
+        context,
+        0,
+        Intent(context, NoticeReceiver::class.java)
+            .setAction(ACTION_DISMISS_EARLY)
+            .setData("clock://dismiss-early/$alarmId".toUri())
+            .putExtra(EXTRA_ALARM_ID, alarmId),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
 
     /** Opened when the user taps the alarm icon in the status bar / quick settings. */
     fun showAlarmsPendingIntent(context: Context): PendingIntent = PendingIntent.getActivity(

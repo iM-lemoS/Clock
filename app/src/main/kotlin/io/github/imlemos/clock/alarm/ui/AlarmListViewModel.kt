@@ -7,6 +7,7 @@ import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.alarm.data.AlarmRepository
 import io.github.imlemos.clock.alarm.model.Alarm
 import io.github.imlemos.clock.alarm.scheduling.AlarmScheduler
+import io.github.imlemos.clock.core.scheduling.Recurrence
 import kotlinx.coroutines.delay
 import io.github.imlemos.clock.reliability.ReliabilityChecker
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,8 +22,18 @@ import java.time.Clock
 import java.time.ZonedDateTime
 import javax.inject.Inject
 
-/** An alarm with its next ring time, as shown in the list. */
-data class AlarmListItem(val alarm: Alarm, val nextRing: ZonedDateTime?)
+/**
+ * An alarm with its next ring time, as shown in the list.
+ *
+ * @property canSkip Recurring alarms can skip their next occurrence (docs/PLANO.md 3.5).
+ * @property skipped The next occurrence is currently skipped.
+ */
+data class AlarmListItem(
+    val alarm: Alarm,
+    val nextRing: ZonedDateTime?,
+    val canSkip: Boolean = false,
+    val skipped: Boolean = false,
+)
 
 data class AlarmListState(val items: List<AlarmListItem> = emptyList(), val now: ZonedDateTime? = null)
 
@@ -55,13 +66,22 @@ class AlarmListViewModel @Inject constructor(
     val state: StateFlow<AlarmListState> = combine(repository.observeAll(), minutes) { alarms, now ->
         val zone = scheduler.appZone()
         val items = alarms.map { alarm ->
-            AlarmListItem(alarm, scheduler.nextTrigger(alarm)?.at?.atZone(zone))
+            AlarmListItem(
+                alarm = alarm,
+                nextRing = scheduler.nextTrigger(alarm)?.at?.atZone(zone),
+                canSkip = alarm.enabled && alarm.recurrence !is Recurrence.Once,
+                skipped = alarm.skippedOccurrence?.let { it > now } == true,
+            )
         }
         AlarmListState(sort(items), now.atZone(zone))
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AlarmListState())
 
     fun setEnabled(id: Long, enabled: Boolean) {
         viewModelScope.launch { controller.setEnabled(id, enabled) }
+    }
+
+    fun setSkipNext(id: Long, skip: Boolean) {
+        viewModelScope.launch { controller.setSkipNext(id, skip) }
     }
 
     /**

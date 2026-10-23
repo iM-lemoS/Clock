@@ -1,9 +1,11 @@
 package io.github.imlemos.clock
 
 import android.app.UiModeManager
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.ViewTreeObserver
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -31,6 +33,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         keepSplashUntilSettingsLoad()
+        handleIntent(intent)
 
         setContent {
             val appearance by viewModel.appearance.collectAsStateWithLifecycle()
@@ -48,6 +51,28 @@ class MainActivity : ComponentActivity() {
                 ClockShell(showReliabilityIntro = showIntro, onReliabilityIntroShown = viewModel::onReliabilityIntroShown)
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    /** "Tap to undo" on the notification of an alarm the app deleted after its last ring. */
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action != ACTION_RESTORE_FROM_TRASH) return
+        val trashId = intent.getLongExtra(EXTRA_TRASH_ID, -1)
+        if (trashId >= 0) {
+            viewModel.restore(trashId) {
+                Toast.makeText(this, R.string.alarm_restored, Toast.LENGTH_SHORT).show()
+            }
+        }
+        setIntent(Intent(this, MainActivity::class.java))
+    }
+
+    companion object {
+        const val ACTION_RESTORE_FROM_TRASH = "io.github.imlemos.clock.action.RESTORE_FROM_TRASH"
+        const val EXTRA_TRASH_ID = "trash_id"
     }
 
     /** Avoids a first frame in the wrong theme: hold the system splash until DataStore answers. */

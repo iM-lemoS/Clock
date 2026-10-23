@@ -32,7 +32,9 @@ internal fun AlarmEntity.toAlarm(): Alarm = Alarm(
     ringDurationSeconds = ringDurationSeconds,
     vibrate = vibrate,
     ringtoneUri = ringtoneUri,
+    singleUse = singleUse,
     createdAt = Instant.ofEpochMilli(createdAt),
+    armedAt = Instant.ofEpochMilli(if (armedAt == 0L) createdAt else armedAt),
 )
 
 internal fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
@@ -57,6 +59,8 @@ internal fun Alarm.toEntity(): AlarmEntity = AlarmEntity(
     vibrate = vibrate,
     ringtoneUri = ringtoneUri,
     createdAt = createdAt.toEpochMilli(),
+    singleUse = singleUse,
+    armedAt = armedAt.toEpochMilli(),
 )
 
 private val DayOfWeek.bit: Int get() = 1 shl ordinal

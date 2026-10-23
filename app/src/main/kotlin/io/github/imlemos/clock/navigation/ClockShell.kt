@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.navigation
 
+import android.app.KeyguardManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -10,6 +11,27 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.semantics.Role
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.delay
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.imlemos.clock.core.designsystem.glass.CapsuleShape
+import io.github.imlemos.clock.core.designsystem.glass.GlassBackdrop
+import io.github.imlemos.clock.core.designsystem.glass.GlassSurface
+import io.github.imlemos.clock.trash.TrashScreen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -51,6 +74,8 @@ import io.github.imlemos.clock.settings.SettingsScreen
 import io.github.imlemos.clock.stopwatch.StopwatchScreen
 import io.github.imlemos.clock.timer.TimersScreen
 
+private const val UNDO_SEEN_AFTER_MS = 1_500L
+
 /** Space reserved at the bottom of tab screens for the floating "+" and navigation capsule. */
 private val FloatingChromeHeight = 64.dp + 12.dp + 64.dp + 16.dp
 
@@ -58,8 +83,26 @@ private val FloatingChromeHeight = 64.dp + 12.dp + 64.dp + 16.dp
  * @param showReliabilityIntro Opens "Set up reliability" once, on the first launch.
  */
 @Composable
-fun ClockShell(showReliabilityIntro: Boolean, onReliabilityIntroShown: () -> Unit) {
+fun ClockShell(
+    showReliabilityIntro: Boolean,
+    onReliabilityIntroShown: () -> Unit,
+    shellViewModel: ShellViewModel = hiltViewModel(),
+) {
     val backStack = rememberNavBackStack(AlarmsDestination)
+    val pendingUndo by shellViewModel.pendingUndo.collectAsStateWithLifecycle()
+    // The pop-up disappears if the app is closed and reopened without touching it (docs/PLANO.md 3.1).
+    // "Seen" means on screen for a moment with the phone unlocked: when an alarm screen closes over
+    // the lock screen, this activity is briefly resumed behind the keyguard, which must not count.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val keyguard = LocalContext.current.getSystemService(KeyguardManager::class.java)
+    LaunchedEffect(pendingUndo.isNotEmpty()) {
+        if (pendingUndo.isEmpty()) return@LaunchedEffect
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            delay(UNDO_SEEN_AFTER_MS)
+            if (!keyguard.isKeyguardLocked) shellViewModel.onUndoVisibleWhileResumed()
+        }
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { shellViewModel.onAppStopped() }
     LaunchedEffect(showReliabilityIntro) {
         if (showReliabilityIntro) {
             backStack.add(ReliabilityDestination)
@@ -105,12 +148,14 @@ fun ClockShell(showReliabilityIntro: Boolean, onReliabilityIntroShown: () -> Uni
                     SettingsScreen(
                         onBack = pop,
                         onOpenReliability = openReliability,
+                        onOpenTrash = { backStack.add(TrashDestination) },
                         onOpenGlassLab = if (BuildConfig.DEBUG) ({ backStack.add(GlassLabDestination) }) else null,
                     )
                 }
                 entry<GlassLabDestination> { GlassLabScreen(onBack = pop) }
                 entry<AlarmEditorDestination> { key -> AlarmEditorScreen(alarmId = key.alarmId, onClose = pop) }
                 entry<ReliabilityDestination> { ReliabilityScreen(onBack = pop) }
+                entry<TrashDestination> { TrashScreen(onBack = pop) }
             },
         )
 
@@ -130,6 +175,11 @@ fun ClockShell(showReliabilityIntro: Boolean, onReliabilityIntroShown: () -> Uni
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 val addAction = currentTab?.addAction
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    AnimatedVisibility(visible = pendingUndo.isNotEmpty(), enter = fadeIn() + scaleIn(), exit = fadeOut() + scaleOut()) {
+                        UndoPopup(backdrop = backdrop, count = pendingUndo.size, onUndo = shellViewModel::undo)
+                    }
+                    Spacer(Modifier.weight(1f).width(12.dp))
                 AnimatedVisibility(visible = addAction != null, enter = scaleIn() + fadeIn(), exit = scaleOut() + fadeOut()) {
                     if (addAction != null) {
                         GlassIconButton(
@@ -144,6 +194,7 @@ fun ClockShell(showReliabilityIntro: Boolean, onReliabilityIntroShown: () -> Uni
                             },
                         )
                     }
+                }
                 }
                 FloatingNavBar(
                     backdrop = backdrop,
@@ -169,4 +220,33 @@ private fun NavBackStack<NavKey>.selectTab(tab: TopLevelDestination) {
     clear()
     add(AlarmsDestination)
     if (tab != AlarmsDestination) add(tab)
+}
+
+/** Discreet glass pop-up offering to restore alarms deleted moments ago. */
+@Composable
+private fun UndoPopup(backdrop: GlassBackdrop, count: Int, onUndo: () -> Unit) {
+    val colors = ClockTheme.colors
+    GlassSurface(backdrop = backdrop, modifier = Modifier.heightIn(min = 56.dp)) {
+        Row(
+            Modifier.padding(start = 20.dp, end = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = pluralStringResource(R.plurals.undo_alarms_deleted, count, count),
+                style = ClockTheme.typography.label,
+                color = colors.content,
+                maxLines = 1,
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = stringResource(R.string.action_undo),
+                style = ClockTheme.typography.label,
+                color = colors.accent,
+                modifier = Modifier
+                    .clip(CapsuleShape)
+                    .clickable(role = Role.Button, onClick = onUndo)
+                    .padding(horizontal = 14.dp, vertical = 14.dp),
+            )
+        }
+    }
 }

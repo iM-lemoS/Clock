@@ -9,6 +9,8 @@ import io.github.imlemos.clock.R
 object NotificationChannels {
     const val ALARM_RINGING = "alarm_ringing"
     const val ALARM_MISSED = "alarm_missed"
+    const val ALARM_UPCOMING = "alarm_upcoming"
+    const val ALARM_DELETED = "alarm_deleted"
 
     fun createAll(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java)
@@ -32,6 +34,20 @@ object NotificationChannels {
                     NotificationManager.IMPORTANCE_DEFAULT,
                 ).apply {
                     description = context.getString(R.string.channel_alarm_missed_description)
+                },
+                NotificationChannel(
+                    ALARM_UPCOMING,
+                    context.getString(R.string.channel_alarm_upcoming),
+                    NotificationManager.IMPORTANCE_LOW,
+                ).apply {
+                    description = context.getString(R.string.channel_alarm_upcoming_description)
+                },
+                NotificationChannel(
+                    ALARM_DELETED,
+                    context.getString(R.string.channel_alarm_deleted),
+                    NotificationManager.IMPORTANCE_DEFAULT,
+                ).apply {
+                    description = context.getString(R.string.channel_alarm_deleted_description)
                 },
             ),
         )

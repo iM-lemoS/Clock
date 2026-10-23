@@ -27,6 +27,8 @@ class SystemEventsReceiver : BroadcastReceiver() {
         val pending = goAsync()
         scope.launch {
             try {
+                // After boot or a manual clock change, report what should have rung meanwhile.
+                if (intent.action in MISSED_CHECK_ACTIONS) controller.checkMissed()
                 controller.rescheduleAll()
             } finally {
                 pending.finish()
@@ -36,6 +38,11 @@ class SystemEventsReceiver : BroadcastReceiver() {
 
     private companion object {
         const val TAG = "SystemEventsReceiver"
+        val MISSED_CHECK_ACTIONS = setOf(
+            Intent.ACTION_LOCKED_BOOT_COMPLETED,
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_TIME_CHANGED,
+        )
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     }
 }

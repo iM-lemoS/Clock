@@ -137,4 +137,54 @@
     <string name="volume_button_off">Do nothing (changes the volume)</string>
     <string name="volume_button_sound">Silence the sound</string>
     <string name="volume_button_sound_vibration">Silence sound and vibration</string>
+    <!-- Phase 2: recurrence, lifecycle, trash, notices -->
+    <string name="recurrence_once">Once</string>
+    <string name="recurrence_weekly">Weekdays</string>
+    <string name="recurrence_dates">Dates</string>
+    <string name="recurrence_every_day">Every day</string>
+    <string name="recurrence_weekdays">Mon to Fri</string>
+    <string name="recurrence_weekends">Weekends</string>
+    <string name="recurrence_more">+%1$d</string>
+    <string name="alarm_editor_repeat">REPEAT</string>
+    <string name="alarm_editor_pick_days">Pick at least one day.</string>
+    <string name="alarm_editor_pick_dates">Pick at least one date.</string>
+    <string name="alarm_editor_single_use">Single use</string>
+    <string name="alarm_editor_single_use_summary">Moves to the trash as soon as it is dismissed.</string>
+    <string name="calendar_previous_month">Previous month</string>
+    <string name="calendar_next_month">Next month</string>
+    <string name="alarm_skip_next">Skip next</string>
+    <string name="alarm_unskip">Don\'t skip</string>
+    <string name="alarm_next_skipped">The next one is skipped.</string>
+    <string name="upcoming_title">Alarm at %1$s</string>
+    <string name="upcoming_dismiss">Dismiss this one</string>
+    <string name="channel_alarm_upcoming">Upcoming alarms</string>
+    <string name="channel_alarm_upcoming_description">Shown before an alarm rings, so you can dismiss it early.</string>
+    <string name="channel_alarm_deleted">Deleted alarms</string>
+    <string name="channel_alarm_deleted_description">When an alarm rings for the last time and moves to the trash.</string>
+    <string name="deleted_title">Alarm %1$s deleted</string>
+    <string name="deleted_body">This alarm rang for the last time and was deleted. Tap to undo.</string>
+    <string name="alarm_restored">Alarm restored</string>
+    <plurals name="undo_alarms_deleted">
+        <item quantity="one">Alarm deleted</item>
+        <item quantity="other">%d alarms deleted</item>
+    </plurals>
+    <string name="action_undo">Undo</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="trash_title">Trash</string>
+    <string name="trash_empty_title">The trash is empty</string>
+    <string name="trash_empty_body">Deleted alarms stay here for 30 days.</string>
+    <string name="trash_restore">Restore</string>
+    <string name="trash_empty_action">Empty</string>
+    <string name="trash_empty_confirm_title">Empty the trash?</string>
+    <string name="trash_empty_confirm_body">Deleted alarms will be gone for good.</string>
+    <string name="trash_deleted_on">Deleted on %1$s</string>
+    <string name="trash_deleted_automatically">Deleted after its last ring on %1$s</string>
+    <string name="settings_notices">Notices before the alarm</string>
+    <string name="settings_notices_summary">A notification before each alarm lets you dismiss it early.</string>
+    <plurals name="notice_days">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <string name="settings_trash">Trash</string>
+    <string name="settings_trash_summary">Alarms deleted in the last 30 days.</string>
 </resources>

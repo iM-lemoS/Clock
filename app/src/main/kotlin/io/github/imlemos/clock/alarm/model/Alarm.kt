@@ -21,7 +21,10 @@ data class Alarm(
     val ringDurationSeconds: Int = DEFAULT_RING_DURATION_SECONDS,
     val vibrate: Boolean = true,
     val ringtoneUri: String? = null,
+    val singleUse: Boolean = false,
     val createdAt: Instant,
+    /** When the alarm was last saved or switched on (see AlarmCalculator.missedOccurrence). */
+    val armedAt: Instant = createdAt,
 ) {
     val schedule: AlarmSchedule
         get() = AlarmSchedule(
