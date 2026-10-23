@@ -265,6 +265,10 @@ private fun SwitchRow(
                 uncheckedThumbColor = colors.contentMuted,
                 uncheckedTrackColor = colors.background,
                 uncheckedBorderColor = colors.outline,
+                // Forced on by the system: still clearly "on", just dimmed.
+                disabledCheckedThumbColor = colors.onAccent,
+                disabledCheckedTrackColor = colors.accent.copy(alpha = 0.45f),
+                disabledCheckedBorderColor = colors.accent.copy(alpha = 0.45f),
             ),
         )
     }

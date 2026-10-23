@@ -137,8 +137,12 @@ Launch the debug app: `adb shell am start -n io.github.imlemos.clock.debug/io.gi
 
 - Needed: Developer options (Settings > About device > Version > tap "Build number" 7 times),
   then **USB debugging**, and accept the computer's RSA key on first connection.
-- On ColorOS 16.0.10 nothing else was needed for `adb install`, `input` and `uiautomator`. If
-  installs or input injection start failing, check in Developer options: **"Install via USB"**
-  (may require an OPPO account) and **"Disable permission monitoring"**.
+- On ColorOS 16.0.10 nothing else was needed for `adb install`, `input`, `uiautomator`,
+  `screencap`, `cmd locale`, `cmd power` and `connectedDebugAndroidTest`.
+- `adb shell pm clear` is **blocked** by ColorOS (`CLEAR_APP_USER_DATA` SecurityException) unless
+  Developer options > **"Disable permission monitoring"** is on. Without it, reset app data with
+  `adb uninstall` + reinstall. Some `pm grant`/`appops` changes may hit the same restriction.
+- If installs start failing, check Developer options > **"Install via USB"** (may require an
+  OPPO account).
 - ColorOS kills background apps aggressively: reliability work (phase 1) must be tested with the
   app removed from recents and after a reboot.
