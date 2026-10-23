@@ -53,8 +53,13 @@ a password manager.
 
 ## Third-party assets
 
-- [Doto](https://github.com/oliverlalan/Doto) and [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono):
-  SIL Open Font License 1.1 (`licenses/fonts`).
+- Fonts, all under the SIL Open Font License 1.1 (`licenses/fonts`), bundled unmodified:
+  [Doto](https://github.com/oliverlalan/Doto), [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono),
+  and for alarm screen clocks [Outfit](https://github.com/Outfitio/Outfit-Fonts),
+  [Playfair Display](https://github.com/clauseggers/Playfair-Display),
+  [Orbitron](https://github.com/theleagueof/orbitron),
+  [Big Shoulders Display](https://github.com/xotypeco/big_shoulders) and
+  [Comfortaa](https://github.com/alexeiva/comfortaa).
 - [Material Symbols](https://github.com/google/material-design-icons): Apache License 2.0
   (`licenses/icons`).
 

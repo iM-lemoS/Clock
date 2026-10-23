@@ -326,8 +326,6 @@
     <string name="layout_tab_label">Label</string>
     <string name="layout_tab_buttons">Buttons</string>
     <string name="layout_tab_background">Background</string>
-    <string name="layout_style_dots">Dots</string>
-    <string name="layout_style_mono">Mono</string>
     <string name="layout_style_analog">Analog</string>
     <string name="layout_size">Size</string>
     <string name="layout_color">Colour</string>
@@ -378,4 +376,19 @@
     <string name="layouts_delete_body">Alarms that use them go back to the default screen. This can\'t be undone.</string>
     <string name="layout_select">Select</string>
     <string name="action_clear_selection">Clear selection</string>
+    <string name="layout_style_digital">Digital</string>
+    <string name="layout_style_stacked">Stacked</string>
+    <string name="layout_style_lines">Lines</string>
+    <string name="layout_font">Font</string>
+    <string name="layout_weight">Thickness</string>
+    <string name="layout_roundness">Dot roundness</string>
+    <string name="font_dots">Dots</string>
+    <string name="font_mono">Mono</string>
+    <string name="font_geometric">Geometric</string>
+    <string name="font_serif">Serif</string>
+    <string name="font_futuristic">Futuristic</string>
+    <string name="font_condensed">Condensed</string>
+    <string name="font_rounded">Rounded</string>
+    <string name="layout_preset_tall">Tall</string>
+    <string name="layout_preset_classic">Classic</string>
 </resources>

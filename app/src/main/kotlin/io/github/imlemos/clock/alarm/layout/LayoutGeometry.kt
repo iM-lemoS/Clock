@@ -87,7 +87,8 @@ object LayoutGeometry {
      * A box pushed past the bottom stays at the bottom edge.
      */
     fun separate(boxes: List<Box2>, area: Size2, gap: Float): List<Box2> {
-        val order = boxes.indices.sortedBy { boxes[it].y + boxes[it].height / 2f }
+        // By top edge: a tall element placed high (a stacked clock) keeps its place above the rest.
+        val order = boxes.indices.sortedWith(compareBy({ boxes[it].y }, { boxes[it].y + boxes[it].height / 2f }))
         val placed = arrayOfNulls<Box2>(boxes.size)
         for (index in order) {
             var box = boxes[index]

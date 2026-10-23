@@ -106,6 +106,8 @@ fun layoutName(layout: AlarmLayout): String = when (layout.id) {
     PresetLayouts.WAVES -> stringResource(R.string.layout_preset_waves)
     PresetLayouts.MATRIX -> stringResource(R.string.layout_preset_matrix)
     PresetLayouts.ANALOG -> stringResource(R.string.layout_preset_analog)
+    PresetLayouts.TALL -> stringResource(R.string.layout_preset_tall)
+    PresetLayouts.CLASSIC -> stringResource(R.string.layout_preset_classic)
     else -> layout.name
 }
 

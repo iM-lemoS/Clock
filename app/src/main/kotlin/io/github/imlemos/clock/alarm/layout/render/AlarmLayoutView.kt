@@ -201,7 +201,7 @@ fun AlarmLayoutView(
             contents = listOf(
                 {
                     Element(LayoutElementId.CLOCK, true) {
-                        ClockFace(spec.clock.style, time, spec.clock.color?.let(::Color) ?: colors.content, colors.accent)
+                        ClockFace(spec.clock, time, spec.clock.color?.let(::Color) ?: colors.content, colors.accent)
                     }
                 },
                 {

@@ -321,8 +321,6 @@
     <string name="layout_tab_label">Etiqueta</string>
     <string name="layout_tab_buttons">Botões</string>
     <string name="layout_tab_background">Fundo</string>
-    <string name="layout_style_dots">Pontos</string>
-    <string name="layout_style_mono">Mono</string>
     <string name="layout_style_analog">Analógico</string>
     <string name="layout_size">Tamanho</string>
     <string name="layout_color">Cor</string>
@@ -375,4 +373,19 @@
     <string name="layouts_delete_body">Os alarmes que os usam voltam ao ecrã predefinido. Não dá para anular.</string>
     <string name="layout_select">Selecionar</string>
     <string name="action_clear_selection">Limpar seleção</string>
+    <string name="layout_style_digital">Digital</string>
+    <string name="layout_style_stacked">Empilhado</string>
+    <string name="layout_style_lines">Traços</string>
+    <string name="layout_font">Letra</string>
+    <string name="layout_weight">Espessura</string>
+    <string name="layout_roundness">Pontos redondos</string>
+    <string name="font_dots">Pontos</string>
+    <string name="font_mono">Mono</string>
+    <string name="font_geometric">Geométrica</string>
+    <string name="font_serif">Serifada</string>
+    <string name="font_futuristic">Futurista</string>
+    <string name="font_condensed">Condensada</string>
+    <string name="font_rounded">Arredondada</string>
+    <string name="layout_preset_tall">Alto</string>
+    <string name="layout_preset_classic">Clássico</string>
 </resources>

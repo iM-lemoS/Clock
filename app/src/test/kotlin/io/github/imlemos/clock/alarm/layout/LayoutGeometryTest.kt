@@ -112,4 +112,21 @@ class LayoutGeometryTest {
         assertEquals(0.1f, moved.offsetX, 0.0001f)
         assertEquals(-0.1f, moved.offsetY, 0.0001f)
     }
+
+    @Test
+    fun `layouts saved with the first clock styles still read`() {
+        val mono = LayoutJson.decode("""{"clock":{"style":"MONO"}}""").clock
+        assertEquals(ClockStyle.DIGITAL, mono.style)
+        assertEquals(ClockFont.MONO, mono.font)
+        assertEquals(ClockFont.DOTO, LayoutJson.decode("""{"clock":{"style":"DOTS"}}""").clock.font)
+    }
+
+    @Test
+    fun `a tall element at the top stays above shorter ones it overlaps`() {
+        val clock = Box2(100f, 0f, 400f, 900f)
+        val date = Box2(100f, 300f, 400f, 50f)
+        val (c, d) = LayoutGeometry.separate(listOf(clock, date), phone, gap = 10f)
+        assertEquals(clock, c)
+        assertEquals(910f, d.y)
+    }
 }

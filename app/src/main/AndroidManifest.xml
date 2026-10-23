@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Exact alarms: USE_EXACT_ALARM (Android 13+, granted to alarm clock apps);
          SCHEDULE_EXACT_ALARM only for Android 12, where USE_EXACT_ALARM does not exist. -->
@@ -28,9 +29,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Clock">
 
+        <!-- Portrait only, by design: the app never rotates on phones. From Android 16 large
+             screens (600dp and wider) may still rotate it; the layouts already adapt to that. -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -44,6 +49,8 @@
             android:excludeFromRecents="true"
             android:exported="false"
             android:launchMode="singleInstance"
+            android:screenOrientation="portrait"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity"
             android:showWhenLocked="true"
             android:taskAffinity=""
             android:theme="@style/Theme.Clock.Alarm"

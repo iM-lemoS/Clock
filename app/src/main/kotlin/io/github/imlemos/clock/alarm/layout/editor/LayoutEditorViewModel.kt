@@ -9,6 +9,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.imlemos.clock.alarm.layout.Background
 import io.github.imlemos.clock.alarm.layout.BackgroundStore
+import io.github.imlemos.clock.alarm.layout.ClockFont
 import io.github.imlemos.clock.alarm.layout.ClockStyle
 import io.github.imlemos.clock.alarm.layout.Frame
 import io.github.imlemos.clock.alarm.layout.LayoutGeometry
@@ -79,6 +80,13 @@ class LayoutEditorViewModel @AssistedInject constructor(
 
 
     fun setClockStyle(style: ClockStyle) = edit { it.copy(clock = it.clock.copy(style = style)) }
+
+    /** A new font starts at its own default weight. */
+    fun setClockFont(font: ClockFont) = edit { it.copy(clock = it.clock.copy(font = font, weight = null)) }
+
+    fun setClockWeight(weight: Int) = edit { it.copy(clock = it.clock.copy(weight = weight)) }
+
+    fun setClockRoundness(roundness: Int) = edit { it.copy(clock = it.clock.copy(roundness = roundness)) }
 
     /** [argb] `null` returns the element to the automatic colour. */
     fun setColor(id: LayoutElementId, argb: Int?) = edit { spec ->

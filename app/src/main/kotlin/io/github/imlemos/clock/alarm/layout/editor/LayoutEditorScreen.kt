@@ -55,7 +55,20 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.imlemos.clock.R
 import io.github.imlemos.clock.alarm.layout.Background
+import io.github.imlemos.clock.alarm.layout.ClockElement
+import io.github.imlemos.clock.alarm.layout.ClockFont
 import io.github.imlemos.clock.alarm.layout.ClockStyle
+import io.github.imlemos.clock.alarm.layout.render.effectiveWeight
+import io.github.imlemos.clock.alarm.layout.render.rememberClockFontFamily
+import io.github.imlemos.clock.alarm.layout.render.spec
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.foundation.verticalScroll
+import io.github.imlemos.clock.core.designsystem.component.DotDigits
+import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 import io.github.imlemos.clock.alarm.layout.LayoutGeometry
 import io.github.imlemos.clock.alarm.layout.PresetKind
 import io.github.imlemos.clock.alarm.layout.render.AlarmLayoutView
@@ -193,7 +206,14 @@ fun LayoutEditorScreen(
                 ) { panelVisible = !panelVisible }
                 if (panelVisible) {
                     Spacer(Modifier.height(8.dp))
-                    GlassSurface(backdrop = backdrop, shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth()) {
+                    // At most about half the screen, so the preview above stays visible; the options scroll.
+                    val maxPanel = with(LocalDensity.current) { (LocalWindowInfo.current.containerSize.height * 0.45f).toDp() }
+                    GlassSurface(
+                        backdrop = backdrop,
+                        shape = RoundedCornerShape(28.dp),
+                        modifier = Modifier.fillMaxWidth().heightIn(max = maxPanel),
+                        contentAlignment = Alignment.TopStart,
+                    ) {
                         EditorPanel(state, viewModel)
                     }
                 }
@@ -260,7 +280,7 @@ private fun EditorPanel(state: LayoutEditorState, viewModel: LayoutEditorViewMod
         if (uri != null) viewModel.importBackground(uri, video = true) { Toast.makeText(context, failed, Toast.LENGTH_SHORT).show() }
     }
     val spec = state.spec
-    Column(Modifier.fillMaxWidth().padding(16.dp)) {
+    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp)) {
         Row {
             ChipRow(
                 options = listOf(
@@ -279,13 +299,15 @@ private fun EditorPanel(state: LayoutEditorState, viewModel: LayoutEditorViewMod
             LayoutElementId.CLOCK -> {
                 ChipRow(
                     options = listOf(
-                        ClockStyle.DOTS to stringResource(R.string.layout_style_dots),
-                        ClockStyle.MONO to stringResource(R.string.layout_style_mono),
+                        ClockStyle.DIGITAL to stringResource(R.string.layout_style_digital),
+                        ClockStyle.STACKED to stringResource(R.string.layout_style_stacked),
                         ClockStyle.ANALOG to stringResource(R.string.layout_style_analog),
+                        ClockStyle.ANALOG_LINES to stringResource(R.string.layout_style_lines),
                     ),
                     selected = spec.clock.style,
                     onSelect = viewModel::setClockStyle,
                 )
+                ClockFontOptions(spec.clock, viewModel)
                 SizeSlider(tab, state.spec.placementOf(tab).scale, viewModel)
                 ColorSwatches(spec.clock.color, allowAuto = true) { viewModel.setColor(tab, it) }
             }
@@ -308,6 +330,74 @@ private fun EditorPanel(state: LayoutEditorState, viewModel: LayoutEditorViewMod
         Text(stringResource(R.string.layout_hint), style = ClockTheme.typography.caption, color = ClockTheme.colors.contentMuted)
     }
 }
+
+/** Font (digital clocks), thickness and, for the dot font, how round the dots are. */
+@Composable
+private fun ClockFontOptions(clock: ClockElement, viewModel: LayoutEditorViewModel) {
+    val colors = ClockTheme.colors
+    val analog = clock.style == ClockStyle.ANALOG || clock.style == ClockStyle.ANALOG_LINES
+    if (!analog) {
+        Spacer(Modifier.height(12.dp))
+        Label(stringResource(R.string.layout_font))
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            ClockFont.entries.forEach { font ->
+                val selected = font == clock.font
+                Column(
+                    Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(if (selected) colors.accent else colors.background, RoundedCornerShape(16.dp))
+                        .border(1.dp, if (selected) colors.accent else colors.outline, RoundedCornerShape(16.dp))
+                        .selectable(selected = selected, role = Role.RadioButton) { viewModel.setClockFont(font) }
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    // Each font shows itself; Doto through DotDigits, which draws round colon dots.
+                    val sample = TextStyle(fontFamily = rememberClockFontFamily(font, font.spec.defaultWeight), fontSize = 22.sp, lineHeight = 26.sp)
+                    val sampleColor = if (selected) colors.onAccent else colors.content
+                    if (font == ClockFont.DOTO) {
+                        DotDigits("12:30", style = sample, color = sampleColor, minFontSize = 22.sp)
+                    } else {
+                        Text("12:30", style = sample, color = sampleColor, maxLines = 1)
+                    }
+                    Text(
+                        stringResource(font.nameRes),
+                        style = ClockTheme.typography.caption,
+                        color = if (selected) colors.onAccent else colors.contentMuted,
+                    )
+                }
+            }
+        }
+    }
+    val range = if (analog) 100..900 else clock.font.spec.minWeight..clock.font.spec.maxWeight
+    Spacer(Modifier.height(8.dp))
+    Label(stringResource(R.string.layout_weight))
+    Slider(
+        value = (if (analog) clock.weight ?: 400 else clock.effectiveWeight()).coerceIn(range).toFloat(),
+        onValueChange = { viewModel.setClockWeight(it.roundToInt()) },
+        valueRange = range.first.toFloat()..range.last.toFloat(),
+        colors = sliderColors(),
+    )
+    if (!analog && clock.font == ClockFont.DOTO) {
+        Label(stringResource(R.string.layout_roundness))
+        Slider(
+            value = clock.roundness.toFloat(),
+            onValueChange = { viewModel.setClockRoundness(it.roundToInt()) },
+            valueRange = 0f..100f,
+            colors = sliderColors(),
+        )
+    }
+}
+
+private val ClockFont.nameRes: Int
+    get() = when (this) {
+        ClockFont.DOTO -> R.string.font_dots
+        ClockFont.MONO -> R.string.font_mono
+        ClockFont.OUTFIT -> R.string.font_geometric
+        ClockFont.SERIF -> R.string.font_serif
+        ClockFont.ORBITRON -> R.string.font_futuristic
+        ClockFont.CONDENSED -> R.string.font_condensed
+        ClockFont.ROUNDED -> R.string.font_rounded
+    }
 
 @Composable
 private fun SizeSlider(id: LayoutElementId, scale: Float, viewModel: LayoutEditorViewModel) {

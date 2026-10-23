@@ -24,16 +24,38 @@ data class LayoutSpec(
 @Serializable
 data class Placement(val x: Float, val y: Float, val scale: Float = 1f)
 
+/**
+ * How the clock is drawn. [DOTS] and [MONO] are from the first layouts and are read as [DIGITAL]
+ * with the Doto or mono font (see [ClockElement.normalized]).
+ */
 @Serializable
-enum class ClockStyle { DOTS, MONO, ANALOG }
+enum class ClockStyle { DIGITAL, STACKED, ANALOG, ANALOG_LINES, DOTS, MONO }
 
-/** [color] is ARGB; `null` follows the theme's content colour. */
+/** Fonts for digital clocks; all bundled variable fonts (licences in licenses/fonts). */
+@Serializable
+enum class ClockFont { DOTO, MONO, OUTFIT, SERIF, ORBITRON, CONDENSED, ROUNDED }
+
+/**
+ * [color] is ARGB; `null` follows the theme's content colour. [weight] (100..900) is the font
+ * weight, or the hands' thickness on analog clocks; `null` uses the font's own default.
+ * [roundness] (0..100) only applies to the Doto dots.
+ */
 @Serializable
 data class ClockElement(
     val placement: Placement = Placement(0.5f, 0.27f, 1f),
-    val style: ClockStyle = ClockStyle.DOTS,
+    val style: ClockStyle = ClockStyle.DIGITAL,
     val color: Int? = null,
-)
+    val font: ClockFont = ClockFont.DOTO,
+    val weight: Int? = null,
+    val roundness: Int = 100,
+) {
+    /** Maps the first layouts' styles onto the current ones. */
+    fun normalized(): ClockElement = when (style) {
+        ClockStyle.DOTS -> copy(style = ClockStyle.DIGITAL, font = ClockFont.DOTO)
+        ClockStyle.MONO -> copy(style = ClockStyle.DIGITAL, font = ClockFont.MONO)
+        else -> this
+    }
+}
 
 @Serializable
 data class TextElement(
@@ -86,7 +108,9 @@ object LayoutJson {
     fun encode(spec: LayoutSpec): String = json.encodeToString(LayoutSpec.serializer(), spec)
 
     /** Unreadable data falls back to the default layout rather than breaking the alarm screen. */
-    fun decode(text: String): LayoutSpec = runCatching { json.decodeFromString(LayoutSpec.serializer(), text) }.getOrDefault(LayoutSpec())
+    fun decode(text: String): LayoutSpec = runCatching { json.decodeFromString(LayoutSpec.serializer(), text) }
+        .getOrDefault(LayoutSpec())
+        .let { it.copy(clock = it.clock.normalized()) }
 }
 
 /**
@@ -98,6 +122,8 @@ object PresetLayouts {
     const val WAVES = -2L
     const val MATRIX = -3L
     const val ANALOG = -4L
+    const val TALL = -5L
+    const val CLASSIC = -6L
 
     /** The app's default when the user has not chosen one. */
     const val DEFAULT = DOTS
@@ -106,13 +132,13 @@ object PresetLayouts {
         DOTS to LayoutSpec(),
         WAVES to LayoutSpec(
             background = Background.Preset(PresetKind.WAVES),
-            clock = ClockElement(Placement(0.5f, 0.3f, 1f), ClockStyle.MONO),
+            clock = ClockElement(Placement(0.5f, 0.3f, 1f), font = ClockFont.MONO, weight = 300),
             date = TextElement(Placement(0.5f, 0.4f, 1f)),
             label = TextElement(Placement(0.5f, 0.5f, 1.1f)),
         ),
         MATRIX to LayoutSpec(
             background = Background.Preset(PresetKind.MATRIX),
-            clock = ClockElement(Placement(0.5f, 0.24f, 1.25f), ClockStyle.DOTS),
+            clock = ClockElement(Placement(0.5f, 0.24f, 1.25f)),
             date = TextElement(Placement(0.5f, 0.36f, 1f)),
             label = TextElement(Placement(0.5f, 0.46f, 1f)),
         ),
@@ -121,6 +147,18 @@ object PresetLayouts {
             clock = ClockElement(Placement(0.5f, 0.3f, 1f), ClockStyle.ANALOG),
             date = TextElement(Placement(0.5f, 0.52f, 1f)),
             label = TextElement(Placement(0.5f, 0.6f, 1f)),
+        ),
+        TALL to LayoutSpec(
+            background = Background.Preset(PresetKind.SOLID, colorA = 0xFF0B0B0B.toInt()),
+            clock = ClockElement(Placement(0.3f, 0.3f, 1.6f), ClockStyle.STACKED, font = ClockFont.CONDENSED, weight = 800),
+            date = TextElement(Placement(0.72f, 0.12f, 1f)),
+            label = TextElement(Placement(0.5f, 0.66f, 1f)),
+        ),
+        CLASSIC to LayoutSpec(
+            background = Background.Preset(PresetKind.GRADIENT, colorA = 0xFF2A1F14.toInt()),
+            clock = ClockElement(Placement(0.5f, 0.28f, 1.1f), font = ClockFont.SERIF, weight = 500),
+            date = TextElement(Placement(0.5f, 0.39f, 1f)),
+            label = TextElement(Placement(0.5f, 0.5f, 1f)),
         ),
     )
 
