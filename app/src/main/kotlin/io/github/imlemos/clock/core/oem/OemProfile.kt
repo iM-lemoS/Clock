@@ -14,10 +14,13 @@ import io.github.imlemos.clock.R
  * @property intents Screens that may perform the step, tried in order. Vendors move and protect
  *   these screens between versions, so each is checked before use and the app details page is the
  *   final fallback.
+ * @property isDone Reads whether the step is done, for the few vendor settings Android exposes;
+ *   `null` when it cannot be checked.
  */
 data class OemStep(
     @param:StringRes val title: Int,
     @param:StringRes val description: Int,
+    val isDone: ((Context) -> Boolean)? = null,
     val intents: (Context) -> List<Intent> = { emptyList() },
 )
 

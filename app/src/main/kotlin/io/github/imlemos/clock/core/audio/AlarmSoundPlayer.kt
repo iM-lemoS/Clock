@@ -138,6 +138,7 @@ class AlarmSoundPlayer @Inject constructor(@ApplicationContext private val conte
                 outputDevice(output)?.let(::setPreferredDevice)
                 setVolume(volume, volume)
                 start()
+                Log.i(TAG, "Playing $uri (output=$output, haptics=${!attributes.areHapticChannelsMuted()})")
             }
         }.onFailure { Log.w(TAG, "Cannot play $uri", it) }.getOrNull()
 

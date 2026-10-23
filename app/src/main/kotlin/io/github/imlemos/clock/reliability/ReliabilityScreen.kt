@@ -67,9 +67,11 @@ fun ReliabilityScreen(onBack: () -> Unit, viewModel: ReliabilityViewModel = hilt
     val context = LocalContext.current
     val colors = ClockTheme.colors
     var status by remember { mutableStateOf(viewModel.checker.status()) }
+    var resumeTick by remember { mutableStateOf(0) }
     // Re-check whenever the user comes back from a system settings screen.
     LifecycleResumeEffect(Unit) {
         status = viewModel.checker.status()
+        resumeTick++
         onPauseOrDispose { }
     }
     val profile = viewModel.oemProfile
@@ -122,7 +124,7 @@ fun ReliabilityScreen(onBack: () -> Unit, viewModel: ReliabilityViewModel = hilt
                 profile.displayName?.let { stringResource(R.string.reliability_section_vendor, stringResource(it)) }
                     ?: stringResource(R.string.reliability_section_generic),
             )
-            profile.steps.forEachIndexed { index, step -> StepRow(index + 1, step) }
+            profile.steps.forEachIndexed { index, step -> StepRow(index + 1, step, resumeTick) }
             LinkRow(
                 title = stringResource(R.string.reliability_more_info),
                 summary = stringResource(R.string.reliability_more_info_summary),
@@ -180,22 +182,34 @@ private fun CheckRow(check: ReliabilityCheck, ok: Boolean, onClick: () -> Unit) 
 }
 
 @Composable
-private fun StepRow(number: Int, step: OemStep) {
+private fun StepRow(number: Int, step: OemStep, resumeTick: Int) {
     val context = LocalContext.current
     val colors = ClockTheme.colors
     val intents = step.intents(context)
+    val done = remember(resumeTick) { step.isDone?.invoke(context) }
     Row(
         Modifier
             .fillMaxWidth()
-            .clickable(enabled = intents.isNotEmpty()) { context.launchFirst(intents) }
+            .clickable(enabled = intents.isNotEmpty() && done != true) { context.launchFirst(intents) }
             .padding(horizontal = 24.dp, vertical = 14.dp),
     ) {
-        Text(number.toString(), style = ClockTheme.typography.title, color = colors.contentMuted, modifier = Modifier.width(28.dp))
+        if (done == null) {
+            Text(number.toString(), style = ClockTheme.typography.title, color = colors.contentMuted, modifier = Modifier.width(28.dp))
+        } else {
+            Icon(
+                painter = painterResource(if (done) R.drawable.ic_check_circle else R.drawable.ic_error),
+                contentDescription = stringResource(if (done) R.string.reliability_ok else R.string.reliability_needs_action),
+                tint = if (done) colors.content else colors.accent,
+                modifier = Modifier
+                    .padding(end = 4.dp)
+                    .size(24.dp),
+            )
+        }
         Column(Modifier.weight(1f)) {
             Text(stringResource(step.title), style = ClockTheme.typography.body, color = colors.content)
             Spacer(Modifier.height(2.dp))
             Text(stringResource(step.description), style = ClockTheme.typography.caption, color = colors.contentMuted)
-            if (intents.isNotEmpty()) {
+            if (intents.isNotEmpty() && done != true) {
                 Spacer(Modifier.height(6.dp))
                 Text(stringResource(R.string.reliability_open_settings), style = ClockTheme.typography.label, color = colors.accent)
             }

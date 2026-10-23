@@ -1,6 +1,8 @@
 package io.github.imlemos.clock.core.oem
 
+import android.app.NotificationManager
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.core.notifications.NotificationChannels
 
 /**
  * OPPO, realme and OnePlus (ColorOS / OxygenOS / realme UI). Verified on ColorOS 16: the autostart
@@ -16,9 +18,16 @@ class ColorOsProfile(brand: String) : OemProfile {
         OemStep(R.string.oem_coloros_background_title, R.string.oem_coloros_background_body) { context ->
             listOf(appDetailsIntent(context))
         },
-        OemStep(R.string.oem_coloros_dnd_title, R.string.oem_coloros_dnd_body) { context ->
-            listOf(appNotificationSettingsIntent(context), appDetailsIntent(context))
-        },
+        OemStep(
+            title = R.string.oem_coloros_dnd_title,
+            description = R.string.oem_coloros_dnd_body,
+            intents = { context -> listOf(appNotificationSettingsIntent(context), appDetailsIntent(context)) },
+            // ColorOS's "Allow in Do Not Disturb" switch sets the channels' bypass flag.
+            isDone = { context ->
+                context.getSystemService(NotificationManager::class.java)
+                    .getNotificationChannel(NotificationChannels.ALARM_RINGING)?.canBypassDnd() == true
+            },
+        ),
         LockInRecentsStep,
     )
 }
