@@ -595,7 +595,7 @@ private fun ClickableRow(title: String, summary: String, onClick: () -> Unit, @D
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (icon != null) {
-            Icon(painterResource(icon), contentDescription = null, tint = ClockTheme.colors.content, modifier = Modifier.size(26.dp))
+            Icon(painterResource(icon), contentDescription = null, tint = ClockTheme.colors.accent, modifier = Modifier.size(26.dp))
             Spacer(Modifier.width(18.dp))
         }
         RowText(title, summary, Modifier.weight(1f))
