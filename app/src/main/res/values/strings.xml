@@ -225,4 +225,8 @@
     <string name="wheel_period">AM or PM</string>
     <string name="wheel_increase">Increase</string>
     <string name="wheel_decrease">Decrease</string>
+    <string name="volume_low_title">Alarm volume is very low</string>
+    <string name="volume_low_body">Alarms will ring at the minimum volume. Tap to raise it.</string>
+    <string name="settings_warn_low_volume">Warn when alarm volume is very low</string>
+    <string name="settings_warn_low_volume_summary">Shows a notice on the alarm list when the alarm volume is at its minimum.</string>
 </resources>

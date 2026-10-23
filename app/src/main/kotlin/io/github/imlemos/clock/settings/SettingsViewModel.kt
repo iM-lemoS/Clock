@@ -55,6 +55,13 @@ class SettingsViewModel @Inject constructor(
 
     fun previewVibration(vibration: Vibration) = player.previewVibration(vibration)
 
+    val warnLowVolume: StateFlow<Boolean> = settings.warnLowVolume
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
+
+    fun setWarnLowVolume(enabled: Boolean) {
+        viewModelScope.launch { settings.setWarnLowVolume(enabled) }
+    }
+
     fun setAudioOutput(output: AudioOutput) {
         viewModelScope.launch { settings.setAudioOutput(output) }
     }

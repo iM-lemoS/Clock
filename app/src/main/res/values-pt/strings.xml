@@ -219,4 +219,8 @@
     <string name="wheel_period">AM ou PM</string>
     <string name="wheel_increase">Aumentar</string>
     <string name="wheel_decrease">Diminuir</string>
+    <string name="volume_low_title">O volume de alarme está muito baixo</string>
+    <string name="volume_low_body">Os alarmes vão tocar no volume mínimo. Toca para o aumentar.</string>
+    <string name="settings_warn_low_volume">Avisar quando o volume de alarme está muito baixo</string>
+    <string name="settings_warn_low_volume_summary">Mostra um aviso na lista de alarmes quando o volume de alarme está no mínimo.</string>
 </resources>

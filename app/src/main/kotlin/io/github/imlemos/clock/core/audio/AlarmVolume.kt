@@ -12,7 +12,21 @@ import javax.inject.Inject
 class AlarmVolume @Inject constructor(@ApplicationContext context: Context) {
     private val audioManager = context.getSystemService(AudioManager::class.java)
 
-    fun isZero(): Boolean = audioManager.getStreamVolume(AudioManager.STREAM_ALARM) == 0
+    enum class Level { OK, LOW, ZERO }
+
+    /**
+     * ZERO only where the phone allows it; LOW at the stream minimum (Android 9+ keeps the alarm
+     * volume at 1 or more, which can still be barely audible).
+     */
+    fun level(): Level {
+        val volume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
+        val minimum = audioManager.getStreamMinVolume(AudioManager.STREAM_ALARM)
+        return when {
+            volume == 0 -> Level.ZERO
+            volume <= minimum -> Level.LOW
+            else -> Level.OK
+        }
+    }
 
     /** Raises the alarm volume one step and shows the system volume panel. */
     fun raise() {

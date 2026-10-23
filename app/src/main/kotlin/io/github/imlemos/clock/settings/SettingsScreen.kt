@@ -196,6 +196,14 @@ fun SettingsScreen(
                 color = ClockTheme.colors.contentMuted,
                 modifier = Modifier.padding(horizontal = 24.dp),
             )
+            val warnLow by viewModel.warnLowVolume.collectAsStateWithLifecycle()
+            SwitchRow(
+                title = stringResource(R.string.settings_warn_low_volume),
+                summary = stringResource(R.string.settings_warn_low_volume_summary),
+                checked = warnLow,
+                enabled = true,
+                onCheckedChange = viewModel::setWarnLowVolume,
+            )
 
             SectionHeader(stringResource(R.string.settings_section_general))
             ClickableRow(

@@ -41,6 +41,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.delay
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.core.audio.AlarmVolume
 import io.github.imlemos.clock.core.designsystem.component.ClockSwitch
 import io.github.imlemos.clock.core.designsystem.component.DotTime
 import io.github.imlemos.clock.core.designsystem.component.EmptyState
@@ -57,7 +58,7 @@ fun AlarmsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val reliabilityOk by viewModel.reliabilityOk.collectAsStateWithLifecycle()
-    val volumeZero by viewModel.volumeZero.collectAsStateWithLifecycle()
+    val volumeWarning by viewModel.volumeWarning.collectAsStateWithLifecycle()
     LifecycleResumeEffect(Unit) {
         viewModel.refreshReliability()
         onPauseOrDispose { }
@@ -72,7 +73,7 @@ fun AlarmsScreen(
             }
         }
     }
-    val showVolumeWarning = volumeZero && state.items.any { it.nextRing != null }
+    val showVolumeWarning = volumeWarning != AlarmVolume.Level.OK && state.items.any { it.nextRing != null }
     val bannerCount = listOf(!reliabilityOk, showVolumeWarning).count { it }
     TabScreen(stringResource(R.string.nav_alarms), PaddingValues(), onOpenSettings) {
         Column(Modifier.align(Alignment.TopCenter).zIndex(1f)) {
@@ -85,8 +86,12 @@ fun AlarmsScreen(
             }
             if (showVolumeWarning) {
                 WarningBanner(
-                    title = stringResource(R.string.volume_zero_title),
-                    body = stringResource(R.string.volume_zero_body),
+                    title = stringResource(
+                        if (volumeWarning == AlarmVolume.Level.ZERO) R.string.volume_zero_title else R.string.volume_low_title,
+                    ),
+                    body = stringResource(
+                        if (volumeWarning == AlarmVolume.Level.ZERO) R.string.volume_zero_body else R.string.volume_low_body,
+                    ),
                     onClick = viewModel::raiseVolume,
                 )
             }

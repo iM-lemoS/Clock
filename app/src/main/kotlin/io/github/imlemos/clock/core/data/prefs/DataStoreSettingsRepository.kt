@@ -87,6 +87,14 @@ class DataStoreSettingsRepository @Inject constructor(
         dataStore.edit { it[Keys.AUDIO_OUTPUT] = output.name }
     }
 
+    override val warnLowVolume: Flow<Boolean> = dataStore.data
+        .map { it[Keys.WARN_LOW_VOLUME] ?: true }
+        .distinctUntilChanged()
+
+    override suspend fun setWarnLowVolume(enabled: Boolean) {
+        dataStore.edit { it[Keys.WARN_LOW_VOLUME] = enabled }
+    }
+
     override val volumeButtonAction: Flow<VolumeButtonAction> = dataStore.data
         .map { prefs ->
             prefs[Keys.VOLUME_BUTTON_ACTION]
@@ -157,6 +165,7 @@ class DataStoreSettingsRepository @Inject constructor(
         val DEFAULT_GRADUAL_SECONDS = intPreferencesKey("default_gradual_seconds")
         val DEFAULT_RING_SECONDS = intPreferencesKey("default_ring_seconds")
         val AUDIO_OUTPUT = stringPreferencesKey("audio_output")
+        val WARN_LOW_VOLUME = booleanPreferencesKey("warn_low_volume")
     }
 
     private fun String.toIntSet(): Set<Int> = split(',').mapNotNull(String::toIntOrNull).toSet()

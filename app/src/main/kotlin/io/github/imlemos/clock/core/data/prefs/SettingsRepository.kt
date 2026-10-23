@@ -22,6 +22,11 @@ interface SettingsRepository {
 
     suspend fun setAudioOutput(output: AudioOutput)
 
+    /** Warn on the alarm list when the alarm volume is at its minimum (zero is always warned). */
+    val warnLowVolume: Flow<Boolean>
+
+    suspend fun setWarnLowVolume(enabled: Boolean)
+
     val volumeButtonAction: Flow<VolumeButtonAction>
 
     suspend fun setVolumeButtonAction(action: VolumeButtonAction)

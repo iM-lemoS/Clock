@@ -10,6 +10,7 @@ import io.github.imlemos.clock.alarm.scheduling.AlarmScheduler
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import kotlinx.coroutines.delay
 import io.github.imlemos.clock.core.audio.AlarmVolume
+import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.reliability.ReliabilityChecker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -46,15 +47,18 @@ class AlarmListViewModel @Inject constructor(
     private val clock: Clock,
     private val reliability: ReliabilityChecker,
     private val alarmVolume: AlarmVolume,
+    settings: SettingsRepository,
 ) : ViewModel() {
 
-    private val _volumeZero = MutableStateFlow(false)
+    private val _volumeLevel = MutableStateFlow(AlarmVolume.Level.OK)
 
-    /** The alarm volume is at zero: enabled alarms would ring silently (docs/PLANO.md 3.2). */
-    val volumeZero: StateFlow<Boolean> = _volumeZero.asStateFlow()
+    /** Zero always warns; the minimum only when the user keeps the low-volume warning on. */
+    val volumeWarning: StateFlow<AlarmVolume.Level> = combine(_volumeLevel, settings.warnLowVolume) { level, warnLow ->
+        if (level == AlarmVolume.Level.LOW && !warnLow) AlarmVolume.Level.OK else level
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AlarmVolume.Level.OK)
 
     fun refreshVolume() {
-        _volumeZero.value = alarmVolume.isZero()
+        _volumeLevel.value = alarmVolume.level()
     }
 
     fun raiseVolume() {
