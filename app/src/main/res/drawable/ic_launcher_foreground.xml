@@ -11,6 +11,9 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Scaled so the ring reaches the edge of the visible icon: launchers choose the mask shape,
+         so the ring itself becomes the border and little is left around it. -->
+    <group android:pivotX="54" android:pivotY="54" android:scaleX="1.11" android:scaleY="1.11">
     <!-- The dial inside the ring stays black; around the ring the icon is transparent. -->
     <path
         android:fillColor="#000000"
@@ -82,4 +85,5 @@
         android:strokeColor="#E0282E"
         android:strokeWidth="2.2"
         android:strokeLineCap="round" />
+    </group>
 </vector>
