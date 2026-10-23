@@ -17,6 +17,9 @@ import io.github.imlemos.clock.core.data.db.AlarmDao
 import io.github.imlemos.clock.core.data.db.AlarmGroupDao
 import io.github.imlemos.clock.core.data.db.AppDatabase
 import io.github.imlemos.clock.core.data.db.LayoutDao
+import io.github.imlemos.clock.core.data.db.TimerDao
+import io.github.imlemos.clock.core.time.ElapsedClock
+import android.os.SystemClock
 import io.github.imlemos.clock.core.data.db.TrashDao
 import io.github.imlemos.clock.core.data.prefs.DataStoreSettingsRepository
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
@@ -60,6 +63,13 @@ object DataModule {
 
     @Provides
     fun provideLayoutDao(database: AppDatabase): LayoutDao = database.layoutDao()
+
+    @Provides
+    fun provideTimerDao(database: AppDatabase): TimerDao = database.timerDao()
+
+    /** `SystemClock.elapsedRealtime`, for timers and the stopwatch. */
+    @Provides
+    fun provideElapsedClock(): ElapsedClock = ElapsedClock { SystemClock.elapsedRealtime() }
 
     /**
      * Built on an explicit device-protected path: `preferencesDataStoreFile()` resolves against the

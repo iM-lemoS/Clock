@@ -54,6 +54,10 @@ data object TrashDestination : NavKey
 @Serializable
 data class BatchEditDestination(val alarmIds: List<Long>) : NavKey
 
+/** Timer editor; [timerId] 0 creates a new timer. */
+@Serializable
+data class TimerEditorDestination(val timerId: Long) : NavKey
+
 /** The layout library (docs/PLANO.md 3.7). */
 @Serializable
 data object LayoutsDestination : NavKey

@@ -20,7 +20,6 @@
     <string name="timers_empty_body">Toca em + para guardares um temporizador.</string>
 
     <!-- Stopwatch -->
-    <string name="stopwatch_zero">00:00,00</string>
     <string name="stopwatch_empty_title">As voltas aparecem aqui.</string>
 
     <!-- Settings -->
@@ -389,4 +388,47 @@
     <string name="layout_preset_tall">Alto</string>
     <string name="layout_preset_classic">Clássico</string>
     <string name="snooze_dial_hint">Desliza até ao tempo e larga</string>
+    <!-- Timers (docs/PLANO.md 4) -->
+    <string name="timer_default_name">Temporizador de %1$s</string>
+    <string name="timer_start">Iniciar</string>
+    <string name="timer_pause">Pausar</string>
+    <string name="timer_resume">Retomar</string>
+    <string name="timer_reset">Repor</string>
+    <string name="timer_stop">Parar</string>
+    <string name="timer_add_minute">+1 min</string>
+    <string name="timer_paused_left">Em pausa · faltam %1$s</string>
+    <string name="timer_status_paused">Em pausa</string>
+    <string name="timer_done_title">Tempo esgotado</string>
+    <string name="timer_edit">Editar</string>
+    <string name="timer_delete">Apagar temporizador</string>
+    <string name="timer_new_title">Novo temporizador</string>
+    <string name="timer_edit_title">Editar temporizador</string>
+    <string name="timer_name">Nome</string>
+    <string name="wheel_seconds">Segundos</string>
+    <plurals name="timers_running">
+        <item quantity="one">%d temporizador</item>
+        <item quantity="many">%d temporizadores</item>
+        <item quantity="other">%d temporizadores</item>
+    </plurals>
+    <string name="channel_timers">Temporizadores a contar</string>
+    <string name="channel_timers_description">A contagem de cada temporizador a correr.</string>
+    <string name="channel_timer_ringing">Temporizadores terminados</string>
+    <string name="channel_timer_ringing_description">Toca quando um temporizador chega a zero.</string>
+    <!-- Cronómetro (docs/PLANO.md 5) -->
+    <string name="stopwatch_start">Iniciar</string>
+    <string name="stopwatch_pause">Pausar</string>
+    <string name="stopwatch_resume">Retomar</string>
+    <string name="stopwatch_lap">Volta</string>
+    <string name="stopwatch_reset">Repor</string>
+    <string name="stopwatch_lap_number">Volta %1$d</string>
+    <string name="stopwatch_fastest">Mais rápida</string>
+    <string name="stopwatch_slowest">Mais lenta</string>
+    <string name="stopwatch_paused_at">Em pausa em %1$s</string>
+    <plurals name="stopwatch_laps">
+        <item quantity="one">%d volta</item>
+        <item quantity="many">%d voltas</item>
+        <item quantity="other">%d voltas</item>
+    </plurals>
+    <string name="channel_stopwatch">Cronómetro</string>
+    <string name="channel_stopwatch_description">O cronómetro enquanto corre.</string>
 </resources>

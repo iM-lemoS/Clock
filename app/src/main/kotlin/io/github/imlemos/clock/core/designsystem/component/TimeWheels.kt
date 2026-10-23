@@ -112,3 +112,62 @@ fun TimeWheels(
         }
     }
 }
+
+/** Hours, minutes and seconds wheels for timers (docs/PLANO.md 2: the same wheels as alarms). */
+@Composable
+fun DurationWheels(
+    hours: Int,
+    minutes: Int,
+    seconds: Int,
+    onChange: (hours: Int, minutes: Int, seconds: Int) -> Unit,
+    labels: DurationWheelLabels,
+    modifier: Modifier = Modifier,
+) {
+    val colors = ClockTheme.colors
+    val style = ClockTheme.typography.timeLarge
+    val itemHeight = 60.dp
+    Box(modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(itemHeight)
+                .background(colors.surface, CapsuleShape),
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            listOf(
+                Triple(24, hours, labels.hours),
+                Triple(60, minutes, labels.minutes),
+                Triple(60, seconds, labels.seconds),
+            ).forEachIndexed { index, (count, value, label) ->
+                if (index > 0) DotColon(style, colors.content)
+                WheelPicker(
+                    count = count,
+                    selected = value,
+                    onSelectedChange = { new ->
+                        when (index) {
+                            0 -> onChange(new, minutes, seconds)
+                            1 -> onChange(hours, new, seconds)
+                            else -> onChange(hours, minutes, new)
+                        }
+                    },
+                    label = { "%02d".format(java.util.Locale.ROOT, it) },
+                    accessibilityLabel = label,
+                    increaseLabel = labels.increase,
+                    decreaseLabel = labels.decrease,
+                    itemHeight = itemHeight,
+                    textStyle = style,
+                    modifier = Modifier.width(88.dp),
+                )
+            }
+        }
+    }
+}
+
+/** Accessibility names for [DurationWheels]. */
+data class DurationWheelLabels(
+    val hours: String,
+    val minutes: String,
+    val seconds: String,
+    val increase: String,
+    val decrease: String,
+)

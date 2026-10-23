@@ -141,6 +141,21 @@ class AppDatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun migrates5To6AddingTimers() = runTest {
+        helper.createDatabase(5).close()
+        helper.runMigrationsAndValidate(6, emptyList()).use { connection ->
+            connection.execSQL(
+                "INSERT INTO timer (name, durationMillis, status, remainingMillis, createdAt) VALUES ('Tea', 180000, 'IDLE', 180000, 1)",
+            )
+            connection.prepare("SELECT name, endElapsed FROM timer").use { stmt ->
+                assertTrue(stmt.step())
+                assertEquals("Tea", stmt.getText(0))
+                assertTrue(stmt.isNull(1))
+            }
+        }
+    }
+
     private companion object {
         const val TEST_DB = "migration-test.db"
     }

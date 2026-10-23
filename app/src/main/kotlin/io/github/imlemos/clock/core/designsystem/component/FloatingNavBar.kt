@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -47,11 +48,13 @@ fun FloatingNavBar(
     modifier: Modifier = Modifier,
 ) {
     GlassSurface(backdrop = backdrop, modifier = modifier.heightIn(min = 64.dp)) {
+        // Edge to edge: the first and last tabs sit in the corners, the others evenly between.
         Row(
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(horizontal = 6.dp, vertical = 6.dp)
                 .selectableGroup(),
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             items.forEach { item ->

@@ -4,6 +4,8 @@ import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.alarm.scheduling.AlarmScheduler
+import io.github.imlemos.clock.stopwatch.StopwatchController
+import io.github.imlemos.clock.timer.data.TimerController
 import io.github.imlemos.clock.alarm.ui.ClockTimeFormat
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.notifications.NotificationChannels
@@ -19,6 +21,8 @@ class ClockApp : Application() {
     @Inject lateinit var alarmController: AlarmController
     @Inject lateinit var settings: SettingsRepository
     @Inject lateinit var scheduler: AlarmScheduler
+    @Inject lateinit var timers: TimerController
+    @Inject lateinit var stopwatch: StopwatchController
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val mainScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -27,7 +31,12 @@ class ClockApp : Application() {
         super.onCreate()
         NotificationChannels.createAll(this)
         // Cheap safety net: whenever the process starts, make sure AlarmManager matches the database.
-        appScope.launch { alarmController.rescheduleAll() }
+        appScope.launch {
+            alarmController.rescheduleAll()
+            // Timers and the stopwatch: reschedule (force-stop clears AlarmManager) and resume ringing.
+            timers.resync(afterBoot = false)
+            stopwatch.resync(afterBoot = false)
+        }
         // The 12/24-hour choice is read everywhere times are formatted, including notifications.
         mainScope.launch { settings.timeFormat.collect { ClockTimeFormat.format = it } }
         // The manual app zone moves every alarm that has no zone of its own.

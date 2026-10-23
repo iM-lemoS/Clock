@@ -63,7 +63,10 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import io.github.imlemos.clock.BuildConfig
+import io.github.imlemos.clock.MainActivity
 import io.github.imlemos.clock.R
+import io.github.imlemos.clock.timer.TimerEditorScreen
+import io.github.imlemos.clock.timer.TimerEditorViewModel
 import io.github.imlemos.clock.alarm.layout.LayoutLibraryScreen
 import io.github.imlemos.clock.alarm.layout.editor.LayoutEditorScreen
 import io.github.imlemos.clock.alarm.ui.AlarmEditorScreen
@@ -94,9 +97,20 @@ private val FloatingChromeHeight = 64.dp + 12.dp + 64.dp + 16.dp
 fun ClockShell(
     showReliabilityIntro: Boolean,
     onReliabilityIntroShown: () -> Unit,
+    requestedTab: String? = null,
+    onTabShown: () -> Unit = {},
     shellViewModel: ShellViewModel = hiltViewModel(),
 ) {
     val backStack = rememberNavBackStack(AlarmsDestination)
+    LaunchedEffect(requestedTab) {
+        val tab = when (requestedTab) {
+            MainActivity.TAB_TIMERS -> TimersDestination
+            MainActivity.TAB_STOPWATCH -> StopwatchDestination
+            else -> return@LaunchedEffect
+        }
+        backStack.selectTab(tab)
+        onTabShown()
+    }
     val chrome = remember { ShellChrome() }
     val pendingUndo by shellViewModel.pendingUndo.collectAsStateWithLifecycle()
     // The pop-up disappears if the app is closed and reopened without touching it (docs/PLANO.md 3.1).
@@ -153,7 +167,10 @@ fun ClockShell(
                             onBatchEdit = { ids -> if (ids.isNotEmpty()) backStack.add(BatchEditDestination(ids)) },
                         )
                     }
-                    entry<TimersDestination> { TimersScreen(tabPadding, onOpenSettings = openSettings) }
+                    entry<TimersDestination> {
+                        TimersScreen(tabPadding, onOpenSettings = openSettings, onEditTimer = { backStack.add(TimerEditorDestination(it)) })
+                    }
+                    entry<TimerEditorDestination> { key -> TimerEditorScreen(timerId = key.timerId, onClose = pop) }
                     entry<StopwatchDestination> { StopwatchScreen(tabPadding, onOpenSettings = openSettings) }
                     entry<SettingsDestination> {
                         SettingsScreen(
@@ -242,7 +259,9 @@ fun ClockShell(
                             icon = R.drawable.ic_add,
                             contentDescription = stringResource(addAction),
                             onClick = {
-                                // Timers arrive in phase 7.
+                                if (currentTab == TimersDestination) {
+                                    backStack.add(TimerEditorDestination(TimerEditorViewModel.NEW_TIMER))
+                                }
                                 if (currentTab == AlarmsDestination) {
                                     backStack.add(AlarmEditorDestination(AlarmEditorViewModel.NEW_ALARM))
                                 }

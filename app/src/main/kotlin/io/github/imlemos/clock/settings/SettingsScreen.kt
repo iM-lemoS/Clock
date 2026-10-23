@@ -75,7 +75,7 @@ import java.time.ZoneId
 
 /**
  * Phase 0 settings: only what is needed to exercise the design system. The full list from
- * docs/PLANO.md section 6 arrives in phase 8.
+ * docs/PLANO.md section 6 arrives in phase 9.
  */
 @Composable
 fun SettingsScreen(

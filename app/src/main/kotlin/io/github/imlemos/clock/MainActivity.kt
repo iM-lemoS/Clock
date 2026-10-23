@@ -2,6 +2,10 @@ package io.github.imlemos.clock
 
 import android.app.UiModeManager
 import android.content.Intent
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import android.content.Context
+import android.app.PendingIntent
 import android.os.Bundle
 import android.view.View
 import android.view.ViewTreeObserver
@@ -29,6 +33,9 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
+    /** A tab asked for by a notification (timers, stopwatch); cleared once shown. */
+    private var requestedTab by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -48,7 +55,12 @@ class MainActivity : ComponentActivity() {
                 ),
             ) {
                 val showIntro by viewModel.showReliabilityIntro.collectAsStateWithLifecycle()
-                ClockShell(showReliabilityIntro = showIntro, onReliabilityIntroShown = viewModel::onReliabilityIntroShown)
+                ClockShell(
+                    showReliabilityIntro = showIntro,
+                    onReliabilityIntroShown = viewModel::onReliabilityIntroShown,
+                    requestedTab = requestedTab,
+                    onTabShown = { requestedTab = null },
+                )
             }
         }
     }
@@ -60,6 +72,11 @@ class MainActivity : ComponentActivity() {
 
     /** "Tap to undo" on the notification of an alarm the app deleted after its last ring. */
     private fun handleIntent(intent: Intent?) {
+        if (intent?.action == ACTION_OPEN_TAB) {
+            requestedTab = intent.getStringExtra(EXTRA_TAB)
+            setIntent(Intent(this, MainActivity::class.java))
+            return
+        }
         if (intent?.action != ACTION_RESTORE_FROM_TRASH) return
         val trashId = intent.getLongExtra(EXTRA_TRASH_ID, -1)
         if (trashId >= 0) {
@@ -73,6 +90,19 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val ACTION_RESTORE_FROM_TRASH = "io.github.imlemos.clock.action.RESTORE_FROM_TRASH"
         const val EXTRA_TRASH_ID = "trash_id"
+        const val ACTION_OPEN_TAB = "io.github.imlemos.clock.action.OPEN_TAB"
+        const val EXTRA_TAB = "tab"
+        const val TAB_TIMERS = "timers"
+        const val TAB_STOPWATCH = "stopwatch"
+
+        /** Opens the app on [tab] (from a timer or stopwatch notification). */
+        fun openTabIntent(context: Context, tab: String): PendingIntent = PendingIntent.getActivity(
+            context,
+            tab.hashCode(),
+            Intent(context, MainActivity::class.java).setAction(ACTION_OPEN_TAB).putExtra(EXTRA_TAB, tab)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
     }
 
     /** Avoids a first frame in the wrong theme: hold the system splash until DataStore answers. */

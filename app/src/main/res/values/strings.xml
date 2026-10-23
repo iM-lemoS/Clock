@@ -25,7 +25,6 @@
     <string name="timers_empty_body">Tap + to save a timer.</string>
 
     <!-- Stopwatch. The separator before hundredths follows the language's decimal mark. -->
-    <string name="stopwatch_zero">00:00.00</string>
     <string name="stopwatch_empty_title">Laps will appear here.</string>
 
     <!-- Settings -->
@@ -392,4 +391,45 @@
     <string name="layout_preset_tall">Tall</string>
     <string name="layout_preset_classic">Classic</string>
     <string name="snooze_dial_hint">Slide to a time and let go</string>
+    <!-- Timers (docs/PLANO.md 4) -->
+    <string name="timer_default_name">Timer %1$s</string>
+    <string name="timer_start">Start</string>
+    <string name="timer_pause">Pause</string>
+    <string name="timer_resume">Resume</string>
+    <string name="timer_reset">Reset</string>
+    <string name="timer_stop">Stop</string>
+    <string name="timer_add_minute">+1 min</string>
+    <string name="timer_paused_left">Paused · %1$s left</string>
+    <string name="timer_status_paused">Paused</string>
+    <string name="timer_done_title">Time\'s up</string>
+    <string name="timer_edit">Edit</string>
+    <string name="timer_delete">Delete timer</string>
+    <string name="timer_new_title">New timer</string>
+    <string name="timer_edit_title">Edit timer</string>
+    <string name="timer_name">Name</string>
+    <string name="wheel_seconds">Seconds</string>
+    <plurals name="timers_running">
+        <item quantity="one">%d timer</item>
+        <item quantity="other">%d timers</item>
+    </plurals>
+    <string name="channel_timers">Running timers</string>
+    <string name="channel_timers_description">The countdown of each running timer.</string>
+    <string name="channel_timer_ringing">Finished timers</string>
+    <string name="channel_timer_ringing_description">Rings when a timer reaches zero.</string>
+    <!-- Stopwatch (docs/PLANO.md 5) -->
+    <string name="stopwatch_start">Start</string>
+    <string name="stopwatch_pause">Pause</string>
+    <string name="stopwatch_resume">Resume</string>
+    <string name="stopwatch_lap">Lap</string>
+    <string name="stopwatch_reset">Reset</string>
+    <string name="stopwatch_lap_number">Lap %1$d</string>
+    <string name="stopwatch_fastest">Fastest</string>
+    <string name="stopwatch_slowest">Slowest</string>
+    <string name="stopwatch_paused_at">Paused at %1$s</string>
+    <plurals name="stopwatch_laps">
+        <item quantity="one">%d lap</item>
+        <item quantity="other">%d laps</item>
+    </plurals>
+    <string name="channel_stopwatch">Stopwatch</string>
+    <string name="channel_stopwatch_description">The stopwatch while it runs.</string>
 </resources>

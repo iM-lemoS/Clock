@@ -190,11 +190,20 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - **Quando acaba**: ecrã bloqueado/apagado → **ecrã inteiro** como um alarme; telemóvel em uso → **notificação pop-up persistente** com som até ser desligada.
 - **Live Updates (Android 16)** para mostrar a contagem nas superfícies do sistema; em versões anteriores, notificação contínua normal. Superfícies de fabricante (ex.: Fluid Cloud da OPPO, Now Bar da Samsung) aproveitam-nas quando o sistema as liga; a validar no dispositivo de referência.
 
+- Implementado (fase 7): fim do timer marcado no `AlarmManager` com `elapsedRealtime` (imune a mudanças manuais da hora) e hora real guardada para sobreviver a reinícios; tocar usa um serviço próprio (como os alarmes) com som até parar ou 10 min; "+1 min"; com a app aberta abre logo o ecrã "Tempo esgotado"; se a app morrer a tocar, volta a tocar quando arranca.
+
 ## 5. Cronómetro
 
 - Iniciar, pausar, retomar, reiniciar.
 - Voltas, com destaque da mais rápida e da mais lenta.
 - Baseado em timestamps (continua certo com a app fechada), com notificação enquanto corre; candidato a Live Update.
+
+### 5.1 Relógio mundial (acrescentado durante a fase 7)
+
+- Separador próprio: **Alarmes · Relógio mundial · Timers · Cronómetro**.
+- Lista de cidades escolhidas (começa vazia), com o mesmo seletor de fusos dos alarmes (pesquisa por cidade ou país, nomes no idioma do telemóvel).
+- Cada cidade mostra a **hora atual**, a **diferença para aqui** ("+5 h", "−3 h 30") , **dia ou noite** e a **data quando é outro dia**.
+- Reordenar e apagar; atalho para **criar um alarme no fuso dessa cidade**.
 
 ---
 
@@ -235,7 +244,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
   - Não usar as fontes proprietárias da Nothing.
 - Respeitar o tamanho de letra do sistema sem partir layouts.
 - Ícones de traço fino, detalhes com pontos, muito espaço vazio.
-- **Navegação**: barra inferior **Alarmes · Timers · Cronómetro**; definições no topo.
+- **Navegação**: barra inferior **Alarmes · Relógio mundial · Timers · Cronómetro**, distribuída de canto a canto; definições no topo.
 
 ### Liquid Glass
 
@@ -272,8 +281,9 @@ Cada fase termina com um **APK instalado e testado** no dispositivo de referênc
 | **5. Fusos horários** | Fuso por alarme, fuso manual geral, dupla hora | Mudar o fuso à mão; mudança de hora |
 | **6. Ecrã do alarme** | Roda de snooze, editor e biblioteca de layouts, fundos, animações, testar alarme, alternativas acessíveis | Editor, vídeo, TalkBack, ecrãs de tamanhos diferentes |
 | **7. Timers e cronómetro** | Timers guardados e múltiplos, ecrã inteiro vs pop-up, cronómetro, Live Updates | Vários timers, bloqueado vs em uso |
-| **8. Definições e acabamento** | Todas as definições, cor de destaque, transições, ícone | Revisão geral |
-| **9. Validação e publicação** | Bateria de testes completa (secção 10), README em inglês, licença, primeira release | Alguns dias de uso real |
+| **8. Relógio mundial** | Separador novo (5.1): cidades, diferenças, dia/noite, alarme no fuso da cidade | Vários fusos, mudança de hora |
+| **9. Definições e acabamento** | Todas as definições, cor de destaque, transições, ícone | Revisão geral |
+| **10. Validação e publicação** | Bateria de testes completa (secção 10), README em inglês, licença, primeira release | Alguns dias de uso real |
 
 ---
 

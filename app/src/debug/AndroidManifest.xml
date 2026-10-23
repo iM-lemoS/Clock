@@ -13,6 +13,7 @@
                 <action android:name="io.github.imlemos.clock.debug.SET_NOTICES" />
                 <action android:name="io.github.imlemos.clock.debug.SET_AUDIO_OUTPUT" />
                 <action android:name="io.github.imlemos.clock.debug.SET_MANUAL_ZONE" />
+                <action android:name="io.github.imlemos.clock.debug.START_TIMER" />
             </intent-filter>
         </receiver>
     </application>

@@ -15,6 +15,7 @@ import io.github.imlemos.clock.core.data.prefs.AudioOutput
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
+import io.github.imlemos.clock.timer.data.TimerController
 import java.time.DayOfWeek
 import java.time.LocalDate
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +43,8 @@ import javax.inject.Inject
  * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_NOTICES -n <same component> --es minutes 30,5
  *     (empty string disables notices)
  * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_AUDIO_OUTPUT -n <same component> --es output PHONE_ONLY
+ * adb shell am broadcast -a io.github.imlemos.clock.debug.START_TIMER -n <same component> --ei seconds 10 --es name Tea
+ *     (creates a timer and starts it)
  * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_MANUAL_ZONE -n <same component> --es zone Asia/Tokyo
  *     (empty string = automatic)
  * ```
@@ -53,6 +56,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
     @Inject lateinit var repository: AlarmRepository
     @Inject lateinit var clock: Clock
     @Inject lateinit var settings: SettingsRepository
+    @Inject lateinit var timers: TimerController
 
     override fun onReceive(context: Context, intent: Intent) {
         val pending = goAsync()
@@ -72,6 +76,11 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                     ACTION_DELETE_ALL -> {
                         repository.getGroups().forEach { controller.deleteGroup(it.id, withAlarms = true) }
                         repository.getAll().forEach { controller.delete(it.id) }
+                    }
+                    ACTION_START_TIMER -> {
+                        val id = timers.create(intent.getStringExtra("name").orEmpty(), intent.getIntExtra("seconds", 10) * 1000L)
+                        timers.start(id)
+                        Log.i(TAG, "Test timer $id started")
                     }
                     ACTION_SET_MANUAL_ZONE ->
                         settings.setManualZone(intent.getStringExtra("zone")?.takeIf(String::isNotBlank)?.let(ZoneId::of))
@@ -141,6 +150,7 @@ class DebugCommandsReceiver : BroadcastReceiver() {
         const val ACTION_TEST_ALARM = "io.github.imlemos.clock.debug.TEST_ALARM"
         const val ACTION_DELETE_ALL = "io.github.imlemos.clock.debug.DELETE_ALL_ALARMS"
         const val ACTION_SET_NOTICES = "io.github.imlemos.clock.debug.SET_NOTICES"
+        const val ACTION_START_TIMER = "io.github.imlemos.clock.debug.START_TIMER"
         const val ACTION_SET_MANUAL_ZONE = "io.github.imlemos.clock.debug.SET_MANUAL_ZONE"
         const val ACTION_SET_AUDIO_OUTPUT = "io.github.imlemos.clock.debug.SET_AUDIO_OUTPUT"
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
