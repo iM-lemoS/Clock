@@ -1,0 +1,33 @@
+<p>O Clock é uma app de relógio open source construída à volta de uma promessa: <b>alarmes que tocam sempre</b>, moldados à tua maneira de acordar. Sem permissão de internet, sem anúncios, sem analytics, sem contas.</p>
+
+<p><b>Alarmes que tocam sempre</b></p>
+<ul>
+<li>Agendamento de alarmes com a prioridade máxima: toca em Doze, por cima do ecrã de bloqueio, e até antes do primeiro desbloqueio depois de reiniciar.</li>
+<li>Reagendados depois de reiniciar, de atualizações da app e de mudanças de hora ou de fuso; um alarme perdido é sempre comunicado.</li>
+<li>Um ecrã de fiabilidade verifica as notificações, o ecrã inteiro e os limites de bateria, com passos para ColorOS, HyperOS/MIUI e One UI.</li>
+</ul>
+
+<p><b>Alarmes à tua maneira</b></p>
+<ul>
+<li>Uma vez, em dias da semana à escolha ou em datas específicas; alarmes de utilização única; saltar a próxima ocorrência.</li>
+<li>Avisos antes do alarme (minutos, horas ou dias, vários ao mesmo tempo) com "Desligar este".</li>
+<li>Duração do toque e do snooze por alarme, predefinidas ou personalizadas.</li>
+<li>Qualquer toque do sistema ou um ficheiro de áudio teu, volume gradual, seis padrões de vibração ou vibração sincronizada com o som, saída no telemóvel e no Bluetooth.</li>
+<li>Grupos com interruptor mestre, seleção múltipla e edição em lote, aviso de colisões e caixote do lixo com anular.</li>
+</ul>
+
+<p><b>Desenha o ecrã com que acordas</b></p>
+<ul>
+<li>Toca em Snooze, ou mantém premido e desliza sobre uma roda para escolher outra duração. Desliza para desligar.</li>
+<li>Uma biblioteca de layouts e um editor: estilos de relógio, sete letras, cores, formato da data, e fundos de cor sólida, gradiente, foto, vídeo sem som ou animados.</li>
+</ul>
+
+<p><b>E mais</b></p>
+<ul>
+<li>Um fuso por alarme, um fuso manual para a app e as duas horas visíveis.</li>
+<li>Relógio mundial, vários timers ao mesmo tempo com notificações ao vivo, e cronómetro com voltas.</li>
+<li>Preto e branco com uma cor de destaque, dígitos em matriz de pontos, temas claro e escuro, controlos em liquid glass.</li>
+<li>Inglês e português europeu.</li>
+</ul>
+
+<p>Os toques, fotos e vídeos vêm dos seletores do sistema, por isso o Clock também não precisa de permissões de armazenamento. Código: https://github.com/iM-lemoS/Clock</p>

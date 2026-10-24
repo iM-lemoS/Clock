@@ -1,0 +1,33 @@
+<p>Clock is an open-source clock app built around one promise: <b>alarms that always ring</b>, shaped to the way you wake up. No internet permission, no ads, no analytics, no accounts.</p>
+
+<p><b>Alarms that always ring</b></p>
+<ul>
+<li>Highest-priority alarm scheduling: rings in Doze, over the lock screen, and even before the first unlock after a reboot.</li>
+<li>Rescheduled after reboots, app updates and time or time zone changes; a missed alarm is always reported.</li>
+<li>An alarm reliability screen checks notifications, full-screen alarms and battery limits, with steps for ColorOS, HyperOS/MIUI and One UI.</li>
+</ul>
+
+<p><b>Alarms your way</b></p>
+<ul>
+<li>Once, on chosen weekdays or on specific dates; single-use alarms; skip the next occurrence.</li>
+<li>Notices before an alarm (minutes, hours or days, several at once) with "Dismiss this one".</li>
+<li>Ring duration and snooze length per alarm, preset or custom.</li>
+<li>Any system tone or your own audio file, gradual volume, six vibration patterns or vibration synced to the sound, phone and Bluetooth output.</li>
+<li>Groups with a master switch, multi-select and batch edit, collision warnings and a trash with undo.</li>
+</ul>
+
+<p><b>Design the screen you wake up to</b></p>
+<ul>
+<li>Tap Snooze, or hold it and slide over a dial to choose another length. Slide to dismiss.</li>
+<li>A library of layouts and an editor: clock styles, seven fonts, colours, date format, and solid, gradient, photo, silent video or animated backgrounds.</li>
+</ul>
+
+<p><b>And more</b></p>
+<ul>
+<li>A time zone per alarm, a manual app zone and both times shown.</li>
+<li>World clock, several timers at once with live notifications, and a stopwatch with laps.</li>
+<li>Black and white with one accent colour, dot-matrix digits, light and dark themes, liquid glass controls.</li>
+<li>English and European Portuguese.</li>
+</ul>
+
+<p>Tones, photos and videos come from the system pickers, so Clock needs no storage permission either. Source code: https://github.com/iM-lemoS/Clock</p>

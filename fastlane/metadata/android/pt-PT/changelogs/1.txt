@@ -1,0 +1,1 @@
+Primeira versão pública: alarmes que tocam sempre, com som, vibração, duração do toque e snooze por alarme, avisos, datas e fusos horários, layouts do ecrã do alarme com editor, relógio mundial, timers e cronómetro. Sem permissão de internet.

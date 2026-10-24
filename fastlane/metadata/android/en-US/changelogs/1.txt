@@ -1,0 +1,1 @@
+First public build: alarms that always ring, with per-alarm sound, vibration, ring duration and snooze, notices, dates and time zones, alarm screen layouts with an editor, world clock, timers and stopwatch. No internet permission.
