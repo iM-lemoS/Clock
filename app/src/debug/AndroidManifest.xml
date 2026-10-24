@@ -14,6 +14,8 @@
                 <action android:name="io.github.imlemos.clock.debug.SET_AUDIO_OUTPUT" />
                 <action android:name="io.github.imlemos.clock.debug.SET_MANUAL_ZONE" />
                 <action android:name="io.github.imlemos.clock.debug.START_TIMER" />
+                <action android:name="io.github.imlemos.clock.debug.PIN_WIDGET" />
+                <action android:name="io.github.imlemos.clock.debug.EXPORT_WIDGET_PREVIEWS" />
             </intent-filter>
         </receiver>
     </application>

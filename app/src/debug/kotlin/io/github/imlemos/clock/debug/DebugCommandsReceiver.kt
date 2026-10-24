@@ -1,6 +1,9 @@
 package io.github.imlemos.clock.debug
 
+import android.annotation.SuppressLint
+import android.appwidget.AppWidgetManager
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -17,6 +20,15 @@ import io.github.imlemos.clock.core.scheduling.Recurrence
 import io.github.imlemos.clock.core.scheduling.TimeOfDay
 import io.github.imlemos.clock.timer.data.TimerController
 import io.github.imlemos.clock.timer.data.TimerRepository
+import androidx.compose.ui.graphics.toArgb
+import io.github.imlemos.clock.R
+import io.github.imlemos.clock.alarm.layout.render.layoutDateLines
+import io.github.imlemos.clock.core.designsystem.theme.AccentPalette
+import io.github.imlemos.clock.widget.ClockWidgetProvider
+import io.github.imlemos.clock.widget.WidgetConfig
+import io.github.imlemos.clock.widget.WidgetContent
+import io.github.imlemos.clock.widget.WidgetRenderer
+import io.github.imlemos.clock.widget.NextAlarmWidgetProvider
 import java.time.DayOfWeek
 import java.time.LocalDate
 import kotlinx.coroutines.CoroutineScope
@@ -49,6 +61,10 @@ import javax.inject.Inject
  *     (creates a timer and starts it)
  * adb shell am broadcast -a io.github.imlemos.clock.debug.SET_MANUAL_ZONE -n <same component> --es zone Asia/Tokyo
  *     (empty string = automatic)
+ * adb shell am broadcast -a io.github.imlemos.clock.debug.PIN_WIDGET -n <same component> --es kind clock
+ *     (the app must be open; asks the launcher to add a widget: clock | next_alarm)
+ * adb shell am broadcast -a io.github.imlemos.clock.debug.EXPORT_WIDGET_PREVIEWS -n <same component>
+ *     (draws the widget picker previews, in English and Portuguese, into files/previews)
  * ```
  */
 @AndroidEntryPoint
@@ -90,6 +106,20 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                         settings.setManualZone(intent.getStringExtra("zone")?.takeIf(String::isNotBlank)?.let(ZoneId::of))
                     ACTION_SET_AUDIO_OUTPUT ->
                         settings.setAudioOutput(AudioOutput.valueOf(intent.getStringExtra("output").orEmpty()))
+                    ACTION_PIN_WIDGET -> {
+                        val provider = when (intent.getStringExtra("kind")) {
+                            "next_alarm" -> NextAlarmWidgetProvider::class.java
+                            else -> ClockWidgetProvider::class.java
+                        }
+                        val manager = context.getSystemService(AppWidgetManager::class.java)
+                        // The app must be in the foreground: open it first.
+                        val asked = manager.isRequestPinAppWidgetSupported &&
+                            runCatching { manager.requestPinAppWidget(ComponentName(context, provider), null, null) }
+                                .onFailure { Log.w(TAG, "Pin widget failed", it) }
+                                .getOrDefault(false)
+                        Log.i(TAG, "Pin widget ${provider.simpleName}: requested=$asked")
+                    }
+                    ACTION_EXPORT_WIDGET_PREVIEWS -> exportWidgetPreviews(context)
                     ACTION_SET_NOTICES -> {
                         val minutes = intent.getStringExtra("minutes").orEmpty().split(',').mapNotNull { it.trim().toIntOrNull() }
                         settings.setNoticeMinutes(minutes.toSet())
@@ -100,6 +130,44 @@ class DebugCommandsReceiver : BroadcastReceiver() {
                 pending.finish()
             }
         }
+    }
+
+    /** The widget picker's sample images: each widget's default look with sample content. */
+    // Draws in each language through a configuration context; nothing changes the app's locale.
+    @SuppressLint("AppBundleLocaleChanges")
+    private fun exportWidgetPreviews(context: Context) {
+        val dir = java.io.File(context.filesDir, "previews").apply { mkdirs() }
+        val density = 3f
+        listOf("en", "pt").forEach { language ->
+            val localized = context.createConfigurationContext(
+                android.content.res.Configuration(context.resources.configuration).apply { setLocale(java.util.Locale.forLanguageTag(language)) },
+            )
+            val res = localized.resources
+            val locale = java.util.Locale.forLanguageTag(language)
+            val renderer = WidgetRenderer(localized) { java.io.File(it) }
+            val date = layoutDateLines(java.time.LocalDate.of(2026, 10, 24), WidgetConfig().date, locale)
+            val samples = listOf(
+                Triple("clock", 330 to 150, WidgetContent("09", "30", lines = date)),
+                Triple(
+                    "next_alarm",
+                    250 to 150,
+                    WidgetContent(
+                        "07",
+                        "00",
+                        lines = listOf(
+                            res.getString(R.string.widget_tomorrow) + " · " + res.getString(R.string.widget_preview_label),
+                            res.getString(R.string.alarm_rings_in, res.getString(R.string.duration_hours_minutes, 9, 30)),
+                        ),
+                        action = res.getString(R.string.alarm_skip_next),
+                    ),
+                ),
+            )
+            samples.forEach { (name, size, content) ->
+                val image = renderer.render(WidgetConfig(), content, (size.first * density).toInt(), (size.second * density).toInt(), density, night = true, accent = AccentPalette.Default.color.toArgb())
+                java.io.File(dir, "widget_preview_${name}_$language.png").outputStream().use { image.bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+            }
+        }
+        Log.i(TAG, "Widget previews written to $dir")
     }
 
     /** An alarm at the start of the minute [minutes] from now; one-off unless days or dates are given. */
@@ -155,6 +223,8 @@ class DebugCommandsReceiver : BroadcastReceiver() {
         const val ACTION_TEST_ALARM = "io.github.imlemos.clock.debug.TEST_ALARM"
         const val ACTION_DELETE_ALL = "io.github.imlemos.clock.debug.DELETE_ALL_ALARMS"
         const val ACTION_SET_NOTICES = "io.github.imlemos.clock.debug.SET_NOTICES"
+        const val ACTION_PIN_WIDGET = "io.github.imlemos.clock.debug.PIN_WIDGET"
+        const val ACTION_EXPORT_WIDGET_PREVIEWS = "io.github.imlemos.clock.debug.EXPORT_WIDGET_PREVIEWS"
         const val ACTION_START_TIMER = "io.github.imlemos.clock.debug.START_TIMER"
         const val ACTION_SET_MANUAL_ZONE = "io.github.imlemos.clock.debug.SET_MANUAL_ZONE"
         const val ACTION_SET_AUDIO_OUTPUT = "io.github.imlemos.clock.debug.SET_AUDIO_OUTPUT"
