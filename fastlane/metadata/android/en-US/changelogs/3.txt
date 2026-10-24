@@ -1,0 +1,1 @@
+New widgets: Clock and Next alarm, in the app's own fonts and styled however you like (fonts, colours, gradient or photo backgrounds, seven ready-made styles). The next-alarm widget has a Skip next button and a warning when alarms may not ring.

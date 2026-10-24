@@ -213,7 +213,7 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - Reordenar e apagar; atalho para **criar um alarme no fuso dessa cidade**.
 - Implementado (fase 8): "dia" é das 7h às 19h locais (regra simples, sem localização); a barra de baixo tem 4 botões da mesma largura e os nomes longos encolhem para caber.
 
-### 5.2 Widgets (depois da 0.2.0, branch `feature/widgets`)
+### 5.2 Widgets (lançados na 0.3.0, 24 out 2026)
 
 Lista combinada: **próximo alarme**, **relógio**, sesta / alarme rápido, lista de alarmes, timers, relógio mundial, cronómetro. Primeiro os dois primeiros; os outros ficam para depois.
 

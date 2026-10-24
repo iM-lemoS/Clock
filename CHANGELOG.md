@@ -4,6 +4,8 @@ All notable changes to Clock. Versions follow [Semantic Versioning](https://semv
 
 ## Unreleased
 
+## [0.3.0](https://github.com/iM-lemoS/Clock/releases/tag/v0.3.0) (2026-10-24)
+
 - Widgets: **Clock** and **Next alarm**, drawn in the app's own fonts and fully customisable (time
   shape, font, weight, dots, separator, colours, background, corners, alignment), with seven
   ready-made styles, a live preview in light and dark, and Settings > Widgets to add and edit them.

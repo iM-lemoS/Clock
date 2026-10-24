@@ -1,0 +1,1 @@
+Novos widgets: Relógio e Próximo alarme, com as letras da app e ao teu gosto (letras, cores, fundos com gradiente ou foto, sete estilos prontos). O widget do próximo alarme tem o botão Saltar próximo e um aviso quando os alarmes podem não tocar.
