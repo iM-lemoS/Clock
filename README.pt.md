@@ -22,10 +22,7 @@ o ecrã com que acordas, crias alarmes para datas específicas ou noutro fuso ho
 quando uma definição do telemóvel pode impedir um alarme de tocar. Sem internet, sem anúncios, sem
 rastreio.
 
-<p align="center">
-  <a href="docs/media/clock.mp4"><img src="docs/media/video-poster.jpg" alt="Vê a apresentação de 36 segundos" width="80%"></a>
-  <br><sub>Toca para veres a apresentação de 36 segundos (em inglês)</sub>
-</p>
+https://github.com/user-attachments/assets/4e3541b6-3a30-4da8-b956-d2fcdec1641c
 
 ## Capturas de ecrã
 

@@ -20,10 +20,7 @@ how long each alarm rings and snoozes, pick a snooze length on the spot, design 
 wake up to, set alarms for specific dates or in another time zone, and get warned when a phone
 setting could keep an alarm from ringing. No internet, no ads, no tracking.
 
-<p align="center">
-  <a href="docs/media/clock.mp4"><img src="docs/media/video-poster.jpg" alt="Watch the 36-second tour" width="80%"></a>
-  <br><sub>Tap to watch the 36-second tour</sub>
-</p>
+https://github.com/user-attachments/assets/4e3541b6-3a30-4da8-b956-d2fcdec1641c
 
 ## Screenshots
 
