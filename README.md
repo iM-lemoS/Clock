@@ -49,6 +49,7 @@ https://github.com/user-attachments/assets/4e3541b6-3a30-4da8-b956-d2fcdec1641c
   with "Dismiss this one".
 - Groups with a master switch, multi-select and batch edit, collision warnings, and a trash with
   undo.
+- Duplicate an alarm to start a new one from all its settings.
 - Type the time on the keyboard or spin the wheels.
 
 **Sound and vibration**

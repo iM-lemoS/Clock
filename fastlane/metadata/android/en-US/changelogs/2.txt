@@ -1,0 +1,1 @@
+Duplicate alarms: from the editor (an unsaved copy of everything on screen) or from multi-select (copies start switched off). The multi-select bar fits all its actions.

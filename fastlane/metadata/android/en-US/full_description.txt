@@ -13,7 +13,7 @@
 <li>Notices before an alarm (minutes, hours or days, several at once) with "Dismiss this one".</li>
 <li>Ring duration and snooze length per alarm, preset or custom.</li>
 <li>Any system tone or your own audio file, gradual volume, six vibration patterns or vibration synced to the sound, phone and Bluetooth output.</li>
-<li>Groups with a master switch, multi-select and batch edit, collision warnings and a trash with undo.</li>
+<li>Groups with a master switch, multi-select, batch edit and duplicate, collision warnings and a trash with undo.</li>
 </ul>
 
 <p><b>Design the screen you wake up to</b></p>

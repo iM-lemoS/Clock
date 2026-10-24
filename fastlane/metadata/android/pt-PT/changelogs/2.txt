@@ -1,0 +1,1 @@
+Duplicar alarmes: no editor (uma cópia por guardar de tudo o que está no ecrã) ou na seleção múltipla (as cópias ficam desligadas). A barra da seleção múltipla mostra todas as ações.

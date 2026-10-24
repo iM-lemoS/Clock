@@ -4,6 +4,12 @@ All notable changes to Clock. Versions follow [Semantic Versioning](https://semv
 
 ## Unreleased
 
+## [0.2.0](https://github.com/iM-lemoS/Clock/releases/tag/v0.2.0) (2026-10-24)
+
+- Duplicate alarms: from the editor (opens an unsaved copy with everything on screen) or from
+  multi-select (copies start switched off, so they never ring together with the original).
+- The multi-select bar fits six actions; long labels shrink instead of being cut.
+
 ## [0.1.0](https://github.com/iM-lemoS/Clock/releases/tag/v0.1.0) (2026-10-24)
 
 First public build. Full notes: [`docs/releases/v0.1.0.md`](docs/releases/v0.1.0.md).

@@ -13,7 +13,7 @@
 <li>Avisos antes do alarme (minutos, horas ou dias, vários ao mesmo tempo) com "Desligar este".</li>
 <li>Duração do toque e do snooze por alarme, predefinidas ou personalizadas.</li>
 <li>Qualquer toque do sistema ou um ficheiro de áudio teu, volume gradual, seis padrões de vibração ou vibração sincronizada com o som, saída no telemóvel e no Bluetooth.</li>
-<li>Grupos com interruptor mestre, seleção múltipla e edição em lote, aviso de colisões e caixote do lixo com anular.</li>
+<li>Grupos com interruptor mestre, seleção múltipla, edição em lote e duplicar, aviso de colisões e caixote do lixo com anular.</li>
 </ul>
 
 <p><b>Desenha o ecrã com que acordas</b></p>

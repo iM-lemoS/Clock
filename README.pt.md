@@ -52,6 +52,7 @@ https://github.com/user-attachments/assets/4e3541b6-3a30-4da8-b956-d2fcdec1641c
   tempo) com "Desligar este".
 - Grupos com interruptor mestre, seleção múltipla e edição em lote, aviso de colisões e caixote do
   lixo com anular.
+- Duplica um alarme para começares um novo com todas as definições dele.
 - Escreve a hora no teclado ou roda as rodas.
 
 **Som e vibração**

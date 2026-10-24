@@ -172,7 +172,8 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 ### 3.9 Seleção, edição em lote e apagar
 
 - **Pressão longa** num cartão → seleção múltipla.
-- Ações em lote: apagar, ligar/desligar, mover para grupo, **editar em lote** (cada campo começa em "não alterar").
+- Ações em lote: apagar, ligar/desligar, mover para grupo, **editar em lote** (cada campo começa em "não alterar"), **duplicar** (as cópias ficam desligadas para não tocarem ao mesmo tempo que o original).
+- **Duplicar** no editor: o ecrã passa a ser uma cópia nova com tudo o que lá está; o original não muda e a cópia só é criada ao guardar.
 - **Apagar grupo**: só o grupo (alarmes ficam soltos) ou grupo + alarmes.
 
 ### 3.10 Caixote do lixo
