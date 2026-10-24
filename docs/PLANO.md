@@ -213,6 +213,31 @@ Vários fabricantes fecham apps em segundo plano de forma agressiva (OPPO/realme
 - Reordenar e apagar; atalho para **criar um alarme no fuso dessa cidade**.
 - Implementado (fase 8): "dia" é das 7h às 19h locais (regra simples, sem localização); a barra de baixo tem 4 botões da mesma largura e os nomes longos encolhem para caber.
 
+### 5.2 Widgets (depois da 0.2.0, branch `feature/widgets`)
+
+Lista combinada: **próximo alarme**, **relógio**, sesta / alarme rápido, lista de alarmes, timers, relógio mundial, cronómetro. Primeiro os dois primeiros; os outros ficam para depois.
+
+**Altamente personalizáveis no aspeto** (pedido explícito), com predefinições de estilo para começar depressa:
+
+- **Hora**: em linha ou empilhada (horas por cima dos minutos), as 7 letras da app, espessura, arredondamento dos pontos (Doto), separador (pontos desenhados, os dois pontos da letra, nenhum), cor da hora e cor do separador, tamanho.
+- **Detalhes** (data, dia, etiqueta…): letra, cor e tamanho próprios; a data escolhe as partes e a disposição como no editor de layouts.
+- **Cores**: automática (segue o tema claro/escuro do telemóvel), cor de destaque da app, ou qualquer cor.
+- **Fundo**: nenhum, cor, gradiente (com direção) ou foto; opacidade, escurecer a foto e raio dos cantos.
+- **Disposição**: alinhamento (esquerda, centro, direita) e margens.
+
+**Próximo alarme**: hora do próximo alarme ligado, dia ("Amanhã", "Sáb, 26 out"), etiqueta, "Toca daqui a…", botão **Saltar próximo** (e anular) nos alarmes que se repetem, e um **aviso vermelho "Os alarmes podem não tocar"** quando o ecrã de fiabilidade encontra um problema. Sem alarmes: mostra isso mesmo. Tocar abre a app.
+
+**Relógio**: hora e data atuais; tocar abre a app.
+
+**Configuração**: abre ao adicionar o widget e pode ser reaberta depois (widget reconfigurável), com pré-visualização exata em claro e escuro.
+
+**Como funciona (decisões técnicas, verificadas em 24 out 2026)**:
+
+- O launcher desenha os widgets num contexto restrito em que o Android **ignora as letras da app** (`TextView` só carrega fontes de recursos se o contexto não for restrito), e mudar a espessura de letras variáveis por `RemoteViews` só é permitido a partir do Android 15. Por isso o widget é **desenhado pela app numa imagem** (Canvas, com as mesmas letras, espessuras e o separador desenhado da app), igual em todas as versões a partir do Android 12.
+- **Claro e escuro**: são geradas as duas imagens e o launcher mostra a certa (layout com variante `-night`), por isso muda logo com o tema.
+- **Atualização a cada minuto** com um alarme exato **não-wakeup**: só corre com o ecrã ligado; com o ecrã desligado não há trabalho nenhum e o widget acerta assim que o ecrã liga. Com um widget no ecrã o Android mantém a app no grupo "ativo" (`am get-standby-bucket` = 10, mesmo depois de a forçar para "rare"), por isso o alarme do minuto não é atrasado.
+- O próximo alarme também atualiza sempre que os alarmes mudam, depois de reiniciar e quando a hora ou o fuso mudam.
+
 ---
 
 ## 6. Definições da app
@@ -354,4 +379,4 @@ Cada fase termina com um **APK instalado e testado** no dispositivo de referênc
 - Nas colisões, manda o alarme criado primeiro.
 - Snooze reinicia a duração do toque completa.
 - minSdk 31; sem permissão de internet; inglês como idioma padrão.
-- Fora da v1: widgets, backup/exportação. (O relógio mundial entrou na v1, fase 8.)
+- Fora da v1: widgets, backup/exportação. (O relógio mundial entrou na v1, fase 8; os widgets começaram depois da 0.2.0, secção 5.2.)
