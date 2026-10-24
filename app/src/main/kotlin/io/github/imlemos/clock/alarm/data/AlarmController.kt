@@ -16,6 +16,7 @@ import io.github.imlemos.clock.trash.TrashRepository
 import io.github.imlemos.clock.trash.TrashedAlarm
 import io.github.imlemos.clock.trash.TrashedGroup
 import io.github.imlemos.clock.trash.TrashedLayout
+import io.github.imlemos.clock.widget.WidgetUpdater
 import kotlinx.coroutines.flow.first
 import java.time.Clock
 import java.time.Duration
@@ -36,6 +37,7 @@ class AlarmController @Inject constructor(
     private val settings: SettingsRepository,
     private val ringtones: RingtoneStore,
     private val clock: Clock,
+    private val widgets: WidgetUpdater,
 ) {
     /** Saves an edited or new alarm. Editing clears any snooze or skip and re-arms the alarm. */
     suspend fun save(alarm: Alarm): Alarm {
@@ -292,6 +294,7 @@ class AlarmController @Inject constructor(
 
     /** Schedules the alarm and its upcoming notice, or cancels both (also when its group is off). */
     private suspend fun schedule(alarm: Alarm) {
+        widgets.alarmsChanged()
         val trigger = scheduler.schedule(if (isActive(alarm)) alarm else alarm.copy(enabled = false))
         if (trigger == null || trigger.isSnooze) {
             scheduler.cancelNotice(alarm.id)
@@ -310,6 +313,7 @@ class AlarmController @Inject constructor(
     }
 
     private fun unschedule(id: Long) {
+        widgets.alarmsChanged()
         scheduler.cancel(id)
         notifications.cancelUpcoming(id)
     }

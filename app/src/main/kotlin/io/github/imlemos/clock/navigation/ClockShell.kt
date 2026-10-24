@@ -112,6 +112,7 @@ fun ClockShell(
     val backStack = rememberNavBackStack(AlarmsDestination)
     LaunchedEffect(requestedTab) {
         val tab = when (requestedTab) {
+            MainActivity.TAB_ALARMS -> AlarmsDestination
             MainActivity.TAB_TIMERS -> TimersDestination
             MainActivity.TAB_STOPWATCH -> StopwatchDestination
             else -> return@LaunchedEffect

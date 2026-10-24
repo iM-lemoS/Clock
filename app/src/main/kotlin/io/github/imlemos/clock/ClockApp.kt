@@ -6,6 +6,7 @@ import io.github.imlemos.clock.alarm.data.AlarmController
 import io.github.imlemos.clock.alarm.scheduling.AlarmScheduler
 import io.github.imlemos.clock.stopwatch.StopwatchController
 import io.github.imlemos.clock.timer.data.TimerController
+import io.github.imlemos.clock.widget.WidgetUpdater
 import io.github.imlemos.clock.alarm.ui.ClockTimeFormat
 import io.github.imlemos.clock.core.data.prefs.SettingsRepository
 import io.github.imlemos.clock.core.notifications.NotificationChannels
@@ -23,6 +24,7 @@ class ClockApp : Application() {
     @Inject lateinit var scheduler: AlarmScheduler
     @Inject lateinit var timers: TimerController
     @Inject lateinit var stopwatch: StopwatchController
+    @Inject lateinit var widgets: WidgetUpdater
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val mainScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -36,6 +38,8 @@ class ClockApp : Application() {
             // Timers and the stopwatch: reschedule (force-stop clears AlarmManager) and resume ringing.
             timers.resync()
             stopwatch.resync()
+            // Widgets keep their minute ticks going across process restarts.
+            widgets.scheduleTick()
         }
         // The 12/24-hour choice is read everywhere times are formatted, including notifications.
         mainScope.launch { settings.timeFormat.collect { ClockTimeFormat.format = it } }

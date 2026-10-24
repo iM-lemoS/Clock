@@ -1,5 +1,6 @@
 package io.github.imlemos.clock.settings
 
+import io.github.imlemos.clock.widget.WidgetSettings
 import io.github.imlemos.clock.core.designsystem.rememberHaptics
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -91,6 +92,14 @@ enum class SettingsSection(@param:StringRes val title: Int, @param:StringRes val
     SOUND(R.string.settings_section_sound, R.string.settings_sound_summary, R.drawable.ic_volume_up),
     TIMERS(R.string.settings_section_timers, R.string.settings_timers_summary, R.drawable.ic_hourglass_empty),
     DATE_TIME(R.string.settings_section_datetime, R.string.settings_datetime_summary, R.drawable.ic_schedule),
+
+    /** Listed with the other pages, not with the categories. */
+    WIDGETS(R.string.settings_widgets, R.string.settings_widgets_summary, R.drawable.ic_widgets),
+    ;
+
+    companion object {
+        val categories = entries - WIDGETS
+    }
 }
 
 /** The settings home: the categories and the other pages, grouped in cards. */
@@ -108,7 +117,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     SettingsPage(stringResource(R.string.settings_title), onBack) {
         SettingsCard {
-            SettingsSection.entries.forEachIndexed { index, section ->
+            SettingsSection.categories.forEachIndexed { index, section ->
                 if (index > 0) CardDivider()
                 ClickableRow(
                     title = stringResource(section.title),
@@ -125,6 +134,13 @@ fun SettingsScreen(
                 summary = stringResource(R.string.settings_layouts_summary, defaultLayout?.let { layoutName(it) }.orEmpty()),
                 icon = R.drawable.ic_wallpaper,
                 onClick = onOpenLayouts,
+            )
+            CardDivider()
+            ClickableRow(
+                title = stringResource(SettingsSection.WIDGETS.title),
+                summary = stringResource(SettingsSection.WIDGETS.summary),
+                icon = SettingsSection.WIDGETS.icon,
+                onClick = { onOpenSection(SettingsSection.WIDGETS) },
             )
             CardDivider()
             ClickableRow(
@@ -195,6 +211,7 @@ fun SettingsSectionScreen(section: SettingsSection, onBack: () -> Unit, viewMode
             SettingsSection.SOUND -> SoundSettings(viewModel)
             SettingsSection.TIMERS -> TimerSettings(viewModel)
             SettingsSection.DATE_TIME -> DateTimeSettings(viewModel)
+            SettingsSection.WIDGETS -> WidgetSettings()
         }
     }
 }

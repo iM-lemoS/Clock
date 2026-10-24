@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Redrawn when alarms change and every minute; updatePeriodMillis only restarts that if it stopped. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="io.github.imlemos.clock.widget.WidgetConfigActivity"
+    android:description="@string/widget_next_alarm_description"
+    android:initialLayout="@layout/widget_image"
+    android:minWidth="110dp"
+    android:minHeight="50dp"
+    android:previewImage="@drawable/widget_preview_next_alarm"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="3"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable" />

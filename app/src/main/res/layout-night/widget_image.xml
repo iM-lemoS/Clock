@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Every widget: the app draws it as an image (launchers cannot use app fonts), once for light and
+  once for dark home screens. This dark variant shows the dark image; layout/ has the light one,
+  and the launcher picks the right one as soon as the theme changes.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/widget_light"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/widget_dark"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter" />
+
+    <!-- Tap area over the action button drawn at the bottom of the image (widgets cannot use a
+         plain View). -->
+    <FrameLayout
+        android:id="@+id/widget_action"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="bottom"
+        android:visibility="gone" />
+</FrameLayout>

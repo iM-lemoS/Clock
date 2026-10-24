@@ -21,6 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.imlemos.clock.widget.WidgetUpdater
+import javax.inject.Inject
 import io.github.imlemos.clock.core.data.prefs.ThemeMode
 import io.github.imlemos.clock.core.designsystem.component.OverlayRoot
 import io.github.imlemos.clock.core.designsystem.glass.rememberSystemReducesEffects
@@ -33,6 +35,8 @@ import io.github.imlemos.clock.navigation.ClockShell
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
+
+    @Inject lateinit var widgets: WidgetUpdater
 
     /** A tab asked for by a notification (timers, stopwatch); cleared once shown. */
     private var requestedTab by mutableStateOf<String?>(null)
@@ -68,6 +72,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        // Theme, accent, time format or alarms may have changed: widgets show it right away.
+        widgets.requestUpdateAll()
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
@@ -95,10 +105,11 @@ class MainActivity : ComponentActivity() {
         const val EXTRA_TRASH_ID = "trash_id"
         const val ACTION_OPEN_TAB = "io.github.imlemos.clock.action.OPEN_TAB"
         const val EXTRA_TAB = "tab"
+        const val TAB_ALARMS = "alarms"
         const val TAB_TIMERS = "timers"
         const val TAB_STOPWATCH = "stopwatch"
 
-        /** Opens the app on [tab] (from a timer or stopwatch notification). */
+        /** Opens the app on [tab] (from a timer or stopwatch notification, or a widget). */
         fun openTabIntent(context: Context, tab: String): PendingIntent = PendingIntent.getActivity(
             context,
             tab.hashCode(),
