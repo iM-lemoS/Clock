@@ -107,9 +107,12 @@ into the manifest.
 
 ## Download
 
-Clock needs **Android 12 or newer**. Signed APKs will be published on the
-[Releases](https://github.com/iM-lemoS/Clock/releases) page; until the first release, build it
-from source (below).
+Clock needs **Android 12 or newer**. Download `Clock-X.Y.Z.apk` from the
+[latest release](https://github.com/iM-lemoS/Clock/releases/latest) and open it on your phone
+(Android asks you to allow installs from your browser or file manager the first time).
+
+Every release is signed with the same key. Its SHA-256 certificate fingerprint is
+`03:5D:D5:5A:7C:59:84:20:3A:01:84:31:AA:7A:3C:F5:A3:00:C2:0A:09:81:F6:ED:61:85:A2:4A:5A:3D:FB:58`.
 
 ## Building from source
 

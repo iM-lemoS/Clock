@@ -4,7 +4,7 @@ All notable changes to Clock. Versions follow [Semantic Versioning](https://semv
 
 ## Unreleased
 
-## 0.1.0 (not released yet)
+## [0.1.0](https://github.com/iM-lemoS/Clock/releases/tag/v0.1.0) (2026-10-24)
 
 First public build. Full notes: [`docs/releases/v0.1.0.md`](docs/releases/v0.1.0.md).
 

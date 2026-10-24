@@ -101,8 +101,8 @@ the maintainer's phone.
 
 ### Database rule
 
-Until the first public release, schema version 1 may be regenerated. From then on every schema
-change bumps the version and ships with a migration and a test in `AppDatabaseMigrationTest`.
+0.1.0 is public (schema version 6), so every schema change bumps the version and ships with a
+migration and a test in `AppDatabaseMigrationTest`. Never regenerate or edit an exported schema.
 
 ## Commands
 

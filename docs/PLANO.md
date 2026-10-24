@@ -332,7 +332,7 @@ Cada fase termina com um **APK instalado e testado** no dispositivo de referênc
 ## 11. Open source e distribuição
 
 - **Licença**: GPL-3.0 (escolhida a 24 out 2026). As letras e os ícones mantêm as suas licenças em `licenses/`.
-- **Distribuição**: APK assinado nas GitHub Releases; mais tarde, F-Droid e/ou Google Play (o Play aceita `USE_EXACT_ALARM` para apps de alarme).
+- **Distribuição**: APK assinado nas GitHub Releases (a 0.1.0 saiu a 24 out 2026); mais tarde, F-Droid e/ou Google Play (o Play aceita `USE_EXACT_ALARM` para apps de alarme).
 - README e CONTRIBUTING em inglês e português (`README.pt.md`, `CONTRIBUTING.pt.md`); `SECURITY.md`, `CHANGELOG.md`, modelos de issues e de PR, Dependabot. Este plano fica em português como documento de produto.
 - Descrição para lojas em inglês e português em `fastlane/metadata/android` (formato que o F-Droid lê), com capturas de ecrã, ícone e gráfico de destaque.
 - Vídeo de apresentação (36 s) e banners em `docs/media`.

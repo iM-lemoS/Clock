@@ -114,9 +114,13 @@ destas permissões aparecer no manifesto.
 
 ## Transferir
 
-O Clock precisa de **Android 12 ou mais recente**. Os APKs assinados vão ser publicados na página
-de [Releases](https://github.com/iM-lemoS/Clock/releases); até à primeira release, compila-o a
-partir do código (em baixo).
+O Clock precisa de **Android 12 ou mais recente**. Transfere o `Clock-X.Y.Z.apk` da
+[última release](https://github.com/iM-lemoS/Clock/releases/latest) e abre-o no telemóvel (da
+primeira vez, o Android pede-te para permitires instalações a partir do browser ou do gestor de
+ficheiros).
+
+Todas as releases são assinadas com a mesma chave. A impressão digital SHA-256 do certificado é
+`03:5D:D5:5A:7C:59:84:20:3A:01:84:31:AA:7A:3C:F5:A3:00:C2:0A:09:81:F6:ED:61:85:A2:4A:5A:3D:FB:58`.
 
 ## Compilar a partir do código
 
