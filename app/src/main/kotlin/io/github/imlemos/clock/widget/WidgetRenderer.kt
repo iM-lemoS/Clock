@@ -86,9 +86,11 @@ class WidgetRenderer(private val context: Context, private val photoFile: (Strin
         val padding = config.padding * density
         val inner = RectF(bounds.left + padding, bounds.top + padding, bounds.right - padding, bounds.bottom - padding)
         val details = detailsPaint(config.details)
+        val lineCount = content.lines.size + if (content.warning != null) 1 else 0
+        // Lines and the button may take at most part of the height, so the time always shows.
         val detailSize = WidgetLayoutMath.detailSize(
             inner.width(), inner.height(), MIN_DETAIL_SP * density, MAX_DETAIL_SP * density, config.details.scale,
-        )
+        ).coerceAtMost(WidgetLayoutMath.maxDetailSize(inner.height(), lineCount, hasAction = content.action != null))
 
         // The action button sits at the bottom, outside the centred stack.
         var actionHeight = 0f
@@ -147,7 +149,7 @@ class WidgetRenderer(private val context: Context, private val photoFile: (Strin
     private fun drawAction(canvas: Canvas, label: String, paint: Paint, size: Float, inner: RectF, config: WidgetConfig, palette: Palette): Float {
         paint.textSize = size
         val textWidth = paint.measureText(label)
-        val pillHeight = size * 2.2f
+        val pillHeight = size * WidgetLayoutMath.ACTION_HEIGHT
         val pillWidth = (textWidth + size * 2f).coerceAtMost(inner.width())
         val left = WidgetLayoutMath.alignedLeft(config.alignment, inner.left, inner.right, pillWidth)
         val pill = RectF(left, inner.bottom - pillHeight, left + pillWidth, inner.bottom)

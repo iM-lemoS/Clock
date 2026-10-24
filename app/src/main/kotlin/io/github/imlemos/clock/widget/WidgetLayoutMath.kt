@@ -16,6 +16,12 @@ object WidgetLayoutMath {
     /** Space between the time and the detail lines, relative to the detail font size. */
     const val DETAIL_GAP = 0.5f
 
+    /** Height of the action button, relative to the detail font size. */
+    const val ACTION_HEIGHT = 2.2f
+
+    /** Share of the height the detail lines and the button may take at most. */
+    const val MAX_DETAILS_SHARE = 0.6f
+
     /**
      * The largest font size at which something measuring [width] x [height] at
      * [REFERENCE_SIZE] fits in [availableWidth] x [availableHeight]; never negative.
@@ -31,6 +37,16 @@ object WidgetLayoutMath {
      */
     fun detailSize(innerWidth: Float, innerHeight: Float, minPx: Float, maxPx: Float, scale: Float): Float =
         (min(innerHeight, innerWidth * 0.5f) * 0.11f).coerceIn(minPx, maxPx) * scale
+
+    /**
+     * The largest detail font size at which [lines] lines (and the action button, if any) take
+     * at most [MAX_DETAILS_SHARE] of [innerHeight]; small widgets shrink their details so the
+     * time still shows.
+     */
+    fun maxDetailSize(innerHeight: Float, lines: Int, hasAction: Boolean): Float {
+        val perUnit = detailsHeight(lines, 1f) + if (hasAction) ACTION_HEIGHT + DETAIL_GAP else 0f
+        return if (perUnit <= 0f) Float.MAX_VALUE else innerHeight * MAX_DETAILS_SHARE / perUnit
+    }
 
     /** A detail line shrinks on its own when it is wider than the widget. */
     fun lineSize(size: Float, widthAtSize: Float, availableWidth: Float): Float =

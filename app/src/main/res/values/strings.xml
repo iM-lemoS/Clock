@@ -529,8 +529,6 @@
     <string name="widget_preset_elegant">Elegant</string>
     <string name="widget_preset_glass">Glass</string>
     <string name="widget_preset_sunset">Sunset</string>
-    <string name="widget_editor_clock_title">Clock widget</string>
-    <string name="widget_editor_next_alarm_title">Next alarm widget</string>
     <string name="widget_styles">Styles</string>
     <string name="widget_preview_light">Light</string>
     <string name="widget_preview_dark">Dark</string>

@@ -86,7 +86,7 @@ fun WidgetConfigScreen(viewModel: WidgetConfigViewModel, onClose: () -> Unit, on
             .windowInsetsPadding(WindowInsets.statusBars),
     ) {
         ClockTopBar(
-            title = stringResource(if (state.kind == WidgetKind.CLOCK) R.string.widget_editor_clock_title else R.string.widget_editor_next_alarm_title),
+            title = stringResource(if (state.kind == WidgetKind.CLOCK) R.string.widget_clock_name else R.string.widget_next_alarm_name),
             navigationIcon = { TopBarIconButton(R.drawable.ic_arrow_back, stringResource(R.string.action_back), onClose) },
         )
         if (!state.loaded) return@Column

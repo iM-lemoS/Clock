@@ -526,8 +526,6 @@
     <string name="widget_preset_elegant">Elegante</string>
     <string name="widget_preset_glass">Vidro</string>
     <string name="widget_preset_sunset">Pôr do sol</string>
-    <string name="widget_editor_clock_title">Widget do relógio</string>
-    <string name="widget_editor_next_alarm_title">Widget do próximo alarme</string>
     <string name="widget_styles">Estilos</string>
     <string name="widget_preview_light">Claro</string>
     <string name="widget_preview_dark">Escuro</string>
