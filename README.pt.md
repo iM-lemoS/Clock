@@ -74,6 +74,14 @@ https://github.com/user-attachments/assets/4e3541b6-3a30-4da8-b956-d2fcdec1641c
 - **Relógio mundial**; **timers** (vários ao mesmo tempo, notificações ao vivo, ecrã inteiro
   quando acabam, +1 min); **cronómetro** com voltas.
 
+**Widgets**
+- Widgets do **relógio** e do **próximo alarme** com as letras da app, ao teu gosto: numa linha ou
+  empilhados, qualquer letra, espessura, forma dos pontos e cores, fundo de cor, gradiente ou foto,
+  cantos e alinhamento, ou um de sete estilos prontos. Seguem o tema claro ou escuro do ecrã
+  principal.
+- O widget do próximo alarme mostra quando e o que toca a seguir, com o botão **Saltar próximo** e
+  um aviso quando uma definição do telemóvel pode impedir os alarmes de tocar.
+
 **Design**
 - Preto e branco com uma cor de destaque (cinco predefinidas ou a cor que quiseres), dígitos em
   matriz de pontos, temas claro e escuro, e controlos flutuantes em "liquid glass" com opção de

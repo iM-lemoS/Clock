@@ -22,6 +22,12 @@
 <li>Uma biblioteca de layouts e um editor: estilos de relógio, sete letras, cores, formato da data, e fundos de cor sólida, gradiente, foto, vídeo sem som ou animados.</li>
 </ul>
 
+<p><b>Widgets</b></p>
+<ul>
+<li>Widgets do relógio e do próximo alarme com as letras da app, ao teu gosto: letra, espessura, cores, fundos com gradiente ou foto, ou um de sete estilos prontos.</li>
+<li>O widget do próximo alarme tem o botão Saltar próximo e avisa-te quando uma definição do telemóvel pode impedir os alarmes de tocar.</li>
+</ul>
+
 <p><b>E mais</b></p>
 <ul>
 <li>Um fuso por alarme, um fuso manual para a app e as duas horas visíveis.</li>

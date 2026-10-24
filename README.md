@@ -70,6 +70,13 @@ https://github.com/user-attachments/assets/4e3541b6-3a30-4da8-b956-d2fcdec1641c
 - **World clock**; **timers** (several at once, live notifications, full screen when they end,
   +1 min); a **stopwatch** with laps.
 
+**Widgets**
+- **Clock** and **next alarm** widgets in the app's own fonts, styled however you like: one line or
+  stacked, any font, weight, dot shape and colours, a solid, gradient or photo background, corners
+  and alignment, or one of seven ready-made styles. They follow light and dark home screens.
+- The next-alarm widget shows when and what rings next, with a **Skip next** button and a warning
+  when a phone setting may keep alarms from ringing.
+
 **Design**
 - Black and white with one accent colour (five presets or any colour you like), dot-matrix digits,
   light and dark themes, and "liquid glass" floating controls with a reduce-transparency option.
