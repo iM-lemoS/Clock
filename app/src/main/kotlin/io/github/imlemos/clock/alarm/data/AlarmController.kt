@@ -148,6 +148,19 @@ class AlarmController @Inject constructor(
 
     suspend fun delete(ids: Collection<Long>) = ids.forEach { delete(it) }
 
+    /**
+     * Copies each alarm with all its settings. Copies start switched off so they never ring
+     * together with their original; returns how many were created.
+     */
+    suspend fun duplicate(ids: Collection<Long>): Int {
+        val now = clock.instant()
+        return ids.count { id ->
+            val alarm = repository.get(id) ?: return@count false
+            repository.save(alarm.asCopy(now))
+            true
+        }
+    }
+
     /** Applies a batch edit to each alarm. */
     suspend fun applyPatch(ids: Collection<Long>, patch: AlarmPatch) {
         if (patch.isEmpty) return

@@ -72,6 +72,9 @@
     <string name="action_save">Save</string>
     <string name="alarm_editor_new_title">New alarm</string>
     <string name="alarm_editor_edit_title">Edit alarm</string>
+    <string name="alarm_editor_copy_title">Copy of alarm</string>
+    <string name="action_duplicate_alarm">Duplicate alarm</string>
+    <string name="alarm_editor_copy_toast">Editing a copy. The original stays as it was.</string>
     <string name="alarm_editor_use_keyboard">Type the time</string>
     <string name="alarm_editor_use_dial">Use the dial</string>
     <string name="alarm_editor_label">Label</string>
@@ -257,6 +260,11 @@
     <string name="selection_group">Group</string>
     <string name="selection_edit">Edit</string>
     <string name="selection_delete">Delete</string>
+    <string name="selection_duplicate">Duplicate</string>
+    <plurals name="duplicated_toast">
+        <item quantity="one">Alarm duplicated. The copy is off.</item>
+        <item quantity="other">%d alarms duplicated. The copies are off.</item>
+    </plurals>
     <string name="group_off">Group off</string>
     <string name="group_next">Next: %1$s</string>
     <string name="group_none_active">No alarm on</string>

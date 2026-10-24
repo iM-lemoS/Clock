@@ -39,6 +39,8 @@ enum class RecurrenceKind { ONCE, WEEKLY, DATES }
 
 data class AlarmEditorState(
     val isNew: Boolean,
+    /** A copy of an existing alarm, not saved yet (see [AlarmEditorViewModel.duplicate]). */
+    val isCopy: Boolean = false,
     val loaded: Boolean = false,
     val time: TimeOfDay = TimeOfDay(7, 0),
     val label: String = "",
@@ -221,6 +223,15 @@ class AlarmEditorViewModel @AssistedInject constructor(
         return at.takeIf { scheduler.displayZone(draft, it) != null }?.atZone(scheduler.systemZone())
     }
 
+    /**
+     * Turns this editor into a new alarm with everything currently on screen; the original stays
+     * as it was saved, and the copy is only created when the user saves.
+     */
+    fun duplicate() {
+        original = null
+        _state.update { it.copy(isNew = true, isCopy = true, collision = null) }
+    }
+
     fun dismissCollision() = _state.update { it.copy(collision = null) }
 
     /** First selectable date in the calendar: today, in the alarm's zone. */
@@ -262,7 +273,7 @@ class AlarmEditorViewModel @AssistedInject constructor(
 
     fun delete(onDeleted: () -> Unit) {
         viewModelScope.launch {
-            if (alarmId != NEW_ALARM) controller.delete(alarmId)
+            original?.let { controller.delete(it.id) }
             onDeleted()
         }
     }

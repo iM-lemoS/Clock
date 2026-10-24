@@ -37,6 +37,20 @@ data class Alarm(
             snoozedUntil = snoozedUntil,
         )
 
+    /**
+     * A new alarm with the same settings, switched off: no id, and nothing it has rung, skipped
+     * or snoozed so far.
+     */
+    fun asCopy(now: Instant): Alarm = copy(
+        id = 0,
+        enabled = false,
+        skippedOccurrence = null,
+        lastTriggeredOccurrence = null,
+        snoozedUntil = null,
+        createdAt = now,
+        armedAt = now,
+    )
+
     companion object {
         // Defaults from docs/PLANO.md section 6; settings hold the user's own defaults.
         const val DEFAULT_SNOOZE_MINUTES = 5

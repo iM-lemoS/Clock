@@ -1,6 +1,10 @@
 package io.github.imlemos.clock.alarm.ui
 
 import androidx.compose.animation.core.tween
+import android.widget.Toast
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
 import io.github.imlemos.clock.core.designsystem.rememberHaptics
@@ -87,6 +91,8 @@ fun AlarmsScreen(
     val reliabilityOk by viewModel.reliabilityOk.collectAsStateWithLifecycle()
     val volumeWarning by viewModel.volumeWarning.collectAsStateWithLifecycle()
     var dialog by remember { mutableStateOf<ListDialog?>(null) }
+    val context = LocalContext.current
+    val resources = LocalResources.current
     LifecycleResumeEffect(Unit) {
         viewModel.refreshReliability()
         onPauseOrDispose { }
@@ -114,6 +120,12 @@ fun AlarmsScreen(
                     onDisable = { viewModel.enableSelected(false) },
                     onMove = { dialog = ListDialog.MoveToGroup },
                     onEdit = { onBatchEdit(viewModel.takeSelection()) },
+                    onDuplicate = {
+                        viewModel.duplicateSelected { count ->
+                            val text = resources.getQuantityString(R.plurals.duplicated_toast, count, count)
+                            Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     onDelete = viewModel::deleteSelected,
                 )
             }
@@ -430,39 +442,46 @@ private fun SelectionActions(
     onDisable: () -> Unit,
     onMove: () -> Unit,
     onEdit: () -> Unit,
+    onDuplicate: () -> Unit,
     onDelete: () -> Unit,
 ) {
     Row(
         Modifier
             .fillMaxWidth()
             .padding(horizontal = 6.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
-        SelectionAction(R.drawable.ic_toggle_on, R.string.selection_enable, onEnable)
-        SelectionAction(R.drawable.ic_toggle_off, R.string.selection_disable, onDisable)
-        SelectionAction(R.drawable.ic_folder, R.string.selection_group, onMove)
-        SelectionAction(R.drawable.ic_edit, R.string.selection_edit, onEdit)
-        SelectionAction(R.drawable.ic_delete, R.string.selection_delete, onDelete, destructive = true)
+        SelectionAction(R.drawable.ic_toggle_on, R.string.selection_enable, onEnable, Modifier.weight(1f))
+        SelectionAction(R.drawable.ic_toggle_off, R.string.selection_disable, onDisable, Modifier.weight(1f))
+        SelectionAction(R.drawable.ic_folder, R.string.selection_group, onMove, Modifier.weight(1f))
+        SelectionAction(R.drawable.ic_edit, R.string.selection_edit, onEdit, Modifier.weight(1f))
+        SelectionAction(R.drawable.ic_copy, R.string.selection_duplicate, onDuplicate, Modifier.weight(1f))
+        SelectionAction(R.drawable.ic_delete, R.string.selection_delete, onDelete, Modifier.weight(1f), destructive = true)
     }
 }
 
 @Composable
-private fun SelectionAction(icon: Int, label: Int, onClick: () -> Unit, destructive: Boolean = false) {
+private fun SelectionAction(icon: Int, label: Int, onClick: () -> Unit, modifier: Modifier = Modifier, destructive: Boolean = false) {
     val colors = ClockTheme.colors
     val haptics = rememberHaptics()
     Column(
-        Modifier
+        modifier
             .clip(RoundedCornerShape(16.dp))
             .clickable(role = Role.Button) {
                 if (destructive) haptics.reject() else haptics.tick()
                 onClick()
             }
             .heightIn(min = 52.dp)
-            .padding(horizontal = 8.dp, vertical = 6.dp),
+            .padding(horizontal = 2.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(painterResource(icon), contentDescription = null, tint = colors.content, modifier = Modifier.size(24.dp))
-        Text(stringResource(label), style = ClockTheme.typography.caption, color = colors.content, maxLines = 1)
+        // Six actions share the bar: long labels ("Desligar", "Duplicar") shrink rather than being cut.
+        BasicText(
+            text = stringResource(label),
+            style = ClockTheme.typography.caption.copy(color = colors.content),
+            maxLines = 1,
+            autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = ClockTheme.typography.caption.fontSize),
+        )
     }
 }
 

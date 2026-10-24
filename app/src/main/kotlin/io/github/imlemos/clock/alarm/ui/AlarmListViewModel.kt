@@ -166,6 +166,9 @@ class AlarmListViewModel @Inject constructor(
 
     fun deleteSelected() = withSelection { controller.delete(it) }
 
+    /** Copies the selection (switched off); [onDone] gets how many copies were made. */
+    fun duplicateSelected(onDone: (Int) -> Unit) = withSelection { onDone(controller.duplicate(it)) }
+
     /** Moves the selection to [groupId] (`null` = no group). */
     fun moveSelected(groupId: Long?) = withSelection { controller.moveToGroup(it, groupId) }
 

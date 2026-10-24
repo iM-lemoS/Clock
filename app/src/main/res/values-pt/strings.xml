@@ -66,6 +66,9 @@
     <string name="action_save">Guardar</string>
     <string name="alarm_editor_new_title">Novo alarme</string>
     <string name="alarm_editor_edit_title">Editar alarme</string>
+    <string name="alarm_editor_copy_title">Cópia do alarme</string>
+    <string name="action_duplicate_alarm">Duplicar alarme</string>
+    <string name="alarm_editor_copy_toast">Estás a editar uma cópia. O original fica como estava.</string>
     <string name="alarm_editor_use_keyboard">Escrever a hora</string>
     <string name="alarm_editor_use_dial">Usar o mostrador</string>
     <string name="alarm_editor_label">Etiqueta</string>
@@ -252,6 +255,12 @@
     <string name="selection_group">Grupo</string>
     <string name="selection_edit">Editar</string>
     <string name="selection_delete">Apagar</string>
+    <string name="selection_duplicate">Duplicar</string>
+    <plurals name="duplicated_toast">
+        <item quantity="one">%d alarme duplicado. A cópia está desligada.</item>
+        <item quantity="many">%d alarmes duplicados. As cópias estão desligadas.</item>
+        <item quantity="other">%d alarmes duplicados. As cópias estão desligadas.</item>
+    </plurals>
     <string name="group_off">Grupo desligado</string>
     <string name="group_next">Próximo: %1$s</string>
     <string name="group_none_active">Nenhum alarme ligado</string>

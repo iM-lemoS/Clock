@@ -111,7 +111,13 @@ fun AlarmEditorScreen(
             .background(colors.background),
     ) {
         ClockTopBar(
-            title = stringResource(if (state.isNew) R.string.alarm_editor_new_title else R.string.alarm_editor_edit_title),
+            title = stringResource(
+                when {
+                    state.isCopy -> R.string.alarm_editor_copy_title
+                    state.isNew -> R.string.alarm_editor_new_title
+                    else -> R.string.alarm_editor_edit_title
+                },
+            ),
             navigationIcon = { TopBarIconButton(R.drawable.ic_arrow_back, stringResource(R.string.action_back), onClose) },
             actions = {
                 TopBarIconButton(
@@ -122,6 +128,15 @@ fun AlarmEditorScreen(
                     onClick = { keyboardInput = !keyboardInput },
                 )
                 if (!state.isNew) {
+                    TopBarIconButton(
+                        icon = R.drawable.ic_copy,
+                        contentDescription = stringResource(R.string.action_duplicate_alarm),
+                        onClick = {
+                            haptics.confirm()
+                            viewModel.duplicate()
+                            Toast.makeText(context, resources.getString(R.string.alarm_editor_copy_toast), Toast.LENGTH_SHORT).show()
+                        },
+                    )
                     TopBarIconButton(
                         icon = R.drawable.ic_delete,
                         contentDescription = stringResource(R.string.action_delete_alarm),
