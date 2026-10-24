@@ -1,0 +1,78 @@
+name: Bug report · Relatório de bug
+description: Something went wrong, for example an alarm that did not ring. · Algo correu mal, por exemplo um alarme que não tocou.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! You can write in English or Portuguese.
+        Obrigado pelo relatório! Podes escrever em inglês ou em português.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What happened? · O que aconteceu?
+      options:
+        - An alarm did not ring · Um alarme não tocou
+        - An alarm rang late or at the wrong time · Um alarme tocou atrasado ou à hora errada
+        - A timer or the stopwatch misbehaved · Um timer ou o cronómetro falhou
+        - Crash or freeze · A app fechou ou bloqueou
+        - Something else · Outra coisa
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description · Descrição
+      description: What did you expect, and what happened instead? · O que esperavas, e o que aconteceu?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce · Passos para reproduzir
+      placeholder: |
+        1. Create an alarm for…
+        2. Lock the phone…
+  - type: input
+    id: device
+    attributes:
+      label: Phone model · Modelo do telemóvel
+      placeholder: OPPO Find X9 Pro, Samsung Galaxy S22 Ultra…
+    validations:
+      required: true
+  - type: input
+    id: android
+    attributes:
+      label: Android version and skin · Versão do Android e camada do fabricante
+      placeholder: Android 16, ColorOS 16 / One UI 8 / HyperOS 2…
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Clock version · Versão do Clock
+      description: Settings > About · Definições > Sobre
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: checkboxes
+    id: state
+    attributes:
+      label: Phone state at the time · Estado do telemóvel na altura
+      options:
+        - label: Screen locked · Ecrã bloqueado
+        - label: Battery saver on · Poupança de energia ligada
+        - label: Do Not Disturb on · Não incomodar ligado
+        - label: Rebooted shortly before · Reiniciado pouco antes
+        - label: App swiped away or force-stopped · App removida dos recentes ou forçada a parar
+  - type: textarea
+    id: reliability
+    attributes:
+      label: Alarm reliability screen · Ecrã de fiabilidade
+      description: What does Settings > Alarm reliability show? A screenshot is perfect. · O que mostra Definições > Fiabilidade dos alarmes? Uma captura de ecrã é perfeita.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (optional) · Registos (opcional)
+      description: Output of `adb logcat` or `adb shell dumpsys alarm | grep imlemos`, if you have it. · Resultado do `adb logcat` ou do `adb shell dumpsys alarm | grep imlemos`, se o tiveres.
+      render: text

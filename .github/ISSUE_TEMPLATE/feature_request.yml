@@ -1,0 +1,23 @@
+name: Feature idea · Ideia de funcionalidade
+description: Suggest something new or a better way to do something. · Sugere algo novo ou uma maneira melhor de fazer algo.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Clock will never add internet access, ads, analytics or accounts.
+        O Clock nunca vai ter acesso à internet, anúncios, analytics ou contas.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem · O problema
+      description: What are you trying to do, and what gets in the way? · O que estás a tentar fazer, e o que te impede?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea · A tua ideia
+      description: How could Clock help? Sketches and screenshots are welcome. · Como é que o Clock podia ajudar? Esboços e capturas de ecrã são bem-vindos.
+    validations:
+      required: true

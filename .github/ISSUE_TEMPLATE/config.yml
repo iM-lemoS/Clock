@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security issue · Problema de segurança
+    url: https://github.com/iM-lemoS/Clock/security/advisories/new
+    about: Report it privately, not in a public issue. · Reporta em privado, não numa issue pública.
