@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -117,7 +118,8 @@ private fun WidgetCard(
         Spacer(Modifier.height(4.dp))
         Text(stringResource(description), style = ClockTheme.typography.caption, color = colors.contentMuted)
         Spacer(Modifier.height(16.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // One under the other, full width: "Adicionar ao ecrã principal" leaves no room beside it.
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (canAdd) {
                 Button(stringResource(R.string.widgets_add), accent = true) {
                     haptics.confirm()
@@ -160,16 +162,17 @@ private fun WidgetCard(
 @Composable
 private fun Button(text: String, accent: Boolean, onClick: () -> Unit) {
     val colors = ClockTheme.colors
-    Row(
+    Box(
         Modifier
+            .fillMaxWidth()
             .clip(CapsuleShape)
             .background(if (accent) colors.accent else colors.content.copy(alpha = 0.08f), CapsuleShape)
             .clickable(role = Role.Button, onClick = onClick)
-            .heightIn(min = 44.dp)
+            .heightIn(min = 48.dp)
             .padding(horizontal = 18.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        contentAlignment = Alignment.Center,
     ) {
-        Text(text, style = ClockTheme.typography.label, color = if (accent) colors.onAccent else colors.content)
+        Text(text, style = ClockTheme.typography.label, color = if (accent) colors.onAccent else colors.content, maxLines = 1)
     }
 }
 
