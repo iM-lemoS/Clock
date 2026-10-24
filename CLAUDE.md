@@ -18,6 +18,10 @@ the maintainer's phone.
 
 - **Language**: code, comments, identifiers, commit messages and technical docs in English.
   `docs/PLANO.md` stays in Portuguese.
+- **Public docs come in pairs**: `README.md` / `README.pt.md`, `CONTRIBUTING.md` /
+  `CONTRIBUTING.pt.md`, and the store listing in `fastlane/metadata/android/{en-US,pt-PT}`. When a
+  user-visible feature changes, update both languages and add a line to `CHANGELOG.md`
+  ("Unreleased"). Release steps: `docs/RELEASING.md`.
 - **No text in code.** Every user-visible string lives in resources with English
   (`values/`, default) and European Portuguese (`values-pt/`, so every Portuguese locale, Brazil
   included, gets Portuguese rather than English). Missing translations fail lint. The app always
@@ -49,13 +53,16 @@ the maintainer's phone.
                              presets, repository, render/ (AlarmLayoutView, backgrounds, clock faces),
                              editor/ and the library
   settings/                  settings screen + view model
-  trash/                     (phase 2)
+  trash/                     deleted alarms (30 days, restorable)
+  reliability/               alarm reliability screen (system checks + OemProfile steps)
   navigation/                Navigation 3 keys, ClockShell (tabs + floating glass chrome)
   core/designsystem/         theme (colors, typography), glass/, component/
   core/data/                 Room 3 database (db/), DataStore settings (prefs/), Hilt modules (di/)
   core/oem/                  manufacturer-specific behaviour behind OemProfile
   core/zones/                localized zone names (system ICU data) and the zone picker
-  (core/audio, core/notifications arrive in later phases)
+  core/audio/                alarm sound player, volume, ringtone store
+  core/notifications/        notification channels and builders
+  core/time/                 elapsed-time clock and reboot detection (BootDetector)
 :core:scheduling             pure Kotlin/JVM: scheduling maths, JUnit 6 tests
 ```
 

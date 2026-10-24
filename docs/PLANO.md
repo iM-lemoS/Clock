@@ -1,6 +1,6 @@
 # Relógio — Plano do Projeto
 
-> Versão 2 · 23 out 2026 · Nome final da app e package id a definir
+> Versão 3 · 24 out 2026 · App **Clock**, package `io.github.imlemos.clock`, repositório [iM-lemoS/Clock](https://github.com/iM-lemoS/Clock)
 > App de relógio open source para Android, centrada em **alarmes fiáveis e muito personalizáveis**.
 > Dispositivo de referência para testes: OPPO Find X9 Pro (ColorOS 16 / Android 16). A app tem de funcionar em **qualquer Android suportado**, não só neste.
 
@@ -298,7 +298,7 @@ Cada fase termina com um **APK instalado e testado** no dispositivo de referênc
 | **7. Timers e cronómetro** | Timers guardados e múltiplos, ecrã inteiro vs pop-up, cronómetro, Live Updates | Vários timers, bloqueado vs em uso |
 | **8. Relógio mundial** | Separador novo (5.1): cidades, diferenças, dia/noite, alarme no fuso da cidade | Vários fusos, mudança de hora |
 | **9. Definições e acabamento** | Todas as definições, cor de destaque, transições, ícone | Revisão geral |
-| **10. Validação e publicação** | Bateria de testes completa (secção 10), README em inglês, licença, primeira release | Alguns dias de uso real |
+| **10. Validação e publicação** | Bateria de testes completa (secção 10), README e CONTRIBUTING em inglês e português, licença, repositório público, primeira release | Alguns dias de uso real |
 
 ---
 
@@ -333,8 +333,10 @@ Cada fase termina com um **APK instalado e testado** no dispositivo de referênc
 
 - **Licença**: a decidir antes de tornar o repositório público.
 - **Distribuição**: APK assinado nas GitHub Releases; mais tarde, F-Droid e/ou Google Play (o Play aceita `USE_EXACT_ALARM` para apps de alarme).
-- README e CONTRIBUTING em inglês; este plano fica em português como documento de produto.
-- Nome da app e package id a definir (o nome do repositório no GitHub perdeu o acento: "Rel-gio").
+- README e CONTRIBUTING em inglês e português (`README.pt.md`, `CONTRIBUTING.pt.md`); `SECURITY.md`, `CHANGELOG.md`, modelos de issues e de PR, Dependabot. Este plano fica em português como documento de produto.
+- Descrição para lojas em inglês e português em `fastlane/metadata/android` (formato que o F-Droid lê), com capturas de ecrã, ícone e gráfico de destaque.
+- Vídeo de apresentação (36 s) e banners em `docs/media`.
+- Nome: **Clock**; package `io.github.imlemos.clock`; repositório `iM-lemoS/Clock`.
 
 ## 12. Pontos a validar durante a implementação
 
