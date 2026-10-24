@@ -9,6 +9,7 @@
   <img src="https://img.shields.io/badge/Android-12%2B-black?logo=android" alt="Android 12+">
   <img src="https://img.shields.io/badge/permiss%C3%A3o%20de%20internet-nenhuma-E0282E" alt="Sem permissão de internet">
   <img src="https://img.shields.io/badge/idiomas-EN%20%C2%B7%20PT-black" alt="Inglês e português">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-GPL--3.0-black" alt="GPL-3.0"></a>
 </p>
 
 O **Clock** é uma app de relógio open source para Android (alarmes, relógio mundial, timers e
@@ -177,4 +178,7 @@ O plano do produto, [`docs/PLANO.md`](docs/PLANO.md), está em português. As al
 
 ## Licença
 
-A decidir antes da primeira release.
+O Clock é software livre sob a [GNU General Public License v3.0](LICENSE): podes usá-lo,
+estudá-lo, partilhá-lo e modificá-lo, e qualquer versão modificada que seja distribuída tem de
+continuar aberta com a mesma licença. As letras e os ícones incluídos mantêm as suas licenças
+(`licenses/`).

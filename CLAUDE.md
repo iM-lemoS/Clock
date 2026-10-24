@@ -39,8 +39,8 @@ the maintainer's phone.
 - **Scheduling logic** (next occurrence, recurrences, time zones, DST) is pure Kotlin in
   `:core:scheduling` with extensive unit tests. Never add Android dependencies there.
 - **Secrets** never enter the repo: `keystore.properties`, `*.jks`, `*.keystore` are git-ignored.
-- **No LICENSE file** until the maintainer chooses a licence. Bundled assets keep their own
-  licences under `licenses/`.
+- **Licence**: GPL-3.0 (`LICENSE`). New dependencies and assets must be compatible with it; bundled
+  assets keep their own licences under `licenses/`.
 - **Commits**: small and descriptive. **Never push** without asking.
 
 ## Architecture

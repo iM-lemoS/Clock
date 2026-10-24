@@ -9,6 +9,7 @@
   <img src="https://img.shields.io/badge/Android-12%2B-black?logo=android" alt="Android 12+">
   <img src="https://img.shields.io/badge/internet%20permission-none-E0282E" alt="No internet permission">
   <img src="https://img.shields.io/badge/languages-EN%20%C2%B7%20PT-black" alt="English and Portuguese">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-black" alt="GPL-3.0"></a>
 </p>
 
 **Clock** is an open-source Android clock app (alarms, world clock, timers and stopwatch) built
@@ -169,4 +170,6 @@ in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## License
 
-To be decided before the first release.
+Clock is free software under the [GNU General Public License v3.0](LICENSE): you can use,
+study, share and modify it, and any distributed modified version must stay open under the same
+licence. Bundled fonts and icons keep their own licences (`licenses/`).
