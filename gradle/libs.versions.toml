@@ -16,7 +16,7 @@ room = "3.0.3"
 
 # Third party
 hilt = "2.60.1"
-haze = "2.0.1"
+haze = "2.1.0"
 kotlinxCoroutines = "1.11.0"
 kotlinxSerialization = "1.12.0"
 
