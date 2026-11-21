@@ -1,8 +1,8 @@
 [versions]
 # Build
-agp = "9.4.1"
+agp = "9.5.2"
 kotlin = "2.4.21"
-ksp = "2.3.12"
+ksp = "2.3.14"
 
 # AndroidX
 activityCompose = "1.13.0"
@@ -18,7 +18,7 @@ room = "3.0.3"
 hilt = "2.60.1"
 haze = "2.0.1"
 kotlinxCoroutines = "1.11.0"
-kotlinxSerialization = "1.12.0"
+kotlinxSerialization = "1.13.0"
 
 # Testing
 junit4 = "4.13.2"
