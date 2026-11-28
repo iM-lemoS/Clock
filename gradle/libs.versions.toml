@@ -6,7 +6,7 @@ ksp = "2.3.12"
 
 # AndroidX
 activityCompose = "1.13.0"
-composeBom = "2026.09.00"
+composeBom = "2026.11.01"
 coreKtx = "1.19.1"
 datastore = "1.3.0"
 hiltAndroidx = "1.4.0"
